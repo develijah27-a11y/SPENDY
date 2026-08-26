@@ -32,7 +32,7 @@ export function QuickAddModal() {
     processMerchantPayment,
   } = useSpendy();
 
-  const [activeTab, setActiveTab] = useState<'expense' | 'income' | 'loan' | 'pay'>('expense');
+  const [activeTab, setActiveTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer'>('expense');
 
   // Form states
   const [amount, setAmount] = useState<string>('');
@@ -74,7 +74,7 @@ export function QuickAddModal() {
     }
   }, [quickAddOpen, quickAddInitialTab, accounts, categories]);
 
-  const handleTabChange = (tab: 'expense' | 'income' | 'loan' | 'pay') => {
+  const handleTabChange = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer') => {
     setActiveTab(tab);
     setErrorMsg('');
     if (tab === 'expense' || tab === 'pay') {
@@ -127,6 +127,19 @@ export function QuickAddModal() {
         principal_amount: parsedAmount,
         due_date: dueDate || undefined,
         notes: note.trim() || undefined,
+      });
+      closeQuickAdd();
+    } else if (activeTab === 'transfer') {
+      if (!toAccountId || toAccountId === (accountId || accounts[0]?.id)) {
+        setErrorMsg('Please choose a different destination account.');
+        return;
+      }
+
+      createTransfer({
+        from_account_id: accountId || accounts[0]?.id,
+        to_account_id: toAccountId,
+        amount: parsedAmount,
+        note: note.trim() || undefined,
       });
       closeQuickAdd();
     } else if (activeTab === 'pay') {

@@ -82,8 +82,8 @@ interface SpendyContextType {
 
   // Modals & UI States
   quickAddOpen: boolean;
-  quickAddInitialTab: 'expense' | 'income' | 'loan' | 'pay';
-  openQuickAdd: (tab?: 'expense' | 'income' | 'loan' | 'pay') => void;
+  quickAddInitialTab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer';
+  openQuickAdd: (tab?: 'expense' | 'income' | 'loan' | 'pay' | 'transfer') => void;
   closeQuickAdd: () => void;
   activeReceipt: PaymentReceipt | null;
   openReceipt: (receipt: PaymentReceipt) => void;
@@ -115,6 +115,21 @@ interface SpendyContextType {
   }) => void;
   recordLoanRepayment: (loanId: string, amount: number, note?: string) => void;
   deleteLoan: (id: string) => void;
+
+  // Debt Actions (Legacy Compatibility)
+  addDebt: (debt: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => void;
+  recordDebtPayment: (debtId: string, amount: number, accountId?: string, note?: string) => void;
+  deleteDebt: (id: string) => void;
+
+  // Financial Goals Actions
+  addFinancialGoal: (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => void;
+  updateFinancialGoal: (id: string, updates: Partial<FinancialGoal>) => void;
+  deleteFinancialGoal: (id: string) => void;
+
+  // Recurring Actions
+  addRecurring: (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => void;
+  toggleRecurring: (id: string) => void;
+  deleteRecurring: (id: string) => void;
 
   // Category Actions
   addCategory: (category: Omit<Category, 'id' | 'created_at'>) => void;
@@ -285,7 +300,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   }, [enrichedTransactions, budgets, currentMonthKey]);
 
   // Actions
-  const openQuickAdd = (tab: 'expense' | 'income' | 'loan' | 'pay' = 'expense') => {
+  const openQuickAdd = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer' = 'expense') => {
     setQuickAddInitialTab(tab);
     setQuickAddOpen(true);
   };
@@ -671,6 +686,121 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     document.body.removeChild(link);
   };
 
+  // Debt Actions (Legacy Compatibility)
+  const addDebt = (debtData: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+    const rawAmt = Math.round(debtData.total_amount);
+    const newDebt: Debt = {
+      id: generateUUID(),
+      user_id: user.id,
+      type: debtData.type,
+      counterparty: debtData.counterparty,
+      total_amount: rawAmt,
+      remaining_amount: debtData.remaining_amount !== undefined ? Math.round(debtData.remaining_amount) : rawAmt,
+      due_date: debtData.due_date,
+      note: debtData.note,
+      status: 'active',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      payments: [],
+    };
+    setDebts((prev) => [newDebt, ...prev]);
+  };
+
+  const recordDebtPayment = (debtId: string, amount: number, accountId?: string, note?: string) => {
+    const amt = Math.round(amount);
+    if (amt <= 0) return;
+
+    if (accountId) {
+      const debt = debts.find((d) => d.id === debtId);
+      if (debt) {
+        const isExpense = debt.type === 'i_owe';
+        setAccounts((prev) =>
+          prev.map((acc) => {
+            if (acc.id === accountId) {
+              return { ...acc, balance: acc.balance + (isExpense ? -amt : amt), updated_at: new Date().toISOString() };
+            }
+            return acc;
+          })
+        );
+      }
+    }
+
+    setDebts((prev) =>
+      prev.map((d) => {
+        if (d.id === debtId) {
+          const newRemaining = Math.max(0, d.remaining_amount - amt);
+          const payment: DebtPayment = {
+            id: generateUUID(),
+            user_id: user.id,
+            debt_id: debtId,
+            account_id: accountId,
+            amount: amt,
+            payment_date: new Date().toISOString(),
+            note,
+            created_at: new Date().toISOString(),
+          };
+          return {
+            ...d,
+            remaining_amount: newRemaining,
+            status: newRemaining === 0 ? 'paid' : 'active',
+            payments: [...(d.payments || []), payment],
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return d;
+      })
+    );
+  };
+
+  const deleteDebt = (id: string) => {
+    setDebts((prev) => prev.filter((d) => d.id !== id));
+  };
+
+  // Financial Goals Actions
+  const addFinancialGoal = (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+    const newGoal: FinancialGoal = {
+      ...goal,
+      id: generateUUID(),
+      user_id: user.id,
+      status: 'in_progress',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setFinancialGoals((prev) => [...prev, newGoal]);
+  };
+
+  const updateFinancialGoal = (id: string, updates: Partial<FinancialGoal>) => {
+    setFinancialGoals((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, ...updates, updated_at: new Date().toISOString() } : g))
+    );
+  };
+
+  const deleteFinancialGoal = (id: string) => {
+    setFinancialGoals((prev) => prev.filter((g) => g.id !== id));
+  };
+
+  // Recurring Actions
+  const addRecurring = (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => {
+    const newRec: RecurringTransaction = {
+      ...tx,
+      id: generateUUID(),
+      user_id: user.id,
+      is_active: true,
+      created_at: new Date().toISOString(),
+    };
+    setRecurringTransactions((prev) => [...prev, newRec]);
+  };
+
+  const toggleRecurring = (id: string) => {
+    setRecurringTransactions((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, is_active: !r.is_active } : r))
+    );
+  };
+
+  const deleteRecurring = (id: string) => {
+    setRecurringTransactions((prev) => prev.filter((r) => r.id !== id));
+  };
+
   // Reset to sample Uganda dataset
   const resetToDemoData = () => {
     setAccounts(SEED_ACCOUNTS);
@@ -750,6 +880,15 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         addLoan,
         recordLoanRepayment,
         deleteLoan,
+        addDebt,
+        recordDebtPayment,
+        deleteDebt,
+        addFinancialGoal,
+        updateFinancialGoal,
+        deleteFinancialGoal,
+        addRecurring,
+        toggleRecurring,
+        deleteRecurring,
         addCategory,
         addAccount,
         updateAccount,
