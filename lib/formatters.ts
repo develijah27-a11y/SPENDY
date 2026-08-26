@@ -1,15 +1,18 @@
 /**
- * Spendy Uganda Currency and Date Formatting Utilities
+ * Spendi Uganda — Centralized Currency & Date Formatting Utilities
+ * Strict compliance with Product Brief: All amounts formatted as 'UGX 25,000'
  */
 
 /**
- * Formats a number to Ugandan Shillings format (UGX 1,450,000)
+ * Primary centralized currency formatter for Spendi.
+ * Example: formatCurrency(25000) -> "UGX 25,000"
  */
-export function formatUGX(amount: number | null | undefined, options?: { showSign?: boolean; isExpense?: boolean }): string {
+export function formatCurrency(amount: number | null | undefined, options?: { showSign?: boolean; isExpense?: boolean }): string {
   if (amount === null || amount === undefined || isNaN(amount)) {
     return 'UGX 0';
   }
 
+  // Integer precision for Ugandan Shillings (no fractional cents)
   const rounded = Math.round(amount);
   const formatted = new Intl.NumberFormat('en-UG', {
     maximumFractionDigits: 0,
@@ -19,14 +22,21 @@ export function formatUGX(amount: number | null | undefined, options?: { showSig
     if (options.isExpense || rounded < 0) {
       return `- UGX ${formatted}`;
     }
-    return `+ UGX ${formatted}`;
+    if (rounded > 0) {
+      return `+ UGX ${formatted}`;
+    }
   }
 
   return `UGX ${formatted}`;
 }
 
 /**
- * Compact UGX format for tight spaces (e.g. UGX 1.4M, UGX 350K)
+ * Backward compatibility alias for formatCurrency
+ */
+export const formatUGX = formatCurrency;
+
+/**
+ * Compact UGX format for constrained chart pills (e.g. UGX 1.4M, UGX 350K)
  */
 export function formatCompactUGX(amount: number): string {
   if (Math.abs(amount) >= 1_000_000_000) {
@@ -38,11 +48,11 @@ export function formatCompactUGX(amount: number): string {
   if (Math.abs(amount) >= 1_000) {
     return `UGX ${(amount / 1_000).toFixed(0)}K`;
   }
-  return `UGX ${amount}`;
+  return `UGX ${Math.round(amount)}`;
 }
 
 /**
- * Format standard readable dates (e.g. 25 Aug 2026 or Today, 4:30 PM)
+ * Human-readable date formatting (e.g. "Today, 4:30 PM", "Yesterday", "24 Aug 2026")
  */
 export function formatDate(dateString: string | Date): string {
   const d = new Date(dateString);
@@ -67,6 +77,71 @@ export function formatDate(dateString: string | Date): string {
     month: 'short',
     year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
   });
+}
+
+/**
+ * Grouping header date (e.g. "Today", "Yesterday", "25 August 2026")
+ */
+export function formatDateGroup(dateString: string): string {
+  const d = new Date(dateString);
+  if (isNaN(d.getTime())) return 'Other';
+
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return 'Today';
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+
+  return d.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+/**
+ * Period date filter checking
+ */
+export type PeriodFilter = 'today' | 'this_week' | 'this_month' | 'last_month' | 'this_year' | 'all_time';
+
+export function isDateInPeriod(dateStr: string, period: PeriodFilter): boolean {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return false;
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  switch (period) {
+    case 'today':
+      return d >= todayStart;
+
+    case 'this_week': {
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+      const weekStart = new Date(now);
+      weekStart.setDate(diff);
+      weekStart.setHours(0, 0, 0, 0);
+      return d >= weekStart;
+    }
+
+    case 'this_month':
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+
+    case 'last_month': {
+      const lastMonthYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear();
+      const lastMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1;
+      return d.getFullYear() === lastMonthYear && d.getMonth() === lastMonth;
+    }
+
+    case 'this_year':
+      return d.getFullYear() === now.getFullYear();
+
+    case 'all_time':
+    default:
+      return true;
+  }
 }
 
 /**

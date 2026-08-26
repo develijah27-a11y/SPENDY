@@ -23,8 +23,8 @@ export interface Category {
   type: CategoryType;
   icon: string;
   color: string;
-  is_default: boolean;
-  created_at: string;
+  is_default?: boolean;
+  created_at?: string;
 }
 
 export type TransactionType = 'expense' | 'income';
@@ -32,20 +32,94 @@ export type TransactionType = 'expense' | 'income';
 export interface Transaction {
   id: string;
   user_id: string;
-  account_id: string;
+  account_id?: string;
   category_id: string;
   type: TransactionType;
   amount: number;
   currency: string;
+  description?: string;
   note?: string;
   merchant_name?: string;
   receipt_number?: string;
+  payment_method?: string;
   transaction_date: string;
   is_recurring?: boolean;
   created_at: string;
   updated_at: string;
   account?: Account;
   category?: Category;
+}
+
+export type LoanType = 'lent' | 'borrowed';
+export type LoanStatus = 'pending' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
+
+export interface LoanRepayment {
+  id: string;
+  loan_id: string;
+  amount: number;
+  payment_date: string;
+  account_id?: string;
+  note?: string;
+  created_at: string;
+}
+
+export interface Loan {
+  id: string;
+  user_id: string;
+  loan_type: LoanType; // 'lent' (Money Lent out to others) | 'borrowed' (Money Borrowed from others)
+  counterparty: string; // Person or institution
+  principal_amount: number;
+  amount_paid: number;
+  remaining_balance: number;
+  status: LoanStatus;
+  due_date?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+  repayments: LoanRepayment[];
+}
+
+export type DebtType = 'i_owe' | 'owed_to_me';
+export type DebtStatus = 'active' | 'paid' | 'overdue';
+
+export interface Debt {
+  id: string;
+  user_id: string;
+  type: DebtType;
+  counterparty: string;
+  total_amount: number;
+  remaining_amount: number;
+  due_date?: string;
+  note?: string;
+  status: DebtStatus;
+  created_at: string;
+  updated_at: string;
+  payments?: DebtPayment[];
+}
+
+export interface DebtPayment {
+  id: string;
+  user_id: string;
+  debt_id: string;
+  account_id?: string;
+  amount: number;
+  payment_date: string;
+  note?: string;
+  created_at: string;
+}
+
+export type PeriodFilter = 'today' | 'this_week' | 'this_month' | 'last_month' | 'this_year' | 'all_time';
+
+export interface DashboardMetrics {
+  currentBalance: number;
+  todaySpending: number;
+  totalSpending: number;
+  todayIncome: number;
+  totalIncome: number;
+  moneyLent: number;
+  moneyBorrowed: number;
+  netPeriodSavings: number;
+  transactionCount: number;
 }
 
 export interface Transfer {
@@ -87,35 +161,6 @@ export interface SavingsGoal {
   updated_at: string;
 }
 
-export type DebtType = 'i_owe' | 'owed_to_me';
-export type DebtStatus = 'active' | 'paid' | 'overdue';
-
-export interface Debt {
-  id: string;
-  user_id: string;
-  type: DebtType;
-  counterparty: string;
-  total_amount: number;
-  remaining_amount: number;
-  due_date?: string;
-  note?: string;
-  status: DebtStatus;
-  created_at: string;
-  updated_at: string;
-  payments?: DebtPayment[];
-}
-
-export interface DebtPayment {
-  id: string;
-  user_id: string;
-  debt_id: string;
-  account_id?: string;
-  amount: number;
-  payment_date: string;
-  note?: string;
-  created_at: string;
-}
-
 export interface FinancialGoal {
   id: string;
   user_id: string;
@@ -152,6 +197,7 @@ export interface UserProfile {
   phone_number?: string;
   avatar_url?: string;
   default_currency: string;
+  starting_balance?: number;
   safe_spend_emergency_buffer: number;
 }
 

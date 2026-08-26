@@ -10,8 +10,15 @@ import {
   DebtPayment,
   FinancialGoal,
   FinancialHealthBreakdown,
+  FinancialSummary,
+  Loan,
+  LoanRepayment,
+  LoanType,
+  LoanStatus,
   MerchantPaymentRequest,
   PaymentReceipt,
+  PeriodFilter,
+  DashboardMetrics,
   RecurringTransaction,
   SafeToSpendDetails,
   SavingsGoal,
@@ -24,6 +31,7 @@ import {
   SEED_BUDGETS,
   SEED_CATEGORIES,
   SEED_DEBTS,
+  SEED_LOANS,
   SEED_FINANCIAL_GOALS,
   SEED_RECURRING,
   SEED_SAVINGS_GOALS,
@@ -31,20 +39,25 @@ import {
   SEED_TRANSFERS,
 } from '../mock/seedData';
 import {
+  calculateDashboardMetrics,
   calculateFinancialHealth,
   calculateSafeToSpend,
   generateDeterministicInsights,
 } from '../engines/financeEngine';
-import { getCurrentMonthKey } from '../formatters';
+import { formatCurrency, getCurrentMonthKey } from '../formatters';
 import { defaultPaymentProvider } from '../payments/providers/MockPaymentProvider';
 import { generateUUID } from '../utils';
 
 interface SpendyContextType {
   user: UserProfile;
   setUser: (u: UserProfile) => void;
+  startingBalance: number;
+  setStartingBalance: (amount: number) => void;
+
   accounts: Account[];
   categories: Category[];
   transactions: Transaction[];
+  loans: Loan[];
   transfers: Transfer[];
   budgets: Budget[];
   savingsGoals: SavingsGoal[];
@@ -53,7 +66,12 @@ interface SpendyContextType {
   recurringTransactions: RecurringTransaction[];
   notifications: Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>;
 
-  // Computed
+  // Time Period Filtering
+  periodFilter: PeriodFilter;
+  setPeriodFilter: (period: PeriodFilter) => void;
+
+  // Computed Metrics (Single Source of Truth)
+  dashboardMetrics: DashboardMetrics;
   totalBalance: number;
   monthlyIncome: number;
   monthlyExpenses: number;
@@ -64,83 +82,87 @@ interface SpendyContextType {
 
   // Modals & UI States
   quickAddOpen: boolean;
-  quickAddInitialTab: 'expense' | 'income' | 'transfer' | 'pay';
-  openQuickAdd: (tab?: 'expense' | 'income' | 'transfer' | 'pay') => void;
+  quickAddInitialTab: 'expense' | 'income' | 'loan' | 'pay';
+  openQuickAdd: (tab?: 'expense' | 'income' | 'loan' | 'pay') => void;
   closeQuickAdd: () => void;
   activeReceipt: PaymentReceipt | null;
   openReceipt: (receipt: PaymentReceipt) => void;
   closeReceipt: () => void;
 
-  // Actions
-  addAccount: (account: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
-  updateAccount: (id: string, account: Partial<Account>) => void;
-  deleteAccount: (id: string) => void;
-
-  addCategory: (category: Omit<Category, 'id' | 'created_at'>) => void;
-
+  // Transaction CRUD Actions
   addTransaction: (tx: {
-    account_id: string;
-    category_id: string;
     type: 'expense' | 'income';
     amount: number;
+    category_id: string;
+    description?: string;
     note?: string;
+    account_id?: string;
+    payment_method?: string;
     merchant_name?: string;
     receipt_number?: string;
     transaction_date?: string;
   }) => void;
+  editTransaction: (id: string, updates: Partial<Transaction>) => void;
   deleteTransaction: (id: string) => void;
 
-  createTransfer: (transfer: {
-    from_account_id: string;
-    to_account_id: string;
-    amount: number;
-    note?: string;
+  // Loan Management Actions (Money Lent / Borrowed)
+  addLoan: (loan: {
+    loan_type: LoanType;
+    counterparty: string;
+    principal_amount: number;
+    due_date?: string;
+    notes?: string;
   }) => void;
+  recordLoanRepayment: (loanId: string, amount: number, note?: string) => void;
+  deleteLoan: (id: string) => void;
 
+  // Category Actions
+  addCategory: (category: Omit<Category, 'id' | 'created_at'>) => void;
+
+  // Legacy Accounts & Transfers
+  addAccount: (account: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  updateAccount: (id: string, account: Partial<Account>) => void;
+  deleteAccount: (id: string) => void;
+  createTransfer: (transfer: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => void;
+
+  // Budgets & Savings
   setBudget: (budget: { category_id?: string | null; planned_amount: number; month?: string }) => void;
   deleteBudget: (id: string) => void;
-
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => void;
-  contributeToGoal: (goalId: string, amount: number, accountId: string) => void;
-  updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
+  contributeToGoal: (goalId: string, amount: number, accountId?: string) => void;
   deleteSavingsGoal: (id: string) => void;
 
-  addDebt: (debt: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'payments'>) => void;
-  recordDebtPayment: (debtId: string, amount: number, accountId?: string, note?: string) => void;
-  deleteDebt: (id: string) => void;
-
-  addRecurring: (rec: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => void;
-  toggleRecurring: (id: string) => void;
-  deleteRecurring: (id: string) => void;
-
-  addFinancialGoal: (fg: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => void;
-  updateFinancialGoal: (id: string, updates: Partial<FinancialGoal>) => void;
-  deleteFinancialGoal: (id: string) => void;
-
+  // Payments & Export
   processMerchantPayment: (req: MerchantPaymentRequest) => Promise<PaymentReceipt>;
+  exportDataCSV: () => void;
   resetToDemoData: () => void;
   clearAllData: () => void;
 }
 
 const SpendyContext = createContext<SpendyContextType | null>(null);
 
-const STORAGE_KEY = 'spendy_uganda_data_v2';
+const STORAGE_KEY = 'spendi_uganda_data_v3';
 
 export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [user, setUser] = useState<UserProfile>({
     id: 'user-uganda-1',
-    email: 'david@spendy.ug',
+    email: 'user@spendi.ug',
     full_name: 'David Mukasa',
     phone_number: '0772 123 456',
     default_currency: 'UGX',
+    starting_balance: 0,
     safe_spend_emergency_buffer: 50000,
   });
+
+  const [startingBalance, setStartingBalanceState] = useState<number>(0);
+  const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('this_month');
 
   const [accounts, setAccounts] = useState<Account[]>(SEED_ACCOUNTS);
   const [categories, setCategories] = useState<Category[]>(SEED_CATEGORIES);
   const [transactions, setTransactions] = useState<Transaction[]>(SEED_TRANSACTIONS);
+  const [loans, setLoans] = useState<Loan[]>(SEED_LOANS);
   const [transfers, setTransfers] = useState<Transfer[]>(SEED_TRANSFERS);
   const [budgets, setBudgets] = useState<Budget[]>(SEED_BUDGETS);
   const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(SEED_SAVINGS_GOALS);
@@ -150,8 +172,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>>([
     {
       id: 'notif-1',
-      title: 'Welcome to Spendy Uganda!',
-      message: 'Your personal finance companion is fully active in UGX.',
+      title: 'Welcome to Spendi UGX!',
+      message: 'All your finances, spending logs, and loans in real-time.',
       type: 'system',
       is_read: false,
       created_at: new Date().toISOString(),
@@ -160,7 +182,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
   // Modal UI state
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'transfer' | 'pay'>('expense');
+  const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'loan' | 'pay'>('expense');
   const [activeReceipt, setActiveReceipt] = useState<PaymentReceipt | null>(null);
 
   // Load from localStorage on client mount
@@ -172,6 +194,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         if (parsed.accounts) setAccounts(parsed.accounts);
         if (parsed.categories) setCategories(parsed.categories);
         if (parsed.transactions) setTransactions(parsed.transactions);
+        if (parsed.loans) setLoans(parsed.loans);
         if (parsed.transfers) setTransfers(parsed.transfers);
         if (parsed.budgets) setBudgets(parsed.budgets);
         if (parsed.savingsGoals) setSavingsGoals(parsed.savingsGoals);
@@ -179,6 +202,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         if (parsed.financialGoals) setFinancialGoals(parsed.financialGoals);
         if (parsed.recurringTransactions) setRecurringTransactions(parsed.recurringTransactions);
         if (parsed.user) setUser(parsed.user);
+        if (parsed.startingBalance !== undefined) setStartingBalanceState(parsed.startingBalance);
       }
     } catch (e) {
       console.warn('Failed to load from storage', e);
@@ -195,9 +219,11 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         STORAGE_KEY,
         JSON.stringify({
           user,
+          startingBalance,
           accounts,
           categories,
           transactions,
+          loans,
           transfers,
           budgets,
           savingsGoals,
@@ -209,7 +235,13 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn('Failed to persist to storage', e);
     }
-  }, [isLoaded, user, accounts, categories, transactions, transfers, budgets, savingsGoals, debts, financialGoals, recurringTransactions]);
+  }, [isLoaded, user, startingBalance, accounts, categories, transactions, loans, transfers, budgets, savingsGoals, debts, financialGoals, recurringTransactions]);
+
+  const setStartingBalance = (amount: number) => {
+    const val = Math.max(0, Math.round(amount || 0));
+    setStartingBalanceState(val);
+    setUser((prev) => ({ ...prev, starting_balance: val }));
+  };
 
   // Enriched transactions with Category & Account object mappings
   const enrichedTransactions = useMemo(() => {
@@ -220,23 +252,17 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     });
   }, [transactions, accounts, categories]);
 
-  // Computed metrics
+  // Dashboard Metrics strictly computed
+  const dashboardMetrics = useMemo(() => {
+    return calculateDashboardMetrics(transactions, loans, periodFilter, startingBalance);
+  }, [transactions, loans, periodFilter, startingBalance]);
+
   const currentMonthKey = getCurrentMonthKey();
 
-  const totalBalance = useMemo(() => {
-    return accounts.filter((a) => !a.is_archived).reduce((sum, a) => sum + (a.balance || 0), 0);
-  }, [accounts]);
-
-  const { monthlyIncome, monthlyExpenses, netSavings } = useMemo(() => {
-    const monthTx = transactions.filter((t) => t.transaction_date.startsWith(currentMonthKey));
-    const income = monthTx.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-    const expenses = monthTx.filter((t) => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-    return {
-      monthlyIncome: income,
-      monthlyExpenses: expenses,
-      netSavings: Math.max(0, income - expenses),
-    };
-  }, [transactions, currentMonthKey]);
+  const totalBalance = dashboardMetrics.currentBalance;
+  const monthlyIncome = dashboardMetrics.totalIncome;
+  const monthlyExpenses = dashboardMetrics.totalSpending;
+  const netSavings = dashboardMetrics.netPeriodSavings;
 
   const safeToSpend = useMemo(() => {
     return calculateSafeToSpend(
@@ -259,7 +285,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   }, [enrichedTransactions, budgets, currentMonthKey]);
 
   // Actions
-  const openQuickAdd = (tab: 'expense' | 'income' | 'transfer' | 'pay' = 'expense') => {
+  const openQuickAdd = (tab: 'expense' | 'income' | 'loan' | 'pay' = 'expense') => {
     setQuickAddInitialTab(tab);
     setQuickAddOpen(true);
   };
@@ -268,6 +294,173 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const openReceipt = (receipt: PaymentReceipt) => setActiveReceipt(receipt);
   const closeReceipt = () => setActiveReceipt(null);
 
+  // Add Transaction
+  const addTransaction = (data: {
+    type: 'expense' | 'income';
+    amount: number;
+    category_id: string;
+    description?: string;
+    note?: string;
+    account_id?: string;
+    payment_method?: string;
+    merchant_name?: string;
+    receipt_number?: string;
+    transaction_date?: string;
+  }) => {
+    const rawAmt = Math.round(data.amount);
+    if (rawAmt <= 0) return;
+
+    const defaultAccId = data.account_id || accounts[0]?.id || 'acc-cash';
+    const desc = data.description || data.note || (data.type === 'expense' ? 'Expense' : 'Income');
+
+    const newTx: Transaction = {
+      id: generateUUID(),
+      user_id: user.id,
+      account_id: defaultAccId,
+      category_id: data.category_id,
+      type: data.type,
+      amount: rawAmt,
+      currency: 'UGX',
+      description: desc,
+      note: desc,
+      payment_method: data.payment_method || 'Cash / Mobile Money',
+      merchant_name: data.merchant_name,
+      receipt_number: data.receipt_number,
+      transaction_date: data.transaction_date || new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    setTransactions((prev) => [newTx, ...prev]);
+
+    // Update corresponding account balance if present
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === defaultAccId) {
+          const delta = data.type === 'income' ? rawAmt : -rawAmt;
+          return { ...acc, balance: acc.balance + delta, updated_at: new Date().toISOString() };
+        }
+        return acc;
+      })
+    );
+  };
+
+  // Edit Transaction
+  const editTransaction = (id: string, updates: Partial<Transaction>) => {
+    setTransactions((prev) =>
+      prev.map((t) => {
+        if (t.id === id) {
+          const updatedAmount = updates.amount !== undefined ? Math.round(updates.amount) : t.amount;
+          return {
+            ...t,
+            ...updates,
+            amount: updatedAmount,
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return t;
+      })
+    );
+  };
+
+  // Delete Transaction
+  const deleteTransaction = (id: string) => {
+    const tx = transactions.find((t) => t.id === id);
+    if (!tx) return;
+
+    // Revert account balance
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id === tx.account_id) {
+          const delta = tx.type === 'income' ? -tx.amount : tx.amount;
+          return { ...acc, balance: acc.balance + delta, updated_at: new Date().toISOString() };
+        }
+        return acc;
+      })
+    );
+
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  // Loan Management
+  const addLoan = (data: {
+    loan_type: LoanType;
+    counterparty: string;
+    principal_amount: number;
+    due_date?: string;
+    notes?: string;
+  }) => {
+    const principal = Math.round(data.principal_amount);
+    if (principal <= 0 || !data.counterparty.trim()) return;
+
+    const newLoan: Loan = {
+      id: generateUUID(),
+      user_id: user.id,
+      loan_type: data.loan_type,
+      counterparty: data.counterparty.trim(),
+      principal_amount: principal,
+      amount_paid: 0,
+      remaining_balance: principal,
+      status: 'pending',
+      due_date: data.due_date,
+      notes: data.notes?.trim(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      repayments: [],
+    };
+
+    setLoans((prev) => [newLoan, ...prev]);
+  };
+
+  const recordLoanRepayment = (loanId: string, amount: number, note?: string) => {
+    const amt = Math.round(amount);
+    if (amt <= 0) return;
+
+    setLoans((prev) =>
+      prev.map((loan) => {
+        if (loan.id === loanId) {
+          const newPaid = loan.amount_paid + amt;
+          const newRemaining = Math.max(0, loan.principal_amount - newPaid);
+          const newStatus: LoanStatus = newRemaining === 0 ? 'paid' : 'partially_paid';
+
+          const repayment: LoanRepayment = {
+            id: generateUUID(),
+            loan_id: loanId,
+            amount: amt,
+            payment_date: new Date().toISOString(),
+            note: note?.trim() || 'Repayment installment',
+            created_at: new Date().toISOString(),
+          };
+
+          return {
+            ...loan,
+            amount_paid: newPaid,
+            remaining_balance: newRemaining,
+            status: newStatus,
+            repayments: [repayment, ...(loan.repayments || [])],
+            updated_at: new Date().toISOString(),
+          };
+        }
+        return loan;
+      })
+    );
+  };
+
+  const deleteLoan = (id: string) => {
+    setLoans((prev) => prev.filter((l) => l.id !== id));
+  };
+
+  // Categories
+  const addCategory = (data: Omit<Category, 'id' | 'created_at'>) => {
+    const newCat: Category = {
+      ...data,
+      id: generateUUID(),
+      created_at: new Date().toISOString(),
+    };
+    setCategories((prev) => [...prev, newCat]);
+  };
+
+  // Legacy Accounts & Transfers
   const addAccount = (data: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     const newAcc: Account = {
       ...data,
@@ -289,89 +482,16 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setAccounts((prev) => prev.filter((acc) => acc.id !== id));
   };
 
-  const addCategory = (data: Omit<Category, 'id' | 'created_at'>) => {
-    const newCat: Category = {
-      ...data,
-      id: generateUUID(),
-      created_at: new Date().toISOString(),
-    };
-    setCategories((prev) => [...prev, newCat]);
-  };
-
-  const addTransaction = (data: {
-    account_id: string;
-    category_id: string;
-    type: 'expense' | 'income';
-    amount: number;
-    note?: string;
-    merchant_name?: string;
-    receipt_number?: string;
-    transaction_date?: string;
-  }) => {
-    if (data.amount <= 0) return;
-
-    const newTx: Transaction = {
-      id: generateUUID(),
-      user_id: user.id,
-      account_id: data.account_id,
-      category_id: data.category_id,
-      type: data.type,
-      amount: data.amount,
-      currency: 'UGX',
-      note: data.note,
-      merchant_name: data.merchant_name,
-      receipt_number: data.receipt_number,
-      transaction_date: data.transaction_date || new Date().toISOString(),
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    setTransactions((prev) => [newTx, ...prev]);
-
-    // Immediately update account balance
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === data.account_id) {
-          const delta = data.type === 'income' ? data.amount : -data.amount;
-          return { ...acc, balance: acc.balance + delta, updated_at: new Date().toISOString() };
-        }
-        return acc;
-      })
-    );
-  };
-
-  const deleteTransaction = (id: string) => {
-    const tx = transactions.find((t) => t.id === id);
-    if (!tx) return;
-
-    // Revert account balance
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === tx.account_id) {
-          const delta = tx.type === 'income' ? -tx.amount : tx.amount;
-          return { ...acc, balance: acc.balance + delta, updated_at: new Date().toISOString() };
-        }
-        return acc;
-      })
-    );
-
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const createTransfer = (data: {
-    from_account_id: string;
-    to_account_id: string;
-    amount: number;
-    note?: string;
-  }) => {
-    if (data.amount <= 0 || data.from_account_id === data.to_account_id) return;
+  const createTransfer = (data: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => {
+    const amt = Math.round(data.amount);
+    if (amt <= 0 || data.from_account_id === data.to_account_id) return;
 
     const newTransfer: Transfer = {
       id: generateUUID(),
       user_id: user.id,
       from_account_id: data.from_account_id,
       to_account_id: data.to_account_id,
-      amount: data.amount,
+      amount: amt,
       transfer_date: new Date().toISOString(),
       note: data.note,
       created_at: new Date().toISOString(),
@@ -379,14 +499,13 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
     setTransfers((prev) => [newTransfer, ...prev]);
 
-    // Update both account balances
     setAccounts((prev) =>
       prev.map((acc) => {
         if (acc.id === data.from_account_id) {
-          return { ...acc, balance: acc.balance - data.amount, updated_at: new Date().toISOString() };
+          return { ...acc, balance: acc.balance - amt, updated_at: new Date().toISOString() };
         }
         if (acc.id === data.to_account_id) {
-          return { ...acc, balance: acc.balance + data.amount, updated_at: new Date().toISOString() };
+          return { ...acc, balance: acc.balance + amt, updated_at: new Date().toISOString() };
         }
         return acc;
       })
@@ -404,7 +523,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         user_id: user.id,
         category_id: data.category_id || null,
         month,
-        planned_amount: data.planned_amount,
+        planned_amount: Math.round(data.planned_amount),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
@@ -429,25 +548,26 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setSavingsGoals((prev) => [...prev, newGoal]);
   };
 
-  const contributeToGoal = (goalId: string, amount: number, accountId: string) => {
-    if (amount <= 0) return;
+  const contributeToGoal = (goalId: string, amount: number, accountId?: string) => {
+    const amt = Math.round(amount);
+    if (amt <= 0) return;
 
-    // Deduct from account
-    setAccounts((prev) =>
-      prev.map((acc) => (acc.id === accountId ? { ...acc, balance: acc.balance - amount } : acc))
-    );
+    if (accountId) {
+      setAccounts((prev) =>
+        prev.map((acc) => (acc.id === accountId ? { ...acc, balance: acc.balance - amt } : acc))
+      );
+    }
 
-    // Add to savings goal
     setSavingsGoals((prev) =>
       prev.map((goal) => {
         if (goal.id === goalId) {
-          const newAmount = goal.current_amount + amount;
+          const newAmount = goal.current_amount + amt;
           const isCompleted = newAmount >= goal.target_amount;
           if (isCompleted) {
             try {
               confetti({
-                particleCount: 120,
-                spread: 80,
+                particleCount: 100,
+                spread: 70,
                 origin: { y: 0.6 },
                 colors: ['#10B981', '#FBBF24', '#3B82F6', '#8B5CF6'],
               });
@@ -467,120 +587,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const updateSavingsGoal = (id: string, updates: Partial<SavingsGoal>) => {
-    setSavingsGoals((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, ...updates, updated_at: new Date().toISOString() } : g))
-    );
-  };
-
   const deleteSavingsGoal = (id: string) => {
     setSavingsGoals((prev) => prev.filter((g) => g.id !== id));
-  };
-
-  const addDebt = (debt: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at' | 'payments'>) => {
-    const newDebt: Debt = {
-      ...debt,
-      id: generateUUID(),
-      user_id: user.id,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      payments: [],
-    };
-    setDebts((prev) => [...prev, newDebt]);
-  };
-
-  const recordDebtPayment = (debtId: string, amount: number, accountId?: string, note?: string) => {
-    if (amount <= 0) return;
-
-    if (accountId) {
-      const debt = debts.find((d) => d.id === debtId);
-      if (debt) {
-        const isPayingDebtIOwe = debt.type === 'i_owe';
-        setAccounts((prev) =>
-          prev.map((acc) => {
-            if (acc.id === accountId) {
-              const delta = isPayingDebtIOwe ? -amount : amount;
-              return { ...acc, balance: acc.balance + delta };
-            }
-            return acc;
-          })
-        );
-      }
-    }
-
-    setDebts((prev) =>
-      prev.map((d) => {
-        if (d.id === debtId) {
-          const newRemaining = Math.max(0, d.remaining_amount - amount);
-          const payment: DebtPayment = {
-            id: generateUUID(),
-            user_id: user.id,
-            debt_id: debtId,
-            amount,
-            account_id: accountId,
-            payment_date: new Date().toISOString(),
-            note,
-            created_at: new Date().toISOString(),
-          };
-          return {
-            ...d,
-            remaining_amount: newRemaining,
-            status: newRemaining === 0 ? 'paid' : d.status,
-            payments: [payment, ...(d.payments || [])],
-            updated_at: new Date().toISOString(),
-          };
-        }
-        return d;
-      })
-    );
-  };
-
-  const deleteDebt = (id: string) => {
-    setDebts((prev) => prev.filter((d) => d.id !== id));
-  };
-
-  const addRecurring = (rec: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => {
-    const newRec: RecurringTransaction = {
-      ...rec,
-      id: generateUUID(),
-      user_id: user.id,
-      is_active: true,
-      created_at: new Date().toISOString(),
-    };
-    setRecurringTransactions((prev) => [...prev, newRec]);
-  };
-
-  const toggleRecurring = (id: string) => {
-    setRecurringTransactions((prev) =>
-      prev.map((r) => (r.id === id ? { ...r, is_active: !r.is_active } : r))
-    );
-  };
-
-  const deleteRecurring = (id: string) => {
-    setRecurringTransactions((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const addFinancialGoal = (fg: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
-    const newGoal: FinancialGoal = {
-      ...fg,
-      id: generateUUID(),
-      user_id: user.id,
-      status: 'in_progress',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setFinancialGoals((prev) => [...prev, newGoal]);
-  };
-
-  const updateFinancialGoal = (id: string, updates: Partial<FinancialGoal>) => {
-    setFinancialGoals((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, ...updates, updated_at: new Date().toISOString() } : g))
-    );
-  };
-
-  const deleteFinancialGoal = (id: string) => {
-    setFinancialGoals((prev) => prev.filter((g) => g.id !== id));
   };
 
   const processMerchantPayment = async (req: MerchantPaymentRequest): Promise<PaymentReceipt> => {
@@ -609,7 +617,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       amount: req.amount,
       merchant_name: req.merchantName,
       receipt_number: res.receiptNumber,
-      note: req.note || `Merchant payment to ${req.merchantName} (${req.reference})`,
+      description: req.note || `Merchant payment to ${req.merchantName}`,
+      note: req.note || `Merchant payment to ${req.merchantName}`,
     });
 
     const receipt: PaymentReceipt = {
@@ -618,7 +627,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       amount: req.amount,
       currency: 'UGX',
       date: new Date().toISOString(),
-      paymentMethod: accountObj?.name || 'Spendy Wallet',
+      paymentMethod: accountObj?.name || 'Spendi Wallet',
       category: categoryObj?.name || 'General Expense',
       reference: req.reference,
       status: 'SUCCESS',
@@ -628,17 +637,53 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     return receipt;
   };
 
+  // One-click CSV export of entire financial ledger
+  const exportDataCSV = () => {
+    const headers = ['Record Type', 'Date', 'Type / Direction', 'Amount (UGX)', 'Category / Counterparty', 'Note / Description', 'Status'];
+    const txRows = transactions.map((t) => [
+      'TRANSACTION',
+      t.transaction_date,
+      t.type.toUpperCase(),
+      t.amount,
+      `"${t.category?.name || 'General'}"`,
+      `"${(t.description || t.note || '').replace(/"/g, '""')}"`,
+      'COMPLETED',
+    ]);
+
+    const loanRows = loans.map((l) => [
+      'LOAN',
+      l.created_at,
+      l.loan_type === 'lent' ? 'LENT_OUT' : 'BORROWED',
+      l.principal_amount,
+      `"${l.counterparty}"`,
+      `"Remaining: ${formatCurrency(l.remaining_balance)}. Notes: ${(l.notes || '').replace(/"/g, '""')}"`,
+      l.status.toUpperCase(),
+    ]);
+
+    const allRows = [headers.join(','), ...txRows.map((r) => r.join(',')), ...loanRows.map((r) => r.join(','))];
+    const csvContent = 'data:text/csv;charset=utf-8,' + allRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Spendi_Financial_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Reset to sample Uganda dataset
   const resetToDemoData = () => {
     setAccounts(SEED_ACCOUNTS);
     setCategories(SEED_CATEGORIES);
     setTransactions(SEED_TRANSACTIONS);
+    setLoans(SEED_LOANS);
     setTransfers(SEED_TRANSFERS);
     setBudgets(SEED_BUDGETS);
     setSavingsGoals(SEED_SAVINGS_GOALS);
     setDebts(SEED_DEBTS);
     setFinancialGoals(SEED_FINANCIAL_GOALS);
     setRecurringTransactions(SEED_RECURRING);
+    setStartingBalanceState(0);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -648,33 +693,9 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
   // Clear all dummy data for a fresh real user start
   const clearAllData = () => {
-    setAccounts([
-      {
-        id: generateUUID(),
-        user_id: user.id,
-        name: 'MTN Mobile Money',
-        type: 'mtn_momo',
-        balance: 0,
-        currency: 'UGX',
-        color: '#FBBF24',
-        is_archived: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: generateUUID(),
-        user_id: user.id,
-        name: 'Physical Cash',
-        type: 'cash',
-        balance: 0,
-        currency: 'UGX',
-        color: '#10B981',
-        is_archived: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ]);
+    setStartingBalanceState(0);
     setTransactions([]);
+    setLoans([]);
     setTransfers([]);
     setBudgets([]);
     setSavingsGoals([]);
@@ -693,9 +714,12 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       value={{
         user,
         setUser,
+        startingBalance,
+        setStartingBalance,
         accounts,
         categories,
         transactions: enrichedTransactions,
+        loans,
         transfers,
         budgets,
         savingsGoals,
@@ -703,6 +727,9 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         financialGoals,
         recurringTransactions,
         notifications,
+        periodFilter,
+        setPeriodFilter,
+        dashboardMetrics,
         totalBalance,
         monthlyIncome,
         monthlyExpenses,
@@ -717,29 +744,24 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         activeReceipt,
         openReceipt,
         closeReceipt,
+        addTransaction,
+        editTransaction,
+        deleteTransaction,
+        addLoan,
+        recordLoanRepayment,
+        deleteLoan,
+        addCategory,
         addAccount,
         updateAccount,
         deleteAccount,
-        addCategory,
-        addTransaction,
-        deleteTransaction,
         createTransfer,
         setBudget,
         deleteBudget,
         addSavingsGoal,
         contributeToGoal,
-        updateSavingsGoal,
         deleteSavingsGoal,
-        addDebt,
-        recordDebtPayment,
-        deleteDebt,
-        addRecurring,
-        toggleRecurring,
-        deleteRecurring,
-        addFinancialGoal,
-        updateFinancialGoal,
-        deleteFinancialGoal,
         processMerchantPayment,
+        exportDataCSV,
         resetToDemoData,
         clearAllData,
       }}

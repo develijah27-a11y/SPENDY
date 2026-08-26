@@ -1,26 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%" fill="none">
   <defs>
-    <linearGradient id="spendyGreenIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Green S Gradient -->
+    <linearGradient id="spendyGreen" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#4ADE80" />
       <stop offset="50%" stop-color="#22C55E" />
       <stop offset="100%" stop-color="#16A34A" />
     </linearGradient>
-    <linearGradient id="spendyOrangeIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Orange Hand Gradient -->
+    <linearGradient id="spendyOrange" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#F59E0B" />
       <stop offset="50%" stop-color="#EA580C" />
       <stop offset="100%" stop-color="#C2410C" />
     </linearGradient>
-    <linearGradient id="coinGoldIcon" x1="0%" y1="0%" x2="100%" y2="100%">
+
+    <!-- Coin Gold Gradient -->
+    <linearGradient id="coinGold" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FDE047" />
       <stop offset="50%" stop-color="#F59E0B" />
       <stop offset="100%" stop-color="#D97706" />
     </linearGradient>
+
+    <!-- Drop Shadow Filter -->
+    <filter id="logoGlow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.4" />
+    </filter>
   </defs>
 
+  <!-- Background rounded rectangle (Dark theme aesthetic) -->
   <rect width="512" height="512" rx="110" fill="#0B0F19" />
 
-  <g transform="translate(0, 0)">
-    <!-- Upper Green S Arrow -->
+  <g filter="url(#logoGlow)" transform="translate(0, 0)">
+    <!-- 1. Upper Green Curved 'S' with Arrow -->
+    <!-- Outer/Inner curve of S -->
     <path
       d="M 330 115
          C 310 80, 260 65, 215 70
@@ -37,11 +49,16 @@
          C 75 110, 120 40, 215 30
          C 275 25, 335 50, 365 100
          Z"
-      fill="url(#spendyGreenIcon)"
+      fill="url(#spendyGreen)"
     />
-    <path d="M 360 80 L 390 145 L 320 135 Z" fill="url(#spendyGreenIcon)" />
 
-    <!-- Orange Hand -->
+    <!-- Arrow head on upper right loop -->
+    <path
+      d="M 360 80 L 390 145 L 320 135 Z"
+      fill="url(#spendyGreen)"
+    />
+
+    <!-- 2. Orange Supportive Hand (Cupping from left-bottom) -->
     <path
       d="M 115 250
          C 110 290, 135 340, 185 375
@@ -50,11 +67,23 @@
          C 325 335, 275 345, 230 330
          C 185 315, 155 280, 145 240
          Z"
-      fill="url(#spendyOrangeIcon)"
+      fill="url(#spendyOrange)"
     />
 
-    <!-- UGX Coin -->
-    <ellipse cx="256" cy="275" rx="58" ry="46" fill="url(#coinGoldIcon)" stroke="#B45309" stroke-width="5" />
+    <!-- Hand Palm & Finger details -->
+    <path
+      d="M 185 375
+         C 240 405, 320 395, 370 335
+         C 340 355, 290 365, 245 350
+         C 200 335, 175 305, 165 270
+         C 155 295, 165 345, 185 375 Z"
+      fill="#D97706"
+      opacity="0.8"
+    />
+
+    <!-- 3. Golden UGX Coin sitting in the palm -->
+    <ellipse cx="256" cy="275" rx="58" ry="46" fill="url(#coinGold)" stroke="#B45309" stroke-width="5" />
+    <ellipse cx="256" cy="275" rx="48" ry="38" fill="none" stroke="#FDE047" stroke-width="2" stroke-dasharray="4,3" opacity="0.8" />
     <text
       x="256"
       y="285"

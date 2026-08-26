@@ -2,14 +2,95 @@ import {
   Account, 
   Budget, 
   Debt, 
+  Loan,
   FinancialHealthBreakdown, 
   FinancialSummary, 
   RecurringTransaction, 
   SafeToSpendDetails, 
   SavingsGoal, 
-  Transaction 
+  Transaction,
+  PeriodFilter,
+  DashboardMetrics
 } from '@/types';
-import { formatUGX, getCurrentMonthKey } from '../formatters';
+import { formatCurrency, formatUGX, getCurrentMonthKey, isDateInPeriod } from '../formatters';
+
+/**
+ * Calculates core dashboard metrics strictly from real stored data.
+ * Adheres to sections 2, 4, 5 & 38 of the Product Brief.
+ */
+export function calculateDashboardMetrics(
+  transactions: Transaction[],
+  loans: Loan[],
+  period: PeriodFilter = 'this_month',
+  startingBalance: number = 0
+): DashboardMetrics {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  let todaySpending = 0;
+  let totalSpending = 0;
+  let todayIncome = 0;
+  let totalIncome = 0;
+  let lifetimeIncome = 0;
+  let lifetimeExpenses = 0;
+  let transactionCount = 0;
+
+  for (const tx of transactions) {
+    const txDate = new Date(tx.transaction_date);
+    const isToday = !isNaN(txDate.getTime()) && txDate >= todayStart;
+    const inPeriod = isDateInPeriod(tx.transaction_date, period);
+
+    const amt = Math.round(tx.amount || 0);
+
+    if (tx.type === 'expense') {
+      lifetimeExpenses += amt;
+      if (isToday) todaySpending += amt;
+      if (inPeriod) {
+        totalSpending += amt;
+        transactionCount++;
+      }
+    } else if (tx.type === 'income') {
+      lifetimeIncome += amt;
+      if (isToday) todayIncome += amt;
+      if (inPeriod) {
+        totalIncome += amt;
+        transactionCount++;
+      }
+    }
+  }
+
+  // Calculate Money Lent (Principal lent out that is still unpaid)
+  let moneyLent = 0;
+  // Calculate Money Borrowed (Principal borrowed that is still owed)
+  let moneyBorrowed = 0;
+
+  for (const loan of loans) {
+    if (loan.status !== 'paid' && loan.status !== 'cancelled') {
+      const rem = Math.round(loan.remaining_balance || 0);
+      if (loan.loan_type === 'lent') {
+        moneyLent += rem;
+      } else if (loan.loan_type === 'borrowed') {
+        moneyBorrowed += rem;
+      }
+    }
+  }
+
+  // Current balance: (Starting Balance + Lifetime Income) - Lifetime Expenses
+  const currentBalance = (Math.round(startingBalance || 0) + lifetimeIncome) - lifetimeExpenses;
+  const netPeriodSavings = totalIncome - totalSpending;
+
+  return {
+    currentBalance,
+    todaySpending,
+    totalSpending,
+    todayIncome,
+    totalIncome,
+    moneyLent,
+    moneyBorrowed,
+    netPeriodSavings,
+    transactionCount,
+  };
+}
 
 /**
  * Calculates the realistic Safe-to-Spend balance for the current month and day.
@@ -50,7 +131,6 @@ export function calculateSafeToSpend(
   const upcomingRecurring = recurringTransactions
     .filter((r) => r.is_active && r.type === 'expense')
     .reduce((sum, r) => {
-      // Calculate how many times it triggers in remaining days
       if (r.frequency === 'daily') {
         return sum + (r.amount * daysRemainingInMonth);
       }
@@ -58,7 +138,6 @@ export function calculateSafeToSpend(
         const remainingWeeks = Math.ceil(daysRemainingInMonth / 7);
         return sum + (r.amount * remainingWeeks);
       }
-      // Monthly: check if next run is before end of month
       const nextRun = new Date(r.next_run_date);
       if (nextRun.getMonth() === now.getMonth() && nextRun.getDate() >= currentDay) {
         return sum + r.amount;
@@ -227,7 +306,6 @@ export function generateDeterministicInsights(
 ): Array<{ title: string; description: string; type: 'success' | 'warning' | 'info' }> {
   const insights: Array<{ title: string; description: string; type: 'success' | 'warning' | 'info' }> = [];
 
-  // Parse previous month key
   const [year, month] = monthKey.split('-').map(Number);
   const prevDate = new Date(year, month - 2, 1);
   const prevMonthKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
@@ -238,26 +316,24 @@ export function generateDeterministicInsights(
   const totalCurrentSpent = currentExpenses.reduce((sum, t) => sum + t.amount, 0);
   const totalPrevSpent = prevExpenses.reduce((sum, t) => sum + t.amount, 0);
 
-  // 1. Overall spending comparison
   if (totalPrevSpent > 0 && totalCurrentSpent > 0) {
     const diff = totalCurrentSpent - totalPrevSpent;
     const pct = Math.abs((diff / totalPrevSpent) * 100).toFixed(0);
     if (diff > 0) {
       insights.push({
         title: 'Spending Trend',
-        description: `You have spent ${formatUGX(diff)} (+${pct}%) more this month compared to last month.`,
+        description: `You have spent ${formatCurrency(diff)} (+${pct}%) more this month compared to last month.`,
         type: 'warning',
       });
     } else {
       insights.push({
         title: 'Spending Savings',
-        description: `Great job! You have spent ${formatUGX(Math.abs(diff))} (-${pct}%) less than last month.`,
+        description: `Great job! You have spent ${formatCurrency(Math.abs(diff))} (-${pct}%) less than last month.`,
         type: 'success',
       });
     }
   }
 
-  // 2. Category top spender insight
   const categoryTotals: Record<string, { name: string; amount: number }> = {};
   currentExpenses.forEach((t) => {
     const catName = t.category?.name || 'General';
@@ -271,34 +347,9 @@ export function generateDeterministicInsights(
     const topCatPct = totalCurrentSpent > 0 ? ((topCat.amount / totalCurrentSpent) * 100).toFixed(0) : '0';
     insights.push({
       title: 'Top Expense Category',
-      description: `${topCat.name} is your highest expense, taking ${topCatPct}% (${formatUGX(topCat.amount)}) of your total spending.`,
+      description: `${topCat.name} is your highest expense, taking ${topCatPct}% (${formatCurrency(topCat.amount)}) of your total spending.`,
       type: 'info',
     });
-  }
-
-  // 3. Budget utilization insight
-  const currentBudget = budgets.find((b) => b.month === monthKey && !b.category_id);
-  if (currentBudget && currentBudget.planned_amount > 0) {
-    const usage = (totalCurrentSpent / currentBudget.planned_amount) * 100;
-    if (usage >= 100) {
-      insights.push({
-        title: 'Budget Alert',
-        description: `You have reached ${usage.toFixed(0)}% of your monthly budget limit (${formatUGX(currentBudget.planned_amount)}).`,
-        type: 'warning',
-      });
-    } else if (usage >= 80) {
-      insights.push({
-        title: 'Budget Warning',
-        description: `You have utilized ${usage.toFixed(0)}% of your monthly budget. Watch upcoming daily expenses.`,
-        type: 'warning',
-      });
-    } else {
-      insights.push({
-        title: 'Budget Status',
-        description: `You are well within budget at ${usage.toFixed(0)}% of planned spending. Remaining: ${formatUGX(currentBudget.planned_amount - totalCurrentSpent)}.`,
-        type: 'success',
-      });
-    }
   }
 
   return insights;
@@ -327,7 +378,6 @@ export function buildFinancialSummary(
   const netSavings = Math.max(0, income - expenses);
   const savingsRatePercentage = income > 0 ? (netSavings / income) * 100 : 0;
 
-  // Category breakdown
   const catMap: Record<string, number> = {};
   monthTransactions
     .filter((t) => t.type === 'expense')

@@ -4,29 +4,28 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { useTheme } from '@/lib/theme/ThemeContext';
-import { formatUGX } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/formatters';
+import { SpendyLogo } from '@/components/ui/SpendyLogo';
 import {
-  Wallet,
   Bell,
   Plus,
-  ShieldCheck,
   RotateCcw,
   Sparkles,
   ChevronDown,
   X,
-  CreditCard,
   Sun,
   Moon,
   Wifi,
   WifiOff,
-  LayoutDashboard,
   ShieldAlert,
-  LogOut,
-  UserCheck,
+  Settings,
+  ReceiptText,
+  HandCoins,
+  DollarSign,
 } from 'lucide-react';
 
 export function Navbar() {
-  const { totalBalance, openQuickAdd, notifications, resetToDemoData, user, clearAllData } = useSpendy();
+  const { totalBalance, openQuickAdd, notifications, user, clearAllData } = useSpendy();
   const { theme, toggleTheme, isOnline } = useTheme();
 
   const [showNotifications, setShowNotifications] = useState(false);
@@ -35,33 +34,16 @@ export function Navbar() {
   const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/10 dark:border-white/10 px-4 lg:px-8 py-3 transition-all">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-black/10 dark:border-white/10 px-4 lg:px-8 py-3 transition-all">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-        {/* Brand & Logo */}
-        <div className="flex items-center gap-3">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-extrabold text-xl tracking-tight text-gray-900 dark:text-white group-hover:text-emerald-500 dark:group-hover:text-emerald-400 transition-colors">
-                  Spendy
-                </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
-                  UG 🇺🇬
-                </span>
-              </div>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 hidden sm:block">
-                Know your money. Control your spending.
-              </p>
-            </div>
-          </Link>
-        </div>
+        {/* Brand & Official Logo */}
+        <Link href="/" className="group cursor-pointer">
+          <SpendyLogo size="md" showTagline={true} />
+        </Link>
 
-        {/* Quick Balance & Action Center */}
+        {/* Action Center & Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Offline / Online Status Pill */}
+          {/* Offline / Online Indicator */}
           <div
             className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
               isOnline
@@ -73,13 +55,15 @@ export function Navbar() {
             <span>{isOnline ? 'Online' : 'Offline Mode'}</span>
           </div>
 
-          {/* Total balance quick pill */}
+          {/* Current Balance Pill */}
           <div className="hidden lg:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs">
-            <span className="text-gray-500 dark:text-gray-400">Total Money:</span>
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">{formatUGX(totalBalance)}</span>
+            <span className="text-gray-500 dark:text-gray-400">Balance:</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+              {formatCurrency(totalBalance)}
+            </span>
           </div>
 
-          {/* Dark / Light Mode Toggle Button */}
+          {/* Dark / Light Theme Toggle */}
           <button
             onClick={toggleTheme}
             aria-label="Toggle Theme"
@@ -88,23 +72,14 @@ export function Navbar() {
             {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
           </button>
 
-          {/* Quick Action Button */}
+          {/* Quick Add Expense Action */}
           <button
             onClick={() => openQuickAdd('expense')}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm shadow-md shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Add Expense</span>
+            <span className="hidden sm:inline">Record Spending</span>
             <span className="sm:hidden">Add</span>
-          </button>
-
-          {/* Pay Action Button */}
-          <button
-            onClick={() => openQuickAdd('pay')}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs sm:text-sm shadow-md shadow-purple-600/20 active:scale-95 transition-all cursor-pointer"
-          >
-            <CreditCard className="w-4 h-4" />
-            <span>Pay</span>
           </button>
 
           {/* Notifications Trigger */}
@@ -147,7 +122,7 @@ export function Navbar() {
             )}
           </div>
 
-          {/* User profile / Quick menu */}
+          {/* User Profile Menu */}
           <div className="relative">
             <button
               onClick={() => {
@@ -159,8 +134,8 @@ export function Navbar() {
               <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center border border-emerald-500/30">
                 {user?.full_name?.charAt(0) || 'U'}
               </div>
-              <span className="hidden sm:inline font-medium text-gray-800 dark:text-gray-200">
-                {user?.full_name || 'My Account'}
+              <span className="hidden sm:inline font-semibold text-gray-800 dark:text-gray-200">
+                {user?.full_name || 'My Spendi'}
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-gray-400 hidden sm:block" />
             </button>
@@ -168,34 +143,46 @@ export function Navbar() {
             {showUserMenu && (
               <div className="absolute right-0 mt-2 w-64 rounded-2xl glass-panel shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="p-2 border-b border-black/10 dark:border-white/10">
-                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{user?.full_name || 'Uganda User'}</p>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{user?.email || 'user@spendy.ug'}</p>
+                  <p className="text-xs font-semibold text-gray-900 dark:text-white">{user?.full_name || 'User'}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">{user?.email || 'user@spendi.ug'}</p>
                 </div>
                 <div className="mt-2 space-y-1 text-xs">
                   <Link
-                    href="/admin"
+                    href="/spending"
                     onClick={() => setShowUserMenu(false)}
-                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-purple-600 dark:text-purple-300 hover:bg-purple-500/10 transition-colors font-semibold"
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                   >
-                    <ShieldAlert className="w-4 h-4 text-purple-500" />
-                    <span>Admin Dashboard</span>
+                    <ReceiptText className="w-4 h-4 text-red-500" />
+                    <span>Spending Log</span>
                   </Link>
+
+                  <Link
+                    href="/income"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  >
+                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                    <span>Income Manager</span>
+                  </Link>
+
+                  <Link
+                    href="/loans"
+                    onClick={() => setShowUserMenu(false)}
+                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                  >
+                    <HandCoins className="w-4 h-4 text-purple-500" />
+                    <span>Loans (Lent & Borrowed)</span>
+                  </Link>
+
                   <Link
                     href="/settings"
                     onClick={() => setShowUserMenu(false)}
                     className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                   >
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                    <span>Settings & Emergency Buffer</span>
+                    <Settings className="w-4 h-4 text-gray-400" />
+                    <span>Settings & Export</span>
                   </Link>
-                  <Link
-                    href="/coach"
-                    onClick={() => setShowUserMenu(false)}
-                    className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    <span>AI Money Coach</span>
-                  </Link>
+
                   <button
                     onClick={() => {
                       clearAllData();
@@ -204,7 +191,7 @@ export function Navbar() {
                     className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-red-500 hover:bg-red-500/10 transition-colors text-left cursor-pointer"
                   >
                     <RotateCcw className="w-4 h-4" />
-                    <span>Start Fresh (Clean Slate)</span>
+                    <span>Reset Data (Clean Slate)</span>
                   </button>
                 </div>
               </div>

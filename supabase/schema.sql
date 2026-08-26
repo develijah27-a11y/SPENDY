@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS public.savings_goals (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 8. DEBTS TABLE (Money I Owe vs Money Owed To Me)
+-- 8. DEBTS TABLE (Legacy)
 CREATE TABLE IF NOT EXISTS public.debts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -118,11 +118,39 @@ CREATE TABLE IF NOT EXISTS public.debts (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. DEBT PAYMENTS TABLE
+-- 9. DEBT PAYMENTS TABLE (Legacy)
 CREATE TABLE IF NOT EXISTS public.debt_payments (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     debt_id UUID NOT NULL REFERENCES public.debts(id) ON DELETE CASCADE,
+    account_id UUID REFERENCES public.accounts(id) ON DELETE SET NULL,
+    amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
+    payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    note TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. LOANS TABLE (Money Lent vs Money Borrowed)
+CREATE TABLE IF NOT EXISTS public.loans (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    loan_type TEXT NOT NULL CHECK (loan_type IN ('lent', 'borrowed')),
+    counterparty TEXT NOT NULL,
+    principal_amount NUMERIC(15, 2) NOT NULL CHECK (principal_amount > 0),
+    amount_paid NUMERIC(15, 2) NOT NULL DEFAULT 0 CHECK (amount_paid >= 0),
+    remaining_balance NUMERIC(15, 2) NOT NULL CHECK (remaining_balance >= 0),
+    status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'partially_paid', 'paid', 'overdue', 'cancelled')),
+    due_date DATE,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 11. LOAN REPAYMENTS TABLE
+CREATE TABLE IF NOT EXISTS public.loan_repayments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    loan_id UUID NOT NULL REFERENCES public.loans(id) ON DELETE CASCADE,
     account_id UUID REFERENCES public.accounts(id) ON DELETE SET NULL,
     amount NUMERIC(15, 2) NOT NULL CHECK (amount > 0),
     payment_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -184,6 +212,9 @@ CREATE INDEX IF NOT EXISTS idx_budgets_user_id_month ON public.budgets(user_id, 
 CREATE INDEX IF NOT EXISTS idx_savings_goals_user_id ON public.savings_goals(user_id);
 CREATE INDEX IF NOT EXISTS idx_debts_user_id_status ON public.debts(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_debt_payments_debt_id ON public.debt_payments(debt_id);
+CREATE INDEX IF NOT EXISTS idx_loans_user_id_status ON public.loans(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_loans_loan_type ON public.loans(loan_type);
+CREATE INDEX IF NOT EXISTS idx_loan_repayments_loan_id ON public.loan_repayments(loan_id);
 CREATE INDEX IF NOT EXISTS idx_recurring_user_id ON public.recurring_transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON public.notifications(user_id, is_read);
 
@@ -199,6 +230,8 @@ ALTER TABLE public.budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.savings_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.debts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.debt_payments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.loans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.loan_repayments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.financial_goals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.recurring_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
@@ -240,6 +273,14 @@ CREATE POLICY "Users can manage own debts" ON public.debts
 
 -- Debt Payments
 CREATE POLICY "Users can manage own debt payments" ON public.debt_payments
+    FOR ALL USING (auth.uid() = user_id);
+
+-- Loans
+CREATE POLICY "Users can manage own loans" ON public.loans
+    FOR ALL USING (auth.uid() = user_id);
+
+-- Loan Repayments
+CREATE POLICY "Users can manage own loan repayments" ON public.loan_repayments
     FOR ALL USING (auth.uid() = user_id);
 
 -- Financial Goals
