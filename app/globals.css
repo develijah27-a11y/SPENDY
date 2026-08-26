@@ -1,7 +1,28 @@
 @import "tailwindcss";
 
 @layer base {
+  /* Light Mode Default Variables */
   :root {
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --surface-elevated: #f1f5f9;
+    --surface-glass: rgba(255, 255, 255, 0.85);
+    --border-glass: rgba(0, 0, 0, 0.08);
+    --foreground: #0f172a;
+    --foreground-muted: #64748b;
+    
+    --primary: #10b981;
+    --primary-hover: #059669;
+    --primary-glow: rgba(16, 185, 129, 0.15);
+
+    --momo-yellow: #d97706;
+    --airtel-red: #dc2626;
+    --bank-blue: #2563eb;
+    --wallet-purple: #7c3aed;
+  }
+
+  /* Dark Mode Variables */
+  .dark {
     --background: #0b0f19;
     --surface: #111827;
     --surface-elevated: #1f2937;
@@ -26,10 +47,11 @@
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism utilities that adapt to light/dark */
 .glass-panel {
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
@@ -37,11 +59,31 @@
   border: 1px solid var(--border-glass);
 }
 
+.dark .glass-panel {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:root:not(.dark) .glass-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
 .glass-card {
-  background: rgba(31, 41, 55, 0.6);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+.dark .glass-card {
+  background: rgba(31, 41, 55, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+:root:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px -1px rgba(0, 0, 0, 0.04);
 }
 
 /* Custom modern scrollbar */
@@ -52,12 +94,13 @@
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+:root:not(.dark) ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
 }
 
 /* Pulse animation for safe-to-spend */

@@ -41,6 +41,7 @@ import { generateUUID } from '../utils';
 
 interface SpendyContextType {
   user: UserProfile;
+  setUser: (u: UserProfile) => void;
   accounts: Account[];
   categories: Category[];
   transactions: Transaction[];
@@ -118,17 +119,18 @@ interface SpendyContextType {
 
   processMerchantPayment: (req: MerchantPaymentRequest) => Promise<PaymentReceipt>;
   resetToDemoData: () => void;
+  clearAllData: () => void;
 }
 
 const SpendyContext = createContext<SpendyContextType | null>(null);
 
-const STORAGE_KEY = 'spendy_uganda_data_v1';
+const STORAGE_KEY = 'spendy_uganda_data_v2';
 
 export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [isLoaded, setIsLoaded] = useState(false);
 
   const [user, setUser] = useState<UserProfile>({
-    id: 'user-demo-1',
+    id: 'user-uganda-1',
     email: 'david@spendy.ug',
     full_name: 'David Mukasa',
     phone_number: '0772 123 456',
@@ -148,8 +150,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>>([
     {
       id: 'notif-1',
-      title: 'Welcome to Spendy!',
-      message: 'Your personal finance companion tailored for Uganda is ready.',
+      title: 'Welcome to Spendy Uganda!',
+      message: 'Your personal finance companion is fully active in UGX.',
       type: 'system',
       is_read: false,
       created_at: new Date().toISOString(),
@@ -442,7 +444,6 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
           const newAmount = goal.current_amount + amount;
           const isCompleted = newAmount >= goal.target_amount;
           if (isCompleted) {
-            // Trigger celebratory confetti!
             try {
               confetti({
                 particleCount: 120,
@@ -492,7 +493,6 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const recordDebtPayment = (debtId: string, amount: number, accountId?: string, note?: string) => {
     if (amount <= 0) return;
 
-    // Optional account adjustment
     if (accountId) {
       const debt = debts.find((d) => d.id === debtId);
       if (debt) {
@@ -583,7 +583,6 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setFinancialGoals((prev) => prev.filter((g) => g.id !== id));
   };
 
-  // Merchant Payment & Digital Wallet Flow
   const processMerchantPayment = async (req: MerchantPaymentRequest): Promise<PaymentReceipt> => {
     const res = await defaultPaymentProvider.processPayment({
       merchantId: req.merchantId,
@@ -603,7 +602,6 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     const categoryObj = categories.find((c) => c.id === req.categoryId);
     const accountObj = accounts.find((a) => a.id === req.accountId);
 
-    // CRITICAL PRODUCT RULE: Automatically create transaction in the ledger
     addTransaction({
       account_id: req.accountId,
       category_id: req.categoryId,
@@ -630,6 +628,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     return receipt;
   };
 
+  // Reset to sample Uganda dataset
   const resetToDemoData = () => {
     setAccounts(SEED_ACCOUNTS);
     setCategories(SEED_CATEGORIES);
@@ -647,10 +646,53 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Clear all dummy data for a fresh real user start
+  const clearAllData = () => {
+    setAccounts([
+      {
+        id: generateUUID(),
+        user_id: user.id,
+        name: 'MTN Mobile Money',
+        type: 'mtn_momo',
+        balance: 0,
+        currency: 'UGX',
+        color: '#FBBF24',
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: generateUUID(),
+        user_id: user.id,
+        name: 'Physical Cash',
+        type: 'cash',
+        balance: 0,
+        currency: 'UGX',
+        color: '#10B981',
+        is_archived: false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]);
+    setTransactions([]);
+    setTransfers([]);
+    setBudgets([]);
+    setSavingsGoals([]);
+    setDebts([]);
+    setFinancialGoals([]);
+    setRecurringTransactions([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // safe
+    }
+  };
+
   return (
     <SpendyContext.Provider
       value={{
         user,
+        setUser,
         accounts,
         categories,
         transactions: enrichedTransactions,
@@ -699,6 +741,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         deleteFinancialGoal,
         processMerchantPayment,
         resetToDemoData,
+        clearAllData,
       }}
     >
       {children}
