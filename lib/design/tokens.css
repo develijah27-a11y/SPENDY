@@ -1,0 +1,31 @@
+/* lib/design/tokens.css */
+:root {
+  /* Primary palette */
+  --color-primary: hsl(160, 71%, 45%); /* emerald */
+  --color-primary-hover: hsl(160, 71%, 40%);
+  --color-primary-glow: hsla(160, 71%, 45%, 0.15);
+
+  /* Accent colors */
+  --color-momo: hsl(40, 88%, 45%);   /* yellow */
+  --color-airtel: hsl(0, 70%, 45%);  /* red */
+  --color-bank: hsl(219, 78%, 46%); /* blue */
+  --color-wallet: hsl(265, 71%, 55%);/* purple */
+
+  /* Surface and background */
+  --color-bg-light: #f8fafc;
+  --color-bg-dark: #0b0f19;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #111827;
+  --color-glass-light: rgba(255, 255, 255, 0.85);
+  --color-glass-dark: rgba(17, 24, 39, 0.85);
+
+  /* Text */
+  --color-text-light: #0f172a;
+  --color-text-dark: #f9fafb;
+  --color-muted-light: #64748b;
+  --color-muted-dark: #9ca3af;
+}
+
+.dark {
+  /* dark mode values already applied via variables */
+}
