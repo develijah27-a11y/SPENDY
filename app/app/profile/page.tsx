@@ -195,7 +195,7 @@ function ProfileContent() {
           {/* Database isolation note */}
           <div className="pt-4 border-t border-white/10 flex items-center gap-2 text-xs font-semibold text-slate-300">
             <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Profile record updates are secured with PostgreSQL Row Level Security (RLS).</span>
+            <span>Your profile and financial data are secured with isolated, encrypted access.</span>
           </div>
         </div>
       </main>

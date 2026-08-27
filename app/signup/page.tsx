@@ -317,7 +317,7 @@ export default function SignupPage() {
           {/* Privacy Guarantee */}
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-semibold text-center">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Row Level Security (RLS) & encrypted credentials</span>
+            <span>Bank-grade encryption & 100% private data isolation</span>
           </div>
 
           {/* Link to Login */}

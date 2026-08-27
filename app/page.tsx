@@ -112,9 +112,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
               <Lock className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-base text-white">Row Level Security</h3>
+            <h3 className="font-black text-base text-white">Isolated Financial Vault</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Multi-tenant user data isolation enforced at the PostgreSQL database kernel level using <code className="text-emerald-400 font-mono">auth.uid() = user_id</code>.
+              Your financial records are strictly isolated and accessible exclusively by you. No other user can ever view or access your money data.
             </p>
           </div>
 
@@ -122,9 +122,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-base text-white">Encrypted Auth & Tokens</h3>
+            <h3 className="font-black text-base text-white">Encrypted & Secure Access</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Supabase Auth credentials vault, secure session renewal, and zero exposure of service-role keys.
+              Your credentials, passwords, and active sessions are protected with industry-standard encryption, keeping your account safe from unauthorized access.
             </p>
           </div>
 
@@ -132,9 +132,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
               <Users className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-base text-white">Strict Data Privacy</h3>
+            <h3 className="font-black text-base text-white">Private by Default</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Your financial records belong only to you. No tracking, no data sharing, private by default.
+              Your financial records belong only to you. We never track your activity, sell your personal information, or share data with third parties.
             </p>
           </div>
         </div>
