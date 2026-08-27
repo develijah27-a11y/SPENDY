@@ -352,3 +352,27 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
+-- ==============================================================================
+-- 13. AUDIT LOGS TABLE & RLS
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.audit_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL CHECK (event_type IN ('LOGIN', 'LOGOUT', 'PASSWORD_CHANGED', 'EMAIL_CHANGED', 'PROFILE_UPDATED', 'ACCOUNT_DELETED', 'DATA_EXPORTED')),
+    ip_address TEXT,
+    user_agent TEXT,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON public.audit_logs(user_id, created_at DESC);
+
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view own audit logs" ON public.audit_logs
+    FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can create own audit logs" ON public.audit_logs
+    FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+

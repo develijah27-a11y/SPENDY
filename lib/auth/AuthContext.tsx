@@ -194,6 +194,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, [supabase, fetchProfile]);
 
+  // Audit Logging Helper
+  const logAuditEvent = async (
+    eventType: 'LOGIN' | 'LOGOUT' | 'PASSWORD_CHANGED' | 'EMAIL_CHANGED' | 'PROFILE_UPDATED' | 'ACCOUNT_DELETED' | 'DATA_EXPORTED',
+    userId?: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    const targetUserId = userId || user?.id;
+    if (!isSupabaseConfigured() || !targetUserId) return;
+    try {
+      await supabase.from('audit_logs').insert({
+        user_id: targetUserId,
+        event_type: eventType,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
+        metadata: metadata || {},
+        created_at: new Date().toISOString(),
+      });
+    } catch {
+      // safe non-blocking audit logging
+    }
+  };
+
   // Sign In
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
     setIsLoading(true);
@@ -246,6 +267,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user);
         setSession(data.session);
         await fetchProfile(data.user.id, data.user.email || '');
+        await logAuditEvent('LOGIN', data.user.id, { email: data.user.email });
       }
 
       return { error: null };
@@ -319,6 +341,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(data.user);
           setSession(data.session);
           await fetchProfile(data.user.id, data.user.email || '');
+          await logAuditEvent('LOGIN', data.user.id, { action: 'signup_confirmed' });
           return { error: null, needsEmailVerification: false };
         }
 
@@ -339,6 +362,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async (): Promise<void> => {
     setIsLoading(true);
     try {
+      if (user?.id) {
+        await logAuditEvent('LOGOUT', user.id);
+      }
       if (isSupabaseConfigured()) {
         await supabase.auth.signOut();
       }
@@ -402,6 +428,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: formatAuthError(error) };
       }
 
+      if (user?.id) {
+        await logAuditEvent('PASSWORD_CHANGED', user.id);
+      }
+
       return { error: null };
     } catch (e: unknown) {
       const err = e as Error;
@@ -451,6 +481,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         return { error: 'Failed to save profile changes. Please try again.' };
       }
+
+      await logAuditEvent('PROFILE_UPDATED', user.id, { full_name: updatedProfile.full_name, currency: updatedProfile.currency });
 
       return { error: null };
     } catch (e: unknown) {

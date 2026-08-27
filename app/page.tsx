@@ -57,19 +57,19 @@ export default function LandingPage() {
       <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center py-12 sm:py-20 space-y-8">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-black shadow-sm">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          <span>Production-Ready Supabase Authentication with RLS</span>
+          <span>Secure by design. Private by default. Isolated by architecture.</span>
         </div>
 
         <div className="space-y-4 max-w-3xl">
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1]">
-            Know your money. <br />
+            Know Your Money. <br />
             <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent">
-              Control your future.
+              Control Your Future.
             </span>
           </h1>
           <p className="text-sm sm:text-lg font-semibold text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Spendy is Uganda&apos;s intelligent personal finance platform. Built with military-grade privacy,
-            Row Level Security, and isolated user profiles.
+            Spendy is a secure personal finance platform that helps you track your income, expenses,
+            savings, budgets, and financial goals while keeping your financial data private and isolated to your account.
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function LandingPage() {
                 href="/app"
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <span>Continue as {profile?.full_name || user?.email || 'User'}</span>
+                <span>Continue to Dashboard</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <p className="text-xs text-slate-400">Your session is active and secure.</p>
@@ -92,7 +92,7 @@ export default function LandingPage() {
                 href="/signup"
                 className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Create Free Account</span>
+                <span>Get Started Free</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
@@ -106,7 +106,7 @@ export default function LandingPage() {
           )}
         </div>
 
-        {/* Security & Authentication Feature Pillars */}
+        {/* Security & Architecture Pillars */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-12 text-left w-full">
           <div className="p-5 rounded-3xl glass-panel border border-white/15 space-y-2">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
@@ -114,7 +114,7 @@ export default function LandingPage() {
             </div>
             <h3 className="font-black text-base text-white">Row Level Security</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Each user&apos;s records are strictly isolated at the PostgreSQL kernel level. User A cannot access User B.
+              Multi-tenant user data isolation enforced at the PostgreSQL database kernel level using <code className="text-emerald-400 font-mono">auth.uid() = user_id</code>.
             </p>
           </div>
 
@@ -122,9 +122,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black">
               <Zap className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-base text-white">Session Persistence</h3>
+            <h3 className="font-black text-base text-white">Encrypted Auth & Tokens</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Seamless browser token restoration, automatic refresh tokens, and instant zero-flash state detection.
+              Supabase Auth credentials vault, secure session renewal, and zero exposure of service-role keys.
             </p>
           </div>
 
@@ -132,9 +132,9 @@ export default function LandingPage() {
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
               <Users className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-base text-white">Verified Identity</h3>
+            <h3 className="font-black text-base text-white">Strict Data Privacy</h3>
             <p className="text-xs font-semibold text-slate-300">
-              Automated email verification, secure password recovery flows, and user profile management.
+              Your financial records belong only to you. No tracking, no data sharing, private by default.
             </p>
           </div>
         </div>
