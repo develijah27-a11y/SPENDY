@@ -189,70 +189,70 @@ export function QuickAddModal() {
         </div>
 
         {/* Tab Switcher - 5 Tabs */}
-        <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-4 border border-slate-200 dark:border-slate-800 text-[11px]">
+        <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-4 border border-slate-200 dark:border-slate-800 text-[10px] sm:text-xs">
           <button
             type="button"
             onClick={() => handleTabChange('expense')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
               activeTab === 'expense'
                 ? 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 shadow-sm'
                 : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <MinusCircle className="w-3.5 h-3.5" />
-            <span>Expense</span>
+            <MinusCircle className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Expense</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('income')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
               activeTab === 'income'
                 ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-sm'
                 : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Income</span>
+            <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Income</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('loan')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
               activeTab === 'loan'
                 ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-sm'
                 : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <HandCoins className="w-3.5 h-3.5" />
-            <span>Loan</span>
+            <HandCoins className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Loan</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('transfer')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
               activeTab === 'transfer'
                 ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-sm'
                 : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <ArrowRightLeft className="w-3.5 h-3.5" />
-            <span>Transfer</span>
+            <ArrowRightLeft className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Transfer</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('pay')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
               activeTab === 'pay'
                 ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-sm'
                 : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <Store className="w-3.5 h-3.5" />
-            <span>Pay</span>
+            <Store className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Pay</span>
           </button>
         </div>
 
