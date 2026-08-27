@@ -41,13 +41,13 @@ export function BottomNav() {
     <>
       {/* Mobile Drawer Sheet */}
       {showMoreMenu && (
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="glass-panel border-t border-black/10 dark:border-white/15 rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
-              <h3 className="font-bold text-base text-gray-900 dark:text-white">More Options</h3>
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="glass-panel border-t border-black/20 dark:border-white/20 rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
+              <h3 className="font-black text-base text-gray-950 dark:text-white">More Spendy Options</h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
-                className="p-1.5 rounded-full bg-black/5 dark:bg-white/10 text-gray-500 dark:text-gray-300"
+                className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -63,16 +63,16 @@ export function BottomNav() {
                     href={item.href}
                     onClick={() => setShowMoreMenu(false)}
                     className={cn(
-                      'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center gap-2',
+                      'flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center gap-2 shadow-sm',
                       isActive
-                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-600 dark:text-emerald-300'
-                        : 'bg-black/5 dark:bg-white/5 border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300'
+                        ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-bold'
+                        : 'bg-white dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-semibold'
                     )}
                   >
-                    <div className="w-10 h-10 rounded-xl bg-black/5 dark:bg-white/10 flex items-center justify-center text-emerald-500">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                       <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-semibold leading-tight">{item.label}</span>
+                    <span className="text-xs leading-tight">{item.label}</span>
                   </Link>
                 );
               })}
@@ -83,7 +83,7 @@ export function BottomNav() {
                 exportDataCSV();
                 setShowMoreMenu(false);
               }}
-              className="w-full mt-2 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2"
+              className="w-full mt-2 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30"
             >
               <Download className="w-4 h-4" />
               <span>Export CSV Report</span>
@@ -93,7 +93,7 @@ export function BottomNav() {
       )}
 
       {/* Fixed Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-black/10 dark:border-white/10 px-2 py-2 flex items-center justify-around">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-black/15 dark:border-white/15 px-2 py-2 flex items-center justify-around shadow-2xl">
         {mainTabs.slice(0, 2).map((tab) => {
           const Icon = tab.icon;
           const isActive = pathname === tab.href || (tab.href === '/spending' && pathname === '/transactions');
@@ -103,11 +103,13 @@ export function BottomNav() {
               href={tab.href}
               className={cn(
                 'flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all',
-                isActive ? 'text-emerald-500 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                isActive
+                  ? 'text-emerald-600 dark:text-emerald-400 font-black'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
               )}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] mt-1">{tab.label}</span>
+              <span className="text-[11px] mt-1">{tab.label}</span>
             </Link>
           );
         })}
@@ -117,9 +119,9 @@ export function BottomNav() {
           <button
             onClick={() => openQuickAdd('expense')}
             aria-label="Quick Add Money Entry"
-            className="w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/40 active:scale-90 transition-transform cursor-pointer border-2 border-white dark:border-[#0b0f19]"
+            className="w-13 h-13 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/50 active:scale-90 transition-transform cursor-pointer border-3 border-white dark:border-[#070a12]"
           >
-            <Plus className="w-6 h-6 stroke-[3]" />
+            <Plus className="w-7 h-7 stroke-[3]" />
           </button>
         </div>
 
@@ -132,11 +134,13 @@ export function BottomNav() {
               href={tab.href}
               className={cn(
                 'flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all',
-                isActive ? 'text-emerald-500 font-bold' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                isActive
+                  ? 'text-emerald-600 dark:text-emerald-400 font-black'
+                  : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
               )}
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] mt-1">{tab.label}</span>
+              <span className="text-[11px] mt-1">{tab.label}</span>
             </Link>
           );
         })}
@@ -144,10 +148,10 @@ export function BottomNav() {
         {/* More Button */}
         <button
           onClick={() => setShowMoreMenu(true)}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-all cursor-pointer"
+          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold transition-all cursor-pointer"
         >
           <MoreHorizontal className="w-5 h-5" />
-          <span className="text-[10px] mt-1">More</span>
+          <span className="text-[11px] mt-1">More</span>
         </button>
       </div>
     </>

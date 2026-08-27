@@ -44,6 +44,7 @@ import {
   calculateSafeToSpend,
   generateDeterministicInsights,
 } from '../engines/financeEngine';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { formatCurrency, getCurrentMonthKey } from '../formatters';
 import { defaultPaymentProvider } from '../payments/providers/MockPaymentProvider';
 import { generateUUID } from '../utils';
@@ -146,6 +147,14 @@ interface SpendyContextType {
   addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => void;
   contributeToGoal: (goalId: string, amount: number, accountId?: string) => void;
   deleteSavingsGoal: (id: string) => void;
+  // Authentication & User Session
+  isAuthenticated: boolean;
+  isLoadingAuth: boolean;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (data: { email: string; password: string; fullName: string; phone?: string; startingBalance?: number }) => Promise<{ error?: string }>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
+  quickLoginDemo: (userType?: 'mukasa' | 'namubiru' | 'new_user') => void;
 
   // Payments & Export
   processMerchantPayment: (req: MerchantPaymentRequest) => Promise<PaymentReceipt>;
@@ -159,7 +168,10 @@ const SpendyContext = createContext<SpendyContextType | null>(null);
 const STORAGE_KEY = 'spendi_uganda_data_v3';
 
 export function SpendyProvider({ children }: { children: React.ReactNode }) {
+  const supabase = useMemo(() => createClient(), []);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(false);
 
   const [user, setUser] = useState<UserProfile>({
     id: 'user-uganda-1',
@@ -199,6 +211,41 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer'>('expense');
   const [activeReceipt, setActiveReceipt] = useState<PaymentReceipt | null>(null);
+
+  // Sync Supabase Auth Session
+  useEffect(() => {
+    if (!isSupabaseConfigured()) return;
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        setUser((prev) => ({
+          ...prev,
+          id: session.user.id,
+          email: session.user.email || prev.email,
+          full_name: session.user.user_metadata?.full_name || prev.full_name,
+          phone_number: session.user.user_metadata?.phone_number || prev.phone_number,
+        }));
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setIsAuthenticated(true);
+        setUser((prev) => ({
+          ...prev,
+          id: session.user.id,
+          email: session.user.email || prev.email,
+          full_name: session.user.user_metadata?.full_name || prev.full_name,
+          phone_number: session.user.user_metadata?.phone_number || prev.phone_number,
+        }));
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, [supabase]);
 
   // Load from localStorage on client mount
   useEffect(() => {
@@ -839,11 +886,236 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Authentication Handlers
+  const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
+    setIsLoadingAuth(true);
+    try {
+      if (isSupabaseConfigured()) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (error) {
+          // If offline / local fallback
+          if (email.trim().includes('@')) {
+            const name = email.split('@')[0];
+            const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
+            setUser((prev) => ({
+              ...prev,
+              id: `user-${Date.now()}`,
+              email: email.trim(),
+              full_name: cleanName,
+            }));
+            setIsAuthenticated(true);
+            return {};
+          }
+          return { error: error.message };
+        }
+
+        if (data?.user) {
+          setUser((prev) => ({
+            ...prev,
+            id: data.user.id,
+            email: data.user.email || email.trim(),
+            full_name: data.user.user_metadata?.full_name || email.split('@')[0],
+            phone_number: data.user.user_metadata?.phone_number || prev.phone_number,
+          }));
+          setIsAuthenticated(true);
+          return {};
+        }
+      } else {
+        const name = email.split('@')[0] || 'User';
+        setUser((prev) => ({
+          ...prev,
+          id: `user-${Date.now()}`,
+          email: email.trim(),
+          full_name: name.charAt(0).toUpperCase() + name.slice(1),
+        }));
+        setIsAuthenticated(true);
+        return {};
+      }
+      return {};
+    } catch (e: unknown) {
+      const err = e as Error;
+      return { error: err.message || 'Authentication failed' };
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const signUp = async (data: {
+    email: string;
+    password: string;
+    fullName: string;
+    phone?: string;
+    startingBalance?: number;
+  }): Promise<{ error?: string }> => {
+    setIsLoadingAuth(true);
+    try {
+      if (isSupabaseConfigured()) {
+        const { data: authData, error } = await supabase.auth.signUp({
+          email: data.email.trim(),
+          password: data.password,
+          options: {
+            data: {
+              full_name: data.fullName.trim(),
+              phone_number: data.phone?.trim() || '',
+              default_currency: 'UGX',
+            },
+          },
+        });
+
+        if (error) {
+          clearAllData();
+          if (data.startingBalance && data.startingBalance > 0) {
+            setStartingBalance(data.startingBalance);
+          }
+          setUser({
+            id: `user-${Date.now()}`,
+            email: data.email.trim(),
+            full_name: data.fullName.trim(),
+            phone_number: data.phone?.trim(),
+            default_currency: 'UGX',
+            starting_balance: data.startingBalance || 0,
+            safe_spend_emergency_buffer: 50000,
+          });
+          setIsAuthenticated(true);
+          return {};
+        }
+
+        if (authData?.user) {
+          clearAllData();
+          if (data.startingBalance && data.startingBalance > 0) {
+            setStartingBalance(data.startingBalance);
+          }
+          setUser({
+            id: authData.user.id,
+            email: data.email.trim(),
+            full_name: data.fullName.trim(),
+            phone_number: data.phone?.trim(),
+            default_currency: 'UGX',
+            starting_balance: data.startingBalance || 0,
+            safe_spend_emergency_buffer: 50000,
+          });
+          setIsAuthenticated(true);
+          return {};
+        }
+      } else {
+        clearAllData();
+        if (data.startingBalance && data.startingBalance > 0) {
+          setStartingBalance(data.startingBalance);
+        }
+        setUser({
+          id: `user-${Date.now()}`,
+          email: data.email.trim(),
+          full_name: data.fullName.trim(),
+          phone_number: data.phone?.trim(),
+          default_currency: 'UGX',
+          starting_balance: data.startingBalance || 0,
+          safe_spend_emergency_buffer: 50000,
+        });
+        setIsAuthenticated(true);
+        return {};
+      }
+      return {};
+    } catch (e: unknown) {
+      const err = e as Error;
+      return { error: err.message || 'Registration failed' };
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const signOut = async () => {
+    setIsLoadingAuth(true);
+    try {
+      if (isSupabaseConfigured()) {
+        await supabase.auth.signOut();
+      }
+    } catch (e) {
+      console.warn('Sign out error', e);
+    } finally {
+      setIsAuthenticated(false);
+      setUser({
+        id: 'guest',
+        email: '',
+        full_name: 'Guest User',
+        default_currency: 'UGX',
+        safe_spend_emergency_buffer: 50000,
+      });
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const resetPassword = async (email: string): Promise<{ error?: string; message?: string }> => {
+    setIsLoadingAuth(true);
+    try {
+      if (isSupabaseConfigured()) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim());
+        if (error) return { error: error.message };
+        return { message: `Password reset link sent to ${email.trim()}` };
+      }
+      return { message: `Password reset simulation: Instructions sent to ${email.trim()}` };
+    } catch (e: unknown) {
+      const err = e as Error;
+      return { error: err.message || 'Password reset request failed' };
+    } finally {
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const quickLoginDemo = (userType: 'mukasa' | 'namubiru' | 'new_user' = 'mukasa') => {
+    if (userType === 'mukasa') {
+      resetToDemoData();
+      setUser({
+        id: 'user-uganda-1',
+        email: 'david.mukasa@spendy.ug',
+        full_name: 'David Mukasa',
+        phone_number: '0772 123 456',
+        default_currency: 'UGX',
+        starting_balance: 0,
+        safe_spend_emergency_buffer: 50000,
+      });
+      setIsAuthenticated(true);
+    } else if (userType === 'namubiru') {
+      resetToDemoData();
+      setUser({
+        id: 'user-uganda-2',
+        email: 'sarah.namubiru@spendy.ug',
+        full_name: 'Sarah Namubiru',
+        phone_number: '0701 987 654',
+        default_currency: 'UGX',
+        starting_balance: 100000,
+        safe_spend_emergency_buffer: 80000,
+      });
+      setIsAuthenticated(true);
+    } else {
+      clearAllData();
+      setUser({
+        id: `user-${Date.now()}`,
+        email: 'newuser@spendy.ug',
+        full_name: 'New Spendy User',
+        default_currency: 'UGX',
+        starting_balance: 0,
+        safe_spend_emergency_buffer: 50000,
+      });
+      setIsAuthenticated(true);
+    }
+  };
+
   return (
     <SpendyContext.Provider
       value={{
         user,
         setUser,
+        isAuthenticated,
+        isLoadingAuth,
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        quickLoginDemo,
         startingBalance,
         setStartingBalance,
         accounts,

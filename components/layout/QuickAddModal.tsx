@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
-import { formatCurrency, formatUGX } from '@/lib/formatters';
+import { formatCurrency } from '@/lib/formatters';
 import { LoanType } from '@/types';
 import {
   X,
@@ -51,7 +51,6 @@ export function QuickAddModal() {
   // Merchant pay states
   const [merchantName, setMerchantName] = useState<string>('Cafe Kampala');
   const [merchantReference, setMerchantReference] = useState<string>('');
-  const [pin, setPin] = useState<string>('1234');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string>('');
 
@@ -67,6 +66,8 @@ export function QuickAddModal() {
         setAccountId(accounts[0].id);
         if (accounts.length > 1) {
           setToAccountId(accounts[1].id);
+        } else {
+          setToAccountId(accounts[0].id);
         }
       }
       const defaultCat = categories.find((c) => c.type === (quickAddInitialTab === 'income' ? 'income' : 'expense'));
@@ -175,27 +176,27 @@ export function QuickAddModal() {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-lg rounded-3xl glass-panel border border-white/20 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-lg rounded-3xl glass-panel border border-black/20 dark:border-white/20 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-black/10 dark:border-white/10">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Record Money Activity</h3>
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
+          <h3 className="text-lg font-black text-gray-950 dark:text-white">Record Money Activity</h3>
           <button
             onClick={closeQuickAdd}
-            className="p-2 rounded-full bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 transition-colors"
+            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="grid grid-cols-4 gap-1.5 p-1 bg-black/5 dark:bg-black/40 rounded-2xl my-4 border border-black/10 dark:border-white/10 text-xs">
+        {/* Tab Switcher - 5 Tabs */}
+        <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-4 border border-slate-200 dark:border-slate-800 text-[11px]">
           <button
             type="button"
             onClick={() => handleTabChange('expense')}
-            className={`py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
               activeTab === 'expense'
-                ? 'bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <MinusCircle className="w-3.5 h-3.5" />
@@ -205,10 +206,10 @@ export function QuickAddModal() {
           <button
             type="button"
             onClick={() => handleTabChange('income')}
-            className={`py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
               activeTab === 'income'
-                ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <PlusCircle className="w-3.5 h-3.5" />
@@ -218,10 +219,10 @@ export function QuickAddModal() {
           <button
             type="button"
             onClick={() => handleTabChange('loan')}
-            className={`py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
               activeTab === 'loan'
-                ? 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/30'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <HandCoins className="w-3.5 h-3.5" />
@@ -230,21 +231,34 @@ export function QuickAddModal() {
 
           <button
             type="button"
+            onClick={() => handleTabChange('transfer')}
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+              activeTab === 'transfer'
+                ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+            }`}
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5" />
+            <span>Transfer</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => handleTabChange('pay')}
-            className={`py-2 rounded-xl font-bold flex items-center justify-center gap-1 transition-all cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
               activeTab === 'pay'
-                ? 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-sm'
+                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <Store className="w-3.5 h-3.5" />
-            <span>Merchant</span>
+            <span>Pay</span>
           </button>
         </div>
 
         {errorMsg && (
-          <div className="mb-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
+          <div className="mb-4 p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -253,11 +267,11 @@ export function QuickAddModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Primary Amount Input */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
               Amount (UGX) <span className="text-red-500">*</span>
             </label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-gray-500 dark:text-gray-400 text-sm">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-emerald-600 dark:text-emerald-400 text-sm">
                 UGX
               </span>
               <input
@@ -269,7 +283,7 @@ export function QuickAddModal() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="25,000"
-                className="w-full pl-14 pr-4 py-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 text-gray-900 dark:text-white font-bold text-xl focus:outline-none focus:border-emerald-500 transition-colors"
+                className="w-full pl-14 pr-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors shadow-inner"
               />
             </div>
 
@@ -280,7 +294,7 @@ export function QuickAddModal() {
                   type="button"
                   key={q}
                   onClick={() => setAmount(q.toString())}
-                  className="px-2.5 py-1 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-[11px] font-medium border border-black/5 dark:border-white/10 transition-colors cursor-pointer"
+                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/20 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                 >
                   +{formatCurrency(q)}
                 </button>
@@ -288,11 +302,67 @@ export function QuickAddModal() {
             </div>
           </div>
 
+          {/* Account Selection */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                {activeTab === 'transfer' ? 'From Account' : 'Account'}
+              </label>
+              <select
+                value={accountId}
+                onChange={(e) => setAccountId(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id}>
+                    {acc.name} ({formatCurrency(acc.balance)})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {activeTab === 'transfer' && (
+              <div>
+                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                  To Account
+                </label>
+                <select
+                  value={toAccountId}
+                  onChange={(e) => setToAccountId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({formatCurrency(acc.balance)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {(activeTab === 'expense' || activeTab === 'income' || activeTab === 'pay') && (
+              <div>
+                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">Category</label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {filteredCategories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+
           {/* LOAN SPECIFIC FIELDS */}
           {activeTab === 'loan' && (
-            <div className="space-y-3 p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs">
+            <div className="space-y-3 p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-xs">
               <div>
-                <label className="block font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
                   Loan Direction <span className="text-red-500">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -302,7 +372,7 @@ export function QuickAddModal() {
                     className={`py-2 px-3 rounded-xl font-bold border transition-all cursor-pointer ${
                       loanType === 'lent'
                         ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                        : 'bg-black/5 dark:bg-white/5 text-gray-700 dark:text-gray-300 border-black/10 dark:border-white/10'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
                     }`}
                   >
                     I Lent Money (Money Lent)
@@ -313,7 +383,7 @@ export function QuickAddModal() {
                     className={`py-2 px-3 rounded-xl font-bold border transition-all cursor-pointer ${
                       loanType === 'borrowed'
                         ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                        : 'bg-black/5 dark:bg-white/5 text-gray-700 dark:text-gray-300 border-black/10 dark:border-white/10'
+                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
                     }`}
                   >
                     I Borrowed (Money Borrowed)
@@ -322,69 +392,83 @@ export function QuickAddModal() {
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                <label className="block font-bold text-gray-900 dark:text-white mb-1">
                   {loanType === 'lent' ? 'Lent To (Person / Entity)' : 'Borrowed From (Lender / Friend)'}{' '}
                   <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={counterparty}
                     onChange={(e) => setCounterparty(e.target.value)}
                     placeholder="e.g. John Ssebaggala, Sarah, Uncle Patrick"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/15 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                <label className="block font-bold text-gray-900 dark:text-white mb-1">
                   Expected Repayment Date (Optional)
                 </label>
                 <div className="relative">
-                  <Calendar className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-gray-900 border border-black/10 dark:border-white/15 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
                   />
                 </div>
               </div>
             </div>
           )}
 
-          {/* CATEGORY PICKER (For Expense & Income) */}
-          {(activeTab === 'expense' || activeTab === 'income') && (
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">Category</label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-gray-900 border border-black/10 dark:border-white/15 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
-              >
-                {filteredCategories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+          {/* MERCHANT SPECIFIC FIELDS */}
+          {activeTab === 'pay' && (
+            <div className="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs">
+              <div>
+                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                  Merchant / Business Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={merchantName}
+                  onChange={(e) => setMerchantName(e.target.value)}
+                  placeholder="e.g. Cafe Javas, Total Fuel, Carrefour"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                  Merchant Reference / Invoice #
+                </label>
+                <input
+                  type="text"
+                  value={merchantReference}
+                  onChange={(e) => setMerchantReference(e.target.value)}
+                  placeholder="e.g. INV-8821 or Table 4"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
+                />
+              </div>
             </div>
           )}
 
           {/* NOTE / DESCRIPTION */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+            <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
               Description / Note (Optional)
             </label>
             <input
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="e.g. Lunch at Cafe, Yaka tokens, boda"
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/15 text-gray-900 dark:text-white text-xs focus:outline-none focus:border-emerald-500"
+              placeholder="e.g. Lunch with team, Yaka tokens, Boda to town"
+              className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -392,10 +476,10 @@ export function QuickAddModal() {
           <button
             type="submit"
             disabled={isProcessing}
-            className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98 disabled:opacity-50 mt-2"
+            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98 disabled:opacity-50 mt-2"
           >
             {isProcessing ? (
-              <span>Processing...</span>
+              <span>Processing Payment...</span>
             ) : (
               <>
                 <Check className="w-4 h-4" />
@@ -403,6 +487,7 @@ export function QuickAddModal() {
                   {activeTab === 'expense' && 'Save Expense'}
                   {activeTab === 'income' && 'Record Income'}
                   {activeTab === 'loan' && (loanType === 'lent' ? 'Record Money Lent' : 'Record Money Borrowed')}
+                  {activeTab === 'transfer' && 'Execute Transfer'}
                   {activeTab === 'pay' && 'Confirm Merchant Payment'}
                 </span>
               </>

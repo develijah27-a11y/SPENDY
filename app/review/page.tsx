@@ -7,16 +7,12 @@ import {
   CalendarCheck2,
   TrendingDown,
   TrendingUp,
-  PiggyBank,
   Printer,
   Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
-  ShieldCheck,
 } from 'lucide-react';
 
 export default function ReviewPage() {
-  const { transactions, budgets, savingsGoals, user } = useSpendy();
+  const { transactions, user } = useSpendy();
   const currentMonthKey = getCurrentMonthKey();
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
@@ -68,11 +64,11 @@ export default function ReviewPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-            <CalendarCheck2 className="w-6 h-6 text-emerald-400" />
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight flex items-center gap-2.5">
+            <CalendarCheck2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400 font-black" />
             <span>Monthly Financial Review</span>
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
             Month-end financial debrief, comparison metrics, and improvements for next month
           </p>
         </div>
@@ -81,7 +77,7 @@ export default function ReviewPage() {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-3.5 py-2 rounded-2xl bg-gray-900 border border-white/15 text-white text-xs font-semibold"
+            className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold shadow-sm"
           >
             <option value={currentMonthKey}>{formatMonthName(currentMonthKey)} (Current)</option>
             <option value="2026-07">July 2026</option>
@@ -90,76 +86,76 @@ export default function ReviewPage() {
 
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold border border-white/10 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-gray-950 dark:text-white text-xs font-black border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer shadow-sm"
           >
-            <Printer className="w-3.5 h-3.5" />
+            <Printer className="w-4 h-4" />
             <span>Print Report</span>
           </button>
         </div>
       </div>
 
       {/* Review Statement Card */}
-      <div className="rounded-3xl glass-panel p-6 sm:p-8 border border-white/15 shadow-2xl space-y-6">
+      <div className="rounded-3xl glass-panel p-6 sm:p-8 border border-black/15 dark:border-white/20 shadow-2xl space-y-6">
         {/* Title */}
-        <div className="border-b border-white/10 pb-4 flex items-center justify-between">
+        <div className="border-b border-slate-200 dark:border-white/10 pb-4 flex items-center justify-between">
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400">
+            <span className="text-xs uppercase font-black tracking-widest text-emerald-600 dark:text-emerald-400">
               Personal Financial Statement
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white mt-1">
               {formatMonthName(selectedMonth)} Review
             </h2>
-            <p className="text-xs text-gray-400">Prepared for {user.full_name || 'David Mukasa'}</p>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Prepared for {user.full_name || 'David Mukasa'}</p>
           </div>
           <div className="text-right">
-            <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-xs font-black px-3.5 py-1 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
               UGX Standard
             </span>
           </div>
         </div>
 
         {/* 4 Key Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <span className="text-[11px] text-gray-400">Total Inflow</span>
-            <p className="text-lg sm:text-xl font-bold text-emerald-400 font-mono mt-1">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Inflow</span>
+            <p className="text-lg sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
               {formatUGX(currentIncome)}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <span className="text-[11px] text-gray-400">Total Outflow</span>
-            <p className="text-lg sm:text-xl font-bold text-red-400 font-mono mt-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Outflow</span>
+            <p className="text-lg sm:text-2xl font-black text-red-600 dark:text-red-400 font-mono mt-1">
               {formatUGX(currentExpenses)}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <span className="text-[11px] text-gray-400">Net Retained</span>
-            <p className="text-lg sm:text-xl font-bold text-blue-400 font-mono mt-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Net Retained</span>
+            <p className="text-lg sm:text-2xl font-black text-blue-600 dark:text-blue-400 font-mono mt-1">
               {formatUGX(currentNetSaved)}
             </p>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-            <span className="text-[11px] text-gray-400">Savings Rate</span>
-            <p className="text-lg sm:text-xl font-bold text-purple-400 font-mono mt-1">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Savings Rate</span>
+            <p className="text-lg sm:text-2xl font-black text-purple-600 dark:text-purple-400 font-mono mt-1">
               {currentSavingsRate}%
             </p>
           </div>
         </div>
 
         {/* Comparative Trend */}
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/40 to-slate-900 border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2.5">
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/30 to-slate-900 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-md">
+          <div className="flex items-center gap-3">
             {Number(expensePctChange) <= 0 ? (
-              <TrendingDown className="w-5 h-5 text-emerald-400 shrink-0" />
+              <TrendingDown className="w-6 h-6 text-emerald-500 shrink-0 font-black" />
             ) : (
-              <TrendingUp className="w-5 h-5 text-red-400 shrink-0" />
+              <TrendingUp className="w-6 h-6 text-red-500 shrink-0 font-black" />
             )}
             <div>
-              <p className="font-bold text-white">Comparison with {formatMonthName(prevMonthKey)}</p>
-              <p className="text-gray-300 mt-0.5">
+              <p className="font-black text-gray-950 dark:text-white text-sm">Comparison with {formatMonthName(prevMonthKey)}</p>
+              <p className="text-slate-700 dark:text-slate-200 mt-0.5 font-semibold">
                 {Number(expensePctChange) <= 0
                   ? `Spending decreased by ${Math.abs(Number(expensePctChange))}% compared to last month. Excellent restraint!`
                   : `Spending increased by ${expensePctChange}% compared to last month. Check highest expense drivers below.`}
@@ -170,25 +166,25 @@ export default function ReviewPage() {
 
         {/* Top Expenses Distribution */}
         <div className="space-y-3">
-          <h3 className="font-bold text-sm text-white">Top Spending Breakdown</h3>
+          <h3 className="font-black text-sm text-gray-950 dark:text-white">Top Spending Breakdown</h3>
           <div className="space-y-2">
             {sortedCats.map((cat, idx) => {
               const pct = currentExpenses > 0 ? ((cat.amount / currentExpenses) * 100).toFixed(0) : '0';
               return (
                 <div
                   key={cat.name}
-                  className="p-3 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between text-xs"
+                  className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex items-center justify-between text-xs shadow-sm"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="w-5 h-5 rounded-full bg-white/10 text-gray-300 flex items-center justify-center font-bold text-[10px]">
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-black text-xs border border-emerald-500/30">
                       {idx + 1}
                     </span>
-                    <span className="font-semibold text-white">{cat.name}</span>
+                    <span className="font-black text-gray-950 dark:text-white">{cat.name}</span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-white">{formatUGX(cat.amount)}</span>
-                    <span className="text-gray-400 text-[11px]">({pct}%)</span>
+                    <span className="font-mono font-black text-gray-950 dark:text-white text-sm">{formatUGX(cat.amount)}</span>
+                    <span className="text-slate-700 dark:text-slate-300 font-bold text-xs">({pct}%)</span>
                   </div>
                 </div>
               );
@@ -197,12 +193,12 @@ export default function ReviewPage() {
         </div>
 
         {/* Next Month Recommendations */}
-        <div className="p-4 rounded-2xl bg-purple-950/20 border border-purple-500/20 space-y-2 text-xs">
-          <div className="flex items-center gap-2 text-purple-300 font-bold">
+        <div className="p-4 sm:p-5 rounded-2xl bg-purple-500/10 border border-purple-500/30 space-y-2 text-xs shadow-sm">
+          <div className="flex items-center gap-2 text-purple-700 dark:text-purple-300 font-black text-sm">
             <Sparkles className="w-4 h-4" />
             <span>Next Month Optimization Action Plan</span>
           </div>
-          <ul className="list-disc list-inside space-y-1 text-gray-300 pl-1">
+          <ul className="list-disc list-inside space-y-1 text-slate-800 dark:text-slate-200 pl-1 font-semibold">
             <li>
               {topCategory
                 ? `Set a strict category cap for ${topCategory.name} to keep it under 30% of total outflow.`

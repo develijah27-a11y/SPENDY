@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -12,39 +12,46 @@ import {
   LineChart,
   PiggyBank,
   Settings,
-  ShieldCheck,
   Download,
+  LogOut,
+  Wallet,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatCurrency } from '@/lib/formatters';
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { dashboardMetrics, exportDataCSV } = useSpendy();
+  const router = useRouter();
+  const { dashboardMetrics, exportDataCSV, user, signOut } = useSpendy();
 
   const navItems = [
     { label: 'Dashboard', href: '/', icon: LayoutDashboard },
     { label: 'Spending Log', href: '/spending', icon: ReceiptText },
-    { label: 'Income', href: '/income', icon: DollarSign },
+    { label: 'Income Manager', href: '/income', icon: DollarSign },
     { label: 'Loans (Lent & Borrowed)', href: '/loans', icon: HandCoins },
     { label: 'Reports & Analytics', href: '/insights', icon: LineChart },
     { label: 'Budgets & Goals', href: '/budgets', icon: PiggyBank },
     { label: 'Settings & Data', href: '/settings', icon: Settings },
   ];
 
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/login');
+  };
+
   return (
-    <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-65px)] glass-panel border-r border-black/10 dark:border-white/10 p-4 shrink-0">
+    <aside className="hidden lg:flex flex-col w-64 min-h-[calc(100vh-65px)] glass-panel border-r border-black/15 dark:border-white/15 p-4 shrink-0 shadow-lg">
       {/* Financial Snapshot Card in Sidebar */}
-      <div className="mb-4 p-3.5 rounded-2xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/30 to-teal-950/40 border border-emerald-500/20">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
-          Current Balance
+      <div className="mb-4 p-4 rounded-3xl bg-gradient-to-br from-emerald-950/60 via-emerald-900/40 to-teal-950/60 border border-emerald-500/30 shadow-md">
+        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-400">
+          Total Net Balance
         </span>
-        <p className="text-lg font-black text-white font-mono mt-0.5">
+        <p className="text-xl font-black text-white font-mono mt-1">
           {formatCurrency(dashboardMetrics.currentBalance)}
         </p>
-        <div className="flex items-center justify-between text-[10px] text-gray-400 mt-2 pt-2 border-t border-emerald-500/20">
-          <span>Today:</span>
-          <span className="font-semibold text-red-400 font-mono">
+        <div className="flex items-center justify-between text-xs text-slate-200 mt-2.5 pt-2.5 border-t border-emerald-500/25">
+          <span className="font-semibold">Today Spent:</span>
+          <span className="font-black text-red-400 font-mono">
             - {formatCurrency(dashboardMetrics.todaySpending)}
           </span>
         </div>
@@ -61,16 +68,18 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-semibold transition-all group',
+                'flex items-center gap-3 px-3.5 py-3 rounded-2xl text-xs font-bold transition-all group',
                 isActive
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shadow-sm'
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/5'
+                  ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
               )}
             >
               <Icon
                 className={cn(
                   'w-4 h-4 transition-colors shrink-0',
-                  isActive ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200'
+                  isActive
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-slate-500 dark:text-slate-300 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
                 )}
               />
               <span className="truncate">{item.label}</span>
@@ -79,16 +88,43 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer / Fast CSV Export */}
-      <div className="pt-3 border-t border-black/10 dark:border-white/10 space-y-2">
+      {/* User Info & Footer Actions */}
+      <div className="pt-3 border-t border-slate-200 dark:border-white/10 space-y-2">
+        {/* User Card */}
+        <div className="flex items-center justify-between p-2 rounded-2xl bg-black/5 dark:bg-white/5 border border-slate-200 dark:border-white/10">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center text-xs shrink-0">
+              {user?.full_name?.charAt(0) || 'U'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-gray-950 dark:text-white truncate">
+                {user?.full_name || 'Spendy User'}
+              </p>
+              <p className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 truncate">
+                {user?.email || 'user@spendy.ug'}
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={handleSignOut}
+            title="Sign Out"
+            className="p-1.5 rounded-xl hover:bg-red-500/10 text-slate-500 hover:text-red-500 dark:text-slate-300 dark:hover:text-red-400 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* CSV Export Button */}
         <button
           onClick={exportDataCSV}
-          className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-xs font-medium border border-black/10 dark:border-white/10 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-900 dark:text-white text-xs font-bold border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer shadow-sm"
         >
           <Download className="w-3.5 h-3.5" />
-          <span>Export CSV Report</span>
+          <span>Export Full CSV Report</span>
         </button>
-        <p className="text-[10px] text-center text-gray-400">
+
+        <p className="text-[10px] font-semibold text-center text-slate-600 dark:text-slate-300">
           Spendy Uganda • UGX Edition
         </p>
       </div>

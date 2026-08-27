@@ -39,20 +39,20 @@ export function BudgetProgressWidget() {
     .slice(0, 4);
 
   return (
-    <div className="rounded-3xl glass-panel p-5 sm:p-6 border border-white/10 shadow-xl">
-      <div className="flex items-center justify-between pb-4 border-b border-white/10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center">
-            <PiggyBank className="w-4 h-4" />
+    <div className="rounded-3xl glass-panel p-5 sm:p-6 border border-black/15 dark:border-white/20 shadow-xl">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/15">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-sm">
+            <PiggyBank className="w-5 h-5 font-black" />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-white">Monthly Budgets</h3>
-            <p className="text-[11px] text-gray-400">Track spending vs plan</p>
+            <h3 className="font-black text-sm text-gray-950 dark:text-white">Monthly Budgets</h3>
+            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Track spending vs plan</p>
           </div>
         </div>
         <Link
           href="/budgets"
-          className="text-xs text-emerald-400 hover:text-emerald-300 font-medium flex items-center gap-1 transition-colors"
+          className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1 transition-colors"
         >
           <span>All budgets</span>
           <ArrowRight className="w-3.5 h-3.5" />
@@ -61,48 +61,48 @@ export function BudgetProgressWidget() {
 
       {/* Overall Total Budget Meter */}
       {totalPlanned > 0 ? (
-        <div className="mt-4 p-3.5 rounded-2xl bg-white/5 border border-white/10">
-          <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="font-semibold text-gray-200">Overall Month Limit</span>
-            <span className="font-mono text-gray-300">
-              <strong className="text-white">{formatUGX(totalSpent)}</strong> / {formatUGX(totalPlanned)}
+        <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200">Overall Month Limit</span>
+            <span className="font-mono text-xs text-slate-700 dark:text-slate-300 font-semibold">
+              <strong className="text-gray-950 dark:text-white font-black">{formatUGX(totalSpent)}</strong> / {formatUGX(totalPlanned)}
             </span>
           </div>
 
-          <div className="w-full bg-white/10 rounded-full h-2.5 overflow-hidden">
+          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 overallPercentage >= 100
                   ? 'bg-red-500'
                   : overallPercentage >= 80
-                  ? 'bg-amber-400'
+                  ? 'bg-amber-500'
                   : 'bg-emerald-500'
               }`}
               style={{ width: `${Math.min(100, overallPercentage)}%` }}
             />
           </div>
 
-          <div className="flex items-center justify-between text-[11px] mt-2">
-            <span className="text-gray-400">{overallPercentage.toFixed(0)}% used</span>
+          <div className="flex items-center justify-between text-xs font-bold mt-2.5">
+            <span className="text-slate-700 dark:text-slate-300">{overallPercentage.toFixed(0)}% used</span>
             {overallPercentage >= 100 ? (
-              <span className="text-red-400 font-semibold flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Exceeded by {formatUGX(totalSpent - totalPlanned)}
+              <span className="text-red-600 dark:text-red-400 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> Exceeded by {formatUGX(totalSpent - totalPlanned)}
               </span>
             ) : overallPercentage >= 80 ? (
-              <span className="text-amber-400 font-semibold flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Warning (80%+)
+              <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5" /> Warning (80%+)
               </span>
             ) : (
-              <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> {formatUGX(totalPlanned - totalSpent)} remaining
+              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {formatUGX(totalPlanned - totalSpent)} remaining
               </span>
             )}
           </div>
         </div>
       ) : (
-        <div className="mt-4 p-3 rounded-2xl bg-white/5 border border-white/10 text-xs text-center text-gray-400">
+        <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold text-slate-700 dark:text-slate-300">
           No overall budget set yet.{' '}
-          <Link href="/budgets" className="text-emerald-400 underline font-medium">
+          <Link href="/budgets" className="text-emerald-600 dark:text-emerald-400 underline ml-1">
             Set Monthly Budget
           </Link>
         </div>
@@ -111,19 +111,19 @@ export function BudgetProgressWidget() {
       {/* Category Budgets list */}
       <div className="mt-4 space-y-3">
         {categoryBudgets.map((b) => (
-          <div key={b.id} className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-300 font-medium">{b.categoryName}</span>
-              <span className="text-[11px] text-gray-400 font-mono">
+          <div key={b.id} className="space-y-1.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+            <div className="flex items-center justify-between text-xs font-bold">
+              <span className="text-gray-950 dark:text-white">{b.categoryName}</span>
+              <span className="text-xs text-slate-700 dark:text-slate-300 font-mono font-semibold">
                 {formatUGX(b.spent)} / {formatUGX(b.planned_amount)} ({b.percentage.toFixed(0)}%)
               </span>
             </div>
-            <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min(100, b.percentage)}%`,
-                  backgroundColor: b.percentage >= 100 ? '#EF4444' : b.percentage >= 80 ? '#FBBF24' : b.color,
+                  backgroundColor: b.percentage >= 100 ? '#EF4444' : b.percentage >= 80 ? '#F59E0B' : b.color,
                 }}
               />
             </div>

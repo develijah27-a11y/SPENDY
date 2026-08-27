@@ -5,11 +5,7 @@ import { useSpendy } from '@/lib/store/spendyStore';
 import { formatUGX, formatMonthName, getCurrentMonthKey } from '@/lib/formatters';
 import {
   LineChart as LineChartIcon,
-  PieChart as PieChartIcon,
-  TrendingUp,
   Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
   ShieldCheck,
   AlertTriangle,
   Info,
@@ -29,7 +25,7 @@ import {
 } from 'recharts';
 
 export default function InsightsPage() {
-  const { transactions, budgets, insights, financialHealth } = useSpendy();
+  const { transactions, insights } = useSpendy();
   const currentMonthKey = getCurrentMonthKey();
 
   // Category Pie Data
@@ -70,40 +66,40 @@ export default function InsightsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2.5">
-          <LineChartIcon className="w-6 h-6 text-emerald-400" />
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight flex items-center gap-2.5">
+          <LineChartIcon className="w-7 h-7 text-emerald-600 dark:text-emerald-400 font-black" />
           <span>Spending Insights & Analytics</span>
         </h1>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
           Visual breakdowns, trend patterns, and automatic deterministic financial insights
         </p>
       </div>
 
       {/* Deterministic Rule-Based Insights Callouts */}
       <div className="space-y-3">
-        <h3 className="font-bold text-sm text-white flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-purple-400" />
-          <span>Smart Deterministic Insights</span>
+        <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <span>Deterministic UGX Financial Insights</span>
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {insights.map((ins, idx) => (
             <div
               key={idx}
-              className={`p-4 rounded-3xl glass-panel border transition-all ${
+              className={`p-4 rounded-3xl glass-panel border transition-all shadow-md ${
                 ins.type === 'warning'
-                  ? 'border-amber-500/30 bg-amber-950/20'
+                  ? 'border-amber-500/40 bg-amber-500/10 dark:bg-amber-950/30'
                   : ins.type === 'success'
-                  ? 'border-emerald-500/30 bg-emerald-950/20'
-                  : 'border-blue-500/30 bg-blue-950/20'
+                  ? 'border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/30'
+                  : 'border-blue-500/40 bg-blue-500/10 dark:bg-blue-950/30'
               }`}
             >
               <div className="flex items-center gap-2 mb-1.5">
-                {ins.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-400" />}
-                {ins.type === 'success' && <ShieldCheck className="w-4 h-4 text-emerald-400" />}
-                {ins.type === 'info' && <Info className="w-4 h-4 text-blue-400" />}
-                <span className="font-bold text-xs text-white">{ins.title}</span>
+                {ins.type === 'warning' && <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 font-bold" />}
+                {ins.type === 'success' && <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 font-bold" />}
+                {ins.type === 'info' && <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 font-bold" />}
+                <span className="font-black text-xs text-gray-950 dark:text-white">{ins.title}</span>
               </div>
-              <p className="text-xs text-gray-300">{ins.description}</p>
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{ins.description}</p>
             </div>
           ))}
         </div>
@@ -112,13 +108,13 @@ export default function InsightsPage() {
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Category Breakdown Donut */}
-        <div className="rounded-3xl glass-panel p-6 border border-white/10 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
             <div>
-              <h3 className="font-bold text-sm text-white">Expenses by Category</h3>
-              <p className="text-[11px] text-gray-400">Current month distribution</p>
+              <h3 className="font-black text-sm text-gray-950 dark:text-white">Expenses by Category</h3>
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Current month distribution</p>
             </div>
-            <span className="text-xs font-bold font-mono text-emerald-400">
+            <span className="text-xs font-black font-mono text-emerald-600 dark:text-emerald-400">
               {formatUGX(totalCurrentSpent)}
             </span>
           </div>
@@ -142,10 +138,12 @@ export default function InsightsPage() {
                 <Tooltip
                   formatter={(value: any) => [formatUGX(Number(value)), 'Amount']}
                   contentStyle={{
-                    backgroundColor: '#111827',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid rgba(255,255,255,0.2)',
                     borderRadius: '16px',
                     fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#ffffff',
                   }}
                 />
               </PieChart>
@@ -157,14 +155,14 @@ export default function InsightsPage() {
             {categoryPieData.map((c) => {
               const pct = totalCurrentSpent > 0 ? ((c.value / totalCurrentSpent) * 100).toFixed(0) : '0';
               return (
-                <div key={c.name} className="flex items-center justify-between text-xs p-2 rounded-xl bg-white/5">
+                <div key={c.name} className="flex items-center justify-between text-xs p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                    <span className="text-gray-300 font-medium">{c.name}</span>
+                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: c.color }} />
+                    <span className="text-gray-950 dark:text-white font-bold">{c.name}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold font-mono text-white">{formatUGX(c.value)}</span>
-                    <span className="text-gray-400 text-[11px]">({pct}%)</span>
+                    <span className="font-black font-mono text-gray-950 dark:text-white">{formatUGX(c.value)}</span>
+                    <span className="text-slate-700 dark:text-slate-300 font-bold text-xs">({pct}%)</span>
                   </div>
                 </div>
               );
@@ -173,44 +171,47 @@ export default function InsightsPage() {
         </div>
 
         {/* Income vs Expense Bar Chart */}
-        <div className="rounded-3xl glass-panel p-6 border border-white/10 shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-white/10">
+        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
             <div>
-              <h3 className="font-bold text-sm text-white">Income vs Expenses</h3>
-              <p className="text-[11px] text-gray-400">Monthly cash flow comparison</p>
+              <h3 className="font-black text-sm text-gray-950 dark:text-white">Income vs Expenses</h3>
+              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Monthly cash flow comparison</p>
             </div>
           </div>
 
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={comparisonData} margin={{ top: 20, right: 10, left: -15, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis dataKey="month" stroke="#9ca3af" fontSize={11} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(150,150,150,0.2)" />
+                <XAxis dataKey="month" stroke="#64748b" fontSize={11} fontWeight={600} />
                 <YAxis
-                  stroke="#9ca3af"
+                  stroke="#64748b"
                   fontSize={10}
+                  fontWeight={600}
                   tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`}
                 />
                 <Tooltip
                   formatter={(value: any) => [formatUGX(Number(value)), '']}
                   contentStyle={{
-                    backgroundColor: '#111827',
-                    border: '1px solid rgba(255,255,255,0.15)',
+                    backgroundColor: '#0f172a',
+                    border: '1px solid rgba(255,255,255,0.2)',
                     borderRadius: '16px',
                     fontSize: '12px',
+                    fontWeight: 'bold',
+                    color: '#ffffff',
                   }}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px', fontWeight: 'bold' }} />
                 <Bar dataKey="Income" fill="#10B981" radius={[8, 8, 0, 0]} />
                 <Bar dataKey="Expenses" fill="#EF4444" radius={[8, 8, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs text-gray-300">
-            <p className="font-semibold text-white mb-1">Savings Rate Trend</p>
-            <p className="text-gray-400">
-              Maintaining an income-to-expense ratio above 20% net savings drastically speeds up emergency cushion and capital acquisition.
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-800 dark:text-slate-200">
+            <p className="font-black text-gray-950 dark:text-white mb-1">Savings Rate Trend</p>
+            <p className="text-slate-700 dark:text-slate-300">
+              Maintaining an income-to-expense ratio above 20% net savings drastically speeds up emergency cushion and capital acquisition in Uganda.
             </p>
           </div>
         </div>
