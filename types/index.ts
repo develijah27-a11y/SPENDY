@@ -27,7 +27,7 @@ export interface Category {
   created_at?: string;
 }
 
-export type TransactionType = 'expense' | 'income';
+export type TransactionType = 'expense' | 'income' | 'saving' | 'transfer';
 
 export interface Transaction {
   id: string;
