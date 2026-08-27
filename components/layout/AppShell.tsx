@@ -13,20 +13,19 @@ import { ReceiptModal } from './ReceiptModal';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuthOrLandingPage =
+  const isPublicAuthPage =
     pathname === '/' ||
     pathname.startsWith('/login') ||
     pathname.startsWith('/signup') ||
     pathname.startsWith('/verify-email') ||
     pathname.startsWith('/forgot-password') ||
-    pathname.startsWith('/reset-password') ||
-    pathname.startsWith('/app');
+    pathname.startsWith('/reset-password');
 
   return (
     <ThemeProvider>
       <AuthProvider>
         <SpendyProvider>
-          {isAuthOrLandingPage ? (
+          {isPublicAuthPage ? (
             <div className="min-h-screen bg-[#060911] text-gray-100 selection:bg-emerald-500 selection:text-white">
               {children}
             </div>

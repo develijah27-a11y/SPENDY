@@ -16,6 +16,9 @@ import {
   Settings,
   X,
   Download,
+  Target,
+  Calendar,
+  Repeat,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 
@@ -25,15 +28,18 @@ export function BottomNav() {
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const mainTabs = [
-    { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { label: 'Spending', href: '/spending', icon: ReceiptText },
+    { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
+    { label: 'Transactions', href: '/spending', icon: ReceiptText },
     { label: 'Income', href: '/income', icon: DollarSign },
-    { label: 'Loans', href: '/loans', icon: HandCoins },
+    { label: 'Reports', href: '/reports', icon: LineChart },
   ];
 
   const moreItems = [
-    { label: 'Reports & Analytics', href: '/insights', icon: LineChart },
-    { label: 'Budgets & Goals', href: '/budgets', icon: PiggyBank },
+    { label: 'Savings & Goals', href: '/goals', icon: PiggyBank },
+    { label: 'Monthly Budgets', href: '/budgets', icon: Target },
+    { label: 'Financial Calendar', href: '/calendar', icon: Calendar },
+    { label: 'Loans & Debts', href: '/loans', icon: HandCoins },
+    { label: 'Recurring Bills', href: '/recurring', icon: Repeat },
     { label: 'Settings & Data', href: '/settings', icon: Settings },
   ];
 

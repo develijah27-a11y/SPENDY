@@ -15,6 +15,9 @@ import {
   Download,
   LogOut,
   Wallet,
+  Calendar,
+  Target,
+  Repeat,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatCurrency } from '@/lib/formatters';
@@ -25,13 +28,16 @@ export function Sidebar() {
   const { dashboardMetrics, exportDataCSV, user, signOut } = useSpendy();
 
   const navItems = [
-    { label: 'Dashboard', href: '/', icon: LayoutDashboard },
-    { label: 'Spending Log', href: '/spending', icon: ReceiptText },
-    { label: 'Income Manager', href: '/income', icon: DollarSign },
-    { label: 'Loans (Lent & Borrowed)', href: '/loans', icon: HandCoins },
-    { label: 'Reports & Analytics', href: '/insights', icon: LineChart },
-    { label: 'Budgets & Goals', href: '/budgets', icon: PiggyBank },
-    { label: 'Settings & Data', href: '/settings', icon: Settings },
+    { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
+    { label: 'Transactions', href: '/spending', icon: ReceiptText },
+    { label: 'Income', href: '/income', icon: DollarSign },
+    { label: 'Savings', href: '/savings', icon: PiggyBank },
+    { label: 'Budgets', href: '/budgets', icon: Target },
+    { label: 'Reports', href: '/reports', icon: LineChart },
+    { label: 'Calendar', href: '/calendar', icon: Calendar },
+    { label: 'Loans & Debts', href: '/loans', icon: HandCoins },
+    { label: 'Recurring Bills', href: '/recurring', icon: Repeat },
+    { label: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const handleSignOut = async () => {
