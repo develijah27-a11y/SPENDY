@@ -191,68 +191,72 @@ function MasterDashboardContent() {
         </Link>
       </div>
 
-      {/* 3. Four Primary Financial Summary Cards */}
+      {/* 3. Four Primary Financial Summary Cards (Fintech Glass Elevations) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Balance */}
-        <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-xl space-y-2 relative overflow-hidden bg-gradient-to-br from-emerald-950/20 to-teal-950/10">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Current Balance</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
+        <div className="p-5 sm:p-6 rounded-3xl glass-panel-elevated space-y-2 relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-28 h-28 rounded-full bg-emerald-500/15 blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="flex items-center justify-between relative z-10">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Money</span>
+            <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-sm">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
+          <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight relative z-10">
             {formatCurrency(totalBalance)}
           </p>
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
             <span>Net position across all accounts</span>
           </div>
         </div>
 
         {/* Card 2: Income */}
-        <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="p-5 sm:p-6 rounded-3xl glass-panel-elevated space-y-2 relative overflow-hidden group hover:border-emerald-500/50 transition-all">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-28 h-28 rounded-full bg-emerald-500/10 blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Income</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
+            <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black shadow-sm">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white font-mono tracking-tight">
+          <p className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white font-mono tracking-tight relative z-10">
             {formatCurrency(periodIncome)}
           </p>
-          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {periodTransactions.filter((t) => t.type === 'income').length} credit logs in period
+          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
+            {periodTransactions.filter((t) => t.type === 'income').length} credit records in period
           </div>
         </div>
 
         {/* Card 3: Expenses */}
-        <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="p-5 sm:p-6 rounded-3xl glass-panel-elevated space-y-2 relative overflow-hidden group hover:border-red-500/50 transition-all">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-28 h-28 rounded-full bg-red-500/15 blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Expenses</span>
-            <div className="w-8 h-8 rounded-xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center font-black">
+            <div className="w-9 h-9 rounded-2xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center font-black shadow-sm">
               <ArrowDownRight className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400 font-mono tracking-tight">
+          <p className="text-2xl sm:text-3xl font-black text-red-600 dark:text-red-400 font-mono tracking-tight relative z-10">
             {formatCurrency(periodExpense)}
           </p>
-          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
             {expensePercentageOfIncome.toFixed(0)}% of income spent
           </div>
         </div>
 
         {/* Card 4: Savings */}
-        <div className="p-5 sm:p-6 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-xl space-y-2">
-          <div className="flex items-center justify-between">
+        <div className="p-5 sm:p-6 rounded-3xl glass-panel-elevated space-y-2 relative overflow-hidden group hover:border-purple-500/50 transition-all">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-28 h-28 rounded-full bg-purple-500/15 blur-2xl group-hover:scale-125 transition-transform" />
+          <div className="flex items-center justify-between relative z-10">
             <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Savings</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black">
+            <div className="w-9 h-9 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black shadow-sm">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <p className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${periodSavings >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
+          <p className={`text-2xl sm:text-3xl font-black font-mono tracking-tight relative z-10 ${periodSavings >= 0 ? 'text-purple-600 dark:text-purple-400' : 'text-red-600 dark:text-red-400'}`}>
             {formatCurrency(Math.max(0, periodSavings))}
           </p>
-          <div className="text-xs font-bold text-purple-600 dark:text-purple-400">
+          <div className="text-xs font-bold text-purple-600 dark:text-purple-400 relative z-10">
             {savingsRate.toFixed(1)}% savings rate
           </div>
         </div>
