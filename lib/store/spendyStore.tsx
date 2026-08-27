@@ -197,7 +197,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
   // Modal UI state
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'loan' | 'pay'>('expense');
+  const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer'>('expense');
   const [activeReceipt, setActiveReceipt] = useState<PaymentReceipt | null>(null);
 
   // Load from localStorage on client mount
