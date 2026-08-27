@@ -37,6 +37,15 @@ import {
   SEED_SAVINGS_GOALS,
   SEED_TRANSACTIONS,
   SEED_TRANSFERS,
+  DEMO_ACCOUNTS,
+  DEMO_BUDGETS,
+  DEMO_DEBTS,
+  DEMO_LOANS,
+  DEMO_FINANCIAL_GOALS,
+  DEMO_RECURRING,
+  DEMO_SAVINGS_GOALS,
+  DEMO_TRANSACTIONS,
+  DEMO_TRANSFERS,
 } from '../mock/seedData';
 import {
   calculateDashboardMetrics,
@@ -165,7 +174,7 @@ interface SpendyContextType {
 
 const SpendyContext = createContext<SpendyContextType | null>(null);
 
-const STORAGE_KEY = 'spendi_uganda_data_v3';
+const STORAGE_KEY = 'spendy_uganda_v7_clean_prod';
 
 export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => createClient(), []);
@@ -174,13 +183,13 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(false);
 
   const [user, setUser] = useState<UserProfile>({
-    id: 'user-uganda-1',
-    email: 'user@spendi.ug',
-    full_name: 'David Mukasa',
-    phone_number: '0772 123 456',
+    id: 'user-new-1',
+    email: '',
+    full_name: 'New User',
+    phone_number: '',
     default_currency: 'UGX',
     starting_balance: 0,
-    safe_spend_emergency_buffer: 50000,
+    safe_spend_emergency_buffer: 0,
   });
 
   const [startingBalance, setStartingBalanceState] = useState<number>(0);
@@ -199,8 +208,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>>([
     {
       id: 'notif-1',
-      title: 'Welcome to Spendi UGX!',
-      message: 'All your finances, spending logs, and loans in real-time.',
+      title: 'Welcome to Spendy!',
+      message: 'Your clean personal finance ledger is ready. Add transactions or set starting balances.',
       type: 'system',
       is_read: false,
       created_at: new Date().toISOString(),
@@ -850,17 +859,27 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
   // Reset to sample Uganda dataset
   const resetToDemoData = () => {
-    setAccounts(SEED_ACCOUNTS);
+    setAccounts(DEMO_ACCOUNTS);
     setCategories(SEED_CATEGORIES);
-    setTransactions(SEED_TRANSACTIONS);
-    setLoans(SEED_LOANS);
-    setTransfers(SEED_TRANSFERS);
-    setBudgets(SEED_BUDGETS);
-    setSavingsGoals(SEED_SAVINGS_GOALS);
-    setDebts(SEED_DEBTS);
-    setFinancialGoals(SEED_FINANCIAL_GOALS);
-    setRecurringTransactions(SEED_RECURRING);
+    setTransactions(DEMO_TRANSACTIONS);
+    setLoans(DEMO_LOANS);
+    setTransfers(DEMO_TRANSFERS);
+    setBudgets(DEMO_BUDGETS);
+    setSavingsGoals(DEMO_SAVINGS_GOALS);
+    setDebts(DEMO_DEBTS);
+    setFinancialGoals(DEMO_FINANCIAL_GOALS);
+    setRecurringTransactions(DEMO_RECURRING);
     setStartingBalanceState(0);
+    setUser({
+      id: 'user-uganda-1',
+      email: 'david.mukasa@spendy.ug',
+      full_name: 'David Mukasa',
+      phone_number: '0772 123 456',
+      default_currency: 'UGX',
+      starting_balance: 0,
+      safe_spend_emergency_buffer: 50000,
+    });
+    setIsAuthenticated(true);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -871,6 +890,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   // Clear all dummy data for a fresh real user start
   const clearAllData = () => {
     setStartingBalanceState(0);
+    setAccounts(SEED_ACCOUNTS);
     setTransactions([]);
     setLoans([]);
     setTransfers([]);
@@ -879,6 +899,15 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setDebts([]);
     setFinancialGoals([]);
     setRecurringTransactions([]);
+    setUser({
+      id: 'user-new',
+      email: '',
+      full_name: 'New User',
+      phone_number: '',
+      default_currency: 'UGX',
+      starting_balance: 0,
+      safe_spend_emergency_buffer: 0,
+    });
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
@@ -918,13 +947,14 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
             ...prev,
             id: data.user.id,
             email: data.user.email || email.trim(),
-            full_name: data.user.user_metadata?.full_name || email.split('@')[0],
+            full_name: data.user.user_metadata?.full_name || prev.full_name,
             phone_number: data.user.user_metadata?.phone_number || prev.phone_number,
           }));
           setIsAuthenticated(true);
           return {};
         }
       } else {
+        // Mock offline fallback
         const name = email.split('@')[0] || 'User';
         setUser((prev) => ({
           ...prev,
@@ -1037,12 +1067,14 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       console.warn('Sign out error', e);
     } finally {
       setIsAuthenticated(false);
+      clearAllData();
       setUser({
         id: 'guest',
         email: '',
         full_name: 'Guest User',
         default_currency: 'UGX',
-        safe_spend_emergency_buffer: 50000,
+        starting_balance: 0,
+        safe_spend_emergency_buffer: 0,
       });
       setIsLoadingAuth(false);
     }
@@ -1065,7 +1097,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const quickLoginDemo = (userType: 'mukasa' | 'namubiru' | 'new_user' = 'mukasa') => {
+  const quickLoginDemo = (userType: 'mukasa' | 'namubiru' | 'new_user' = 'new_user') => {
     if (userType === 'mukasa') {
       resetToDemoData();
       setUser({
@@ -1080,6 +1112,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
     } else if (userType === 'namubiru') {
       resetToDemoData();
+      setAccounts(DEMO_ACCOUNTS.map(a => a.id === 'acc-1' ? {...a, balance: 100000} : a));
       setUser({
         id: 'user-uganda-2',
         email: 'sarah.namubiru@spendy.ug',
@@ -1098,7 +1131,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         full_name: 'New Spendy User',
         default_currency: 'UGX',
         starting_balance: 0,
-        safe_spend_emergency_buffer: 50000,
+        safe_spend_emergency_buffer: 0,
       });
       setIsAuthenticated(true);
     }

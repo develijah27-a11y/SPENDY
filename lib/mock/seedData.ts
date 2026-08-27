@@ -4,8 +4,11 @@ import { getCurrentMonthKey } from '../formatters';
 const currentMonth = getCurrentMonthKey();
 const today = new Date().toISOString();
 
+// ==========================================================================
+// 1. STANDARD FINANCIAL CATEGORIES (UGANDA TAXONOMY)
+// ==========================================================================
 export const SEED_CATEGORIES: Category[] = [
-  // Expense Categories (Section 11 of Product Brief)
+  // Expense Categories
   { id: 'cat-food', name: 'Food & Dining', type: 'expense', icon: 'Utensils', color: '#F59E0B', is_default: true, created_at: today },
   { id: 'cat-transport', name: 'Transport (Boda & Taxi)', type: 'expense', icon: 'Bus', color: '#3B82F6', is_default: true, created_at: today },
   { id: 'cat-housing', name: 'Housing & Rent', type: 'expense', icon: 'Home', color: '#10B981', is_default: true, created_at: today },
@@ -18,7 +21,7 @@ export const SEED_CATEGORIES: Category[] = [
   { id: 'cat-business-exp', name: 'Business Expense', type: 'expense', icon: 'Briefcase', color: '#06B6D4', is_default: true, created_at: today },
   { id: 'cat-other-exp', name: 'Other Expense', type: 'expense', icon: 'MoreHorizontal', color: '#64748B', is_default: true, created_at: today },
 
-  // Income Categories (Section 11 of Product Brief)
+  // Income Categories
   { id: 'cat-salary', name: 'Salary & Wages', type: 'income', icon: 'Banknote', color: '#10B981', is_default: true, created_at: today },
   { id: 'cat-business-inc', name: 'Business Profit', type: 'income', icon: 'TrendingUp', color: '#059669', is_default: true, created_at: today },
   { id: 'cat-farming', name: 'Farming & Agriculture', type: 'income', icon: 'Sprout', color: '#84CC16', is_default: true, created_at: today },
@@ -28,7 +31,92 @@ export const SEED_CATEGORIES: Category[] = [
   { id: 'cat-other-inc', name: 'Other Income', type: 'income', icon: 'PlusCircle', color: '#64748B', is_default: true, created_at: today },
 ];
 
+// ==========================================================================
+// 2. CLEAN STARTER ACCOUNTS FOR NEW USERS (0 UGX BALANCE)
+// ==========================================================================
 export const SEED_ACCOUNTS: Account[] = [
+  {
+    id: 'acc-momo',
+    user_id: 'user-new',
+    name: 'MTN Mobile Money',
+    type: 'mtn_momo',
+    account_number: 'MTN MoMo',
+    balance: 0,
+    currency: 'UGX',
+    color: '#FBBF24',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
+  {
+    id: 'acc-airtel',
+    user_id: 'user-new',
+    name: 'Airtel Money',
+    type: 'airtel_money',
+    account_number: 'Airtel Money',
+    balance: 0,
+    currency: 'UGX',
+    color: '#EF4444',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
+  {
+    id: 'acc-cash',
+    user_id: 'user-new',
+    name: 'Physical Cash',
+    type: 'cash',
+    balance: 0,
+    currency: 'UGX',
+    color: '#10B981',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
+  {
+    id: 'acc-bank',
+    user_id: 'user-new',
+    name: 'Bank Account',
+    type: 'bank',
+    account_number: 'Bank',
+    balance: 0,
+    currency: 'UGX',
+    color: '#3B82F6',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
+  {
+    id: 'acc-spendy-wallet',
+    user_id: 'user-new',
+    name: 'Spendy Digital Wallet',
+    type: 'spendy_wallet',
+    account_number: 'SP-001',
+    balance: 0,
+    currency: 'UGX',
+    color: '#8B5CF6',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
+];
+
+// ==========================================================================
+// 3. CLEAN LEDGER (ZERO DUMMY DATA FOR NEW USERS)
+// ==========================================================================
+export const SEED_TRANSACTIONS: Transaction[] = [];
+export const SEED_LOANS: Loan[] = [];
+export const SEED_TRANSFERS: Transfer[] = [];
+export const SEED_BUDGETS: Budget[] = [];
+export const SEED_SAVINGS_GOALS: SavingsGoal[] = [];
+export const SEED_DEBTS: Debt[] = [];
+export const SEED_FINANCIAL_GOALS: FinancialGoal[] = [];
+export const SEED_RECURRING: RecurringTransaction[] = [];
+
+// ==========================================================================
+// 4. SAMPLE DEMO DATASET (AVAILABLE ON-DEMAND VIA SETTINGS / DEMO LOGIN)
+// ==========================================================================
+export const DEMO_ACCOUNTS: Account[] = [
   {
     id: 'acc-momo',
     user_id: 'user-demo-1',
@@ -80,9 +168,22 @@ export const SEED_ACCOUNTS: Account[] = [
     created_at: today,
     updated_at: today,
   },
+  {
+    id: 'acc-spendy-wallet',
+    user_id: 'user-demo-1',
+    name: 'Spendy Digital Wallet',
+    type: 'spendy_wallet',
+    account_number: 'SP-001',
+    balance: 200000,
+    currency: 'UGX',
+    color: '#8B5CF6',
+    is_archived: false,
+    created_at: today,
+    updated_at: today,
+  },
 ];
 
-export const SEED_TRANSACTIONS: Transaction[] = [
+export const DEMO_TRANSACTIONS: Transaction[] = [
   {
     id: 'tx-1',
     user_id: 'user-demo-1',
@@ -136,6 +237,7 @@ export const SEED_TRANSACTIONS: Transaction[] = [
     description: 'Umeme Yaka Electricity tokens',
     note: 'Umeme Yaka Electricity tokens',
     merchant_name: 'Umeme Ltd',
+    receipt_number: 'REC-YAKA-8891',
     transaction_date: `${currentMonth}-04T12:20:00Z`,
     created_at: `${currentMonth}-04T12:20:00Z`,
     updated_at: `${currentMonth}-04T12:20:00Z`,
@@ -162,8 +264,8 @@ export const SEED_TRANSACTIONS: Transaction[] = [
     type: 'expense',
     amount: 35000,
     currency: 'UGX',
-    description: 'Lunch and groceries at market',
-    note: 'Lunch and groceries at market',
+    description: 'Lunch and groceries at Nakasero Market',
+    note: 'Lunch and groceries at Nakasero Market',
     transaction_date: `${currentMonth}-08T19:45:00Z`,
     created_at: `${currentMonth}-08T19:45:00Z`,
     updated_at: `${currentMonth}-08T19:45:00Z`,
@@ -178,13 +280,15 @@ export const SEED_TRANSACTIONS: Transaction[] = [
     currency: 'UGX',
     description: 'SafeBoda trips to town and back',
     note: 'SafeBoda trips to town and back',
+    merchant_name: 'SafeBoda Ride',
+    receipt_number: 'REC-BODA-1029',
     transaction_date: `${currentMonth}-10T17:30:00Z`,
     created_at: `${currentMonth}-10T17:30:00Z`,
     updated_at: `${currentMonth}-10T17:30:00Z`,
   },
 ];
 
-export const SEED_LOANS: Loan[] = [
+export const DEMO_LOANS: Loan[] = [
   {
     id: 'loan-1',
     user_id: 'user-demo-1',
@@ -235,7 +339,7 @@ export const SEED_LOANS: Loan[] = [
   },
 ];
 
-export const SEED_TRANSFERS: Transfer[] = [
+export const DEMO_TRANSFERS: Transfer[] = [
   {
     id: 'tr-1',
     user_id: 'user-demo-1',
@@ -248,7 +352,7 @@ export const SEED_TRANSFERS: Transfer[] = [
   },
 ];
 
-export const SEED_BUDGETS: Budget[] = [
+export const DEMO_BUDGETS: Budget[] = [
   {
     id: 'b-total',
     user_id: 'user-demo-1',
@@ -278,7 +382,7 @@ export const SEED_BUDGETS: Budget[] = [
   },
 ];
 
-export const SEED_SAVINGS_GOALS: SavingsGoal[] = [
+export const DEMO_SAVINGS_GOALS: SavingsGoal[] = [
   {
     id: 'sg-laptop',
     user_id: 'user-demo-1',
@@ -307,7 +411,7 @@ export const SEED_SAVINGS_GOALS: SavingsGoal[] = [
   },
 ];
 
-export const SEED_DEBTS: Debt[] = [
+export const DEMO_DEBTS: Debt[] = [
   {
     id: 'debt-1',
     user_id: 'user-demo-1',
@@ -324,7 +428,7 @@ export const SEED_DEBTS: Debt[] = [
   },
 ];
 
-export const SEED_FINANCIAL_GOALS: FinancialGoal[] = [
+export const DEMO_FINANCIAL_GOALS: FinancialGoal[] = [
   {
     id: 'fg-1',
     user_id: 'user-demo-1',
@@ -339,7 +443,7 @@ export const SEED_FINANCIAL_GOALS: FinancialGoal[] = [
   },
 ];
 
-export const SEED_RECURRING: RecurringTransaction[] = [
+export const DEMO_RECURRING: RecurringTransaction[] = [
   {
     id: 'rec-rent',
     user_id: 'user-demo-1',

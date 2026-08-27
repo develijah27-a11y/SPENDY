@@ -1,260 +1,335 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useSpendy } from '@/lib/store/spendyStore';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { SpendyLogo } from '@/components/ui/SpendyLogo';
 import {
-  Lock,
-  Mail,
-  User,
-  Phone,
-  ArrowRight,
-  AlertCircle,
+  UserPlus,
   Eye,
   EyeOff,
-  Wallet,
+  ArrowRight,
+  AlertCircle,
   CheckCircle2,
-  Sparkles,
+  Loader2,
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signUp, isLoadingAuth } = useSpendy();
+  const { signUp, isAuthenticated } = useAuth();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [startingBalance, setStartingBalance] = useState('');
-  const [primaryAccountType, setPrimaryAccountType] = useState<'cash' | 'mtn_momo' | 'airtel_money' | 'bank'>('cash');
-  const [agreeTerms, setAgreeTerms] = useState(true);
+  const [currency, setCurrency] = useState('UGX');
 
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
 
-  const handleSignup = async (e: React.FormEvent) => {
+  // Password rules validation
+  const passwordChecks = useMemo(() => {
+    return {
+      minLength: password.length >= 8,
+      hasUpper: /[A-Z]/.test(password),
+      hasLower: /[a-z]/.test(password),
+      hasNumber: /[0-9]/.test(password),
+      matches: password.length > 0 && password === confirmPassword,
+    };
+  }, [password, confirmPassword]);
+
+  const isPasswordValid =
+    passwordChecks.minLength &&
+    passwordChecks.hasUpper &&
+    passwordChecks.hasLower &&
+    passwordChecks.hasNumber &&
+    passwordChecks.matches;
+
+  // Strength score: 0 to 4
+  const strengthScore = useMemo(() => {
+    let score = 0;
+    if (passwordChecks.minLength) score += 1;
+    if (passwordChecks.hasUpper) score += 1;
+    if (passwordChecks.hasLower) score += 1;
+    if (passwordChecks.hasNumber) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    return Math.min(4, score);
+  }, [password, passwordChecks]);
+
+  const strengthLabel = useMemo(() => {
+    if (!password) return '';
+    if (strengthScore <= 1) return 'Weak';
+    if (strengthScore === 2) return 'Fair';
+    if (strengthScore === 3) return 'Good';
+    return 'Strong';
+  }, [password, strengthScore]);
+
+  // If already logged in, redirect to /app
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/app');
+    }
+  }, [isAuthenticated, router]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-    setSuccessMsg('');
 
-    if (!agreeTerms) {
-      setErrorMsg('Please accept the Spendy Terms of Service to proceed.');
+    if (!fullName.trim()) {
+      setErrorMsg('Please enter your full name.');
       return;
     }
 
-    setLoading(true);
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+
+    if (!isPasswordValid) {
+      if (password !== confirmPassword) {
+        setErrorMsg('Passwords do not match.');
+      } else {
+        setErrorMsg('Password must be at least 8 characters and include uppercase, lowercase, and a number.');
+      }
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      const balanceNum = startingBalance ? parseFloat(startingBalance) : 0;
-      const res = await signUp({
-        email,
+      const { error, needsEmailVerification } = await signUp({
+        fullName: fullName.trim(),
+        email: email.trim().toLowerCase(),
         password,
-        fullName,
-        phone,
-        startingBalance: balanceNum,
+        currency,
       });
 
-      if (res.error) {
-        setErrorMsg(res.error);
+      if (error) {
+        setErrorMsg(error);
+      } else if (needsEmailVerification) {
+        router.push(`/verify-email?email=${encodeURIComponent(email.trim().toLowerCase())}`);
       } else {
-        setSuccessMsg('Account created successfully! Welcome to Spendy UGX.');
-        setTimeout(() => {
-          router.push('/');
-        }, 350);
+        router.push('/app');
       }
-    } catch (err: unknown) {
-      const error = err as Error;
-      setErrorMsg(error.message || 'Signup failed. Please try again.');
+    } catch {
+      setErrorMsg('An error occurred during account creation. Please try again.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center p-4 sm:p-6">
-      <div className="w-full max-w-lg rounded-3xl glass-panel p-6 sm:p-8 border border-black/15 dark:border-white/20 shadow-2xl space-y-6">
-        {/* Brand Header with Official Spendy Logo */}
-        <div className="flex flex-col items-center justify-center text-center space-y-2">
-          <Link href="/" className="group cursor-pointer">
-            <SpendyLogo size="lg" showTagline={true} variant="stacked" />
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-[#060911] text-white selection:bg-emerald-500">
+      <div className="w-full max-w-md space-y-6 animate-in fade-in zoom-in-95 duration-300">
+        {/* Brand Logo */}
+        <div className="text-center flex justify-center">
+          <Link href="/" className="inline-block">
+            <SpendyLogo size="lg" showTagline={true} />
           </Link>
-          <h2 className="text-2xl font-black text-gray-950 dark:text-white tracking-tight mt-2">
-            Create Your Account
-          </h2>
-          <p className="text-xs font-medium text-slate-700 dark:text-slate-200">
-            Start managing your personal finances in UGX with institutional clarity
-          </p>
         </div>
 
-        {/* Error Alert */}
-        {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-700 dark:text-red-300 text-xs font-semibold flex items-center gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-600 dark:text-red-400" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
-        {/* Success Alert */}
-        {successMsg && (
-          <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2.5">
-            <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
-        {/* Form */}
-        <form onSubmit={handleSignup} className="space-y-4 text-xs">
-          <div>
-            <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
-              Full Name
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-slate-500 dark:text-slate-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. David Mukasa"
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 dark:text-slate-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="david@spendy.ug"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
-                Uganda Phone (MoMo)
-              </label>
-              <div className="relative">
-                <Phone className="w-4 h-4 text-slate-500 dark:text-slate-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="0772 123 456"
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
-              Password (Min 6 Characters)
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 dark:text-slate-300 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a strong password"
-                className="w-full pl-10 pr-11 py-2.5 rounded-2xl bg-white dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white cursor-pointer"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Optional Starting Balance Setup */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="font-bold text-gray-900 dark:text-white">Initial Starting Balance (Optional)</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                UGX
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <input
-                type="number"
-                value={startingBalance}
-                onChange={(e) => setStartingBalance(e.target.value)}
-                placeholder="e.g. 500,000"
-                min={0}
-                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-bold placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
-
-              <select
-                value={primaryAccountType}
-                onChange={(e) => setPrimaryAccountType(e.target.value as any)}
-                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              >
-                <option value="cash">Cash in Pocket</option>
-                <option value="mtn_momo">MTN Mobile Money</option>
-                <option value="airtel_money">Airtel Money</option>
-                <option value="bank">Bank Account</option>
-              </select>
-            </div>
-            <p className="text-[10px] font-medium text-slate-600 dark:text-slate-300">
-              You can adjust and link more wallets anytime in Accounts & Settings.
+        {/* Card */}
+        <div className="rounded-3xl glass-panel p-6 sm:p-8 border border-white/20 shadow-2xl space-y-5">
+          <div className="text-center space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Create your Spendy account
+            </h1>
+            <p className="text-xs font-semibold text-slate-300">
+              Start tracking your income, expenses, and savings goals with total privacy.
             </p>
           </div>
 
-          {/* Terms checkbox */}
-          <label className="flex items-center gap-2.5 cursor-pointer pt-1">
-            <input
-              type="checkbox"
-              checked={agreeTerms}
-              onChange={(e) => setAgreeTerms(e.target.checked)}
-              className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
-            />
-            <span className="text-[11px] font-medium text-slate-700 dark:text-slate-300">
-              I agree to the Spendy Uganda Terms of Service & Privacy Policy
-            </span>
-          </label>
+          {errorMsg && (
+            <div className="p-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-          <button
-            type="submit"
-            disabled={loading || isLoadingAuth}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98 disabled:opacity-50"
-          >
-            {loading ? 'Creating Spendy Account...' : 'Get Started with Spendy UGX'}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+            {/* Full Name */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                autoComplete="name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="David Mukasa"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              />
+            </div>
 
-        {/* Footer */}
-        <div className="text-center pt-2 text-xs font-medium text-slate-700 dark:text-slate-300">
-          Already have an account?{' '}
-          <Link
-            href="/login"
-            className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline ml-1"
-          >
-            Sign In
-          </Link>
+            {/* Email */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              />
+            </div>
+
+            {/* Currency Preference */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Primary Currency
+              </label>
+              <select
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="UGX">UGX — Ugandan Shilling</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="KES">KES — Kenyan Shilling</option>
+                <option value="TZS">TZS — Tanzanian Shilling</option>
+              </select>
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {/* Password Strength Meter */}
+              {password && (
+                <div className="mt-2 space-y-1">
+                  <div className="flex items-center justify-between text-[11px] font-bold">
+                    <span className="text-slate-400">Strength:</span>
+                    <span
+                      className={
+                        strengthScore <= 1
+                          ? 'text-red-400'
+                          : strengthScore === 2
+                          ? 'text-amber-400'
+                          : strengthScore === 3
+                          ? 'text-blue-400'
+                          : 'text-emerald-400'
+                      }
+                    >
+                      {strengthLabel}
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        strengthScore <= 1
+                          ? 'bg-red-500 w-1/4'
+                          : strengthScore === 2
+                          ? 'bg-amber-500 w-2/4'
+                          : strengthScore === 3
+                          ? 'bg-blue-500 w-3/4'
+                          : 'bg-emerald-500 w-full'
+                      }`}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block font-bold text-slate-200 mb-1">
+                Confirm Password
+              </label>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                autoComplete="new-password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+              />
+            </div>
+
+            {/* Requirements Checklist */}
+            <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 text-[11px]">
+              <div className="grid grid-cols-2 gap-1 font-semibold">
+                <span className={passwordChecks.minLength ? 'text-emerald-400' : 'text-slate-400'}>
+                  {passwordChecks.minLength ? '✓' : '○'} 8+ characters
+                </span>
+                <span className={passwordChecks.hasUpper ? 'text-emerald-400' : 'text-slate-400'}>
+                  {passwordChecks.hasUpper ? '✓' : '○'} Uppercase letter
+                </span>
+                <span className={passwordChecks.hasLower ? 'text-emerald-400' : 'text-slate-400'}>
+                  {passwordChecks.hasLower ? '✓' : '○'} Lowercase letter
+                </span>
+                <span className={passwordChecks.hasNumber ? 'text-emerald-400' : 'text-slate-400'}>
+                  {passwordChecks.hasNumber ? '✓' : '○'} Number (0-9)
+                </span>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={isSubmitting || !isPasswordValid}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Creating Account...</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-4 h-4" />
+                  <span>Create Account</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Privacy Guarantee */}
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-semibold text-center">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Row Level Security (RLS) & encrypted credentials</span>
+          </div>
+
+          {/* Link to Login */}
+          <div className="pt-3 border-t border-white/10 text-center text-xs">
+            <span className="text-slate-300">Already have an account? </span>
+            <Link
+              href="/login"
+              className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline"
+            >
+              Log in
+            </Link>
+          </div>
         </div>
       </div>
     </div>

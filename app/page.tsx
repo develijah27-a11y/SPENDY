@@ -1,172 +1,154 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useSpendy } from '@/lib/store/spendyStore';
-import { formatCurrency, formatDate } from '@/lib/formatters';
-import { PeriodFilter } from '@/types';
-import { BalanceOverviewCard } from '@/components/dashboard/BalanceOverviewCard';
-import { SafeToSpendCard } from '@/components/dashboard/SafeToSpendCard';
-import { MonthlySummaryCard } from '@/components/dashboard/MonthlySummaryCard';
-import { RecentTransactionsWidget } from '@/components/dashboard/RecentTransactionsWidget';
-import { BudgetProgressWidget } from '@/components/dashboard/BudgetProgressWidget';
-import { SavingsGoalWidget } from '@/components/dashboard/SavingsGoalWidget';
-import { FinancialHealthWidget } from '@/components/dashboard/FinancialHealthWidget';
+import { useAuth } from '@/lib/auth/AuthContext';
+import { SpendyLogo } from '@/components/ui/SpendyLogo';
 import {
-  TrendingDown,
-  TrendingUp,
-  HandCoins,
-  ReceiptText,
-  Plus,
-  ArrowUpRight,
-  Sparkles,
-  DollarSign,
+  ArrowRight,
+  ShieldCheck,
+  Lock,
+  Zap,
+  Users,
+  CheckCircle2,
+  LogIn,
+  UserPlus,
 } from 'lucide-react';
 
-export default function DashboardPage() {
-  const {
-    dashboardMetrics,
-    transactions,
-    periodFilter,
-    setPeriodFilter,
-    openQuickAdd,
-    user,
-  } = useSpendy();
-
-  const periods: Array<{ label: string; value: PeriodFilter }> = [
-    { label: 'Today', value: 'today' },
-    { label: 'This Week', value: 'this_week' },
-    { label: 'This Month', value: 'this_month' },
-    { label: 'Last Month', value: 'last_month' },
-    { label: 'This Year', value: 'this_year' },
-    { label: 'All Time', value: 'all_time' },
-  ];
+export default function LandingPage() {
+  const { isAuthenticated, user, profile } = useAuth();
 
   return (
-    <div className="space-y-6">
-      {/* 1. Header Toolbar with Welcome & Time Period Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight">
-              Hello, {user?.full_name?.split(' ')[0] || 'David'}!
-            </h1>
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs font-black uppercase tracking-wider border border-emerald-500/30">
-              UGX Live
+    <div className="min-h-screen bg-[#060911] text-white selection:bg-emerald-500 flex flex-col justify-between">
+      {/* Navigation Header */}
+      <header className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-5 flex items-center justify-between">
+        <SpendyLogo size="md" showTagline={true} />
+
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <Link
+              href="/app"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
+            >
+              <span>Go to App</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="px-4 py-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs sm:text-sm transition-colors"
+              >
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                className="flex items-center gap-1.5 px-5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Get Started</span>
+              </Link>
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1 max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center justify-center text-center py-12 sm:py-20 space-y-8">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-black shadow-sm">
+          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+          <span>Production-Ready Supabase Authentication with RLS</span>
+        </div>
+
+        <div className="space-y-4 max-w-3xl">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.1]">
+            Know your money. <br />
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-500 bg-clip-text text-transparent">
+              Control your future.
             </span>
-          </div>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
-            Real-time balance, spending velocity, income flow & loan tracking
+          </h1>
+          <p className="text-sm sm:text-lg font-semibold text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Spendy is Uganda&apos;s intelligent personal finance platform. Built with military-grade privacy,
+            Row Level Security, and isolated user profiles.
           </p>
         </div>
 
-        {/* Period Filter Selector */}
-        <div className="flex items-center gap-1 p-1 rounded-2xl bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 overflow-x-auto text-xs font-bold shadow-sm">
-          {periods.map((p) => (
-            <button
-              key={p.value}
-              onClick={() => setPeriodFilter(p.value)}
-              className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
-                periodFilter === p.value
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
-              }`}
-            >
-              {p.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* 2. Top Tier: Balance Overview & Safe to Spend */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <BalanceOverviewCard />
-        <SafeToSpendCard />
-      </div>
-
-      {/* 3. Monthly Summary Cards (Income, Expense, Net Saved) */}
-      <MonthlySummaryCard />
-
-      {/* 4. Core Metric Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Card 1: Today's Spending vs Total Spending */}
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Today&apos;s Spending</span>
-            <div className="w-8 h-8 rounded-xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center font-black">
-              <TrendingDown className="w-4 h-4" />
+        {/* CTA Group */}
+        <div className="flex flex-col sm:flex-row items-center gap-3.5 w-full sm:w-auto">
+          {isAuthenticated ? (
+            <div className="space-y-2 text-center">
+              <Link
+                href="/app"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 active:scale-95 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Continue as {profile?.full_name || user?.email || 'User'}</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <p className="text-xs text-slate-400">Your session is active and secure.</p>
             </div>
-          </div>
-          <div>
-            <p className="text-2xl font-black text-red-600 dark:text-red-400 font-mono">
-              {formatCurrency(dashboardMetrics.todaySpending)}
+          ) : (
+            <>
+              <Link
+                href="/signup"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm sm:text-base shadow-xl shadow-emerald-600/30 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <span>Create Free Account</span>
+                <ArrowRight className="w-5 h-5" />
+              </Link>
+              <Link
+                href="/login"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm sm:text-base border border-white/15 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <LogIn className="w-5 h-5 text-slate-300" />
+                <span>Log In</span>
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Security & Authentication Feature Pillars */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-12 text-left w-full">
+          <div className="p-5 rounded-3xl glass-panel border border-white/15 space-y-2">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">
+              <Lock className="w-5 h-5" />
+            </div>
+            <h3 className="font-black text-base text-white">Row Level Security</h3>
+            <p className="text-xs font-semibold text-slate-300">
+              Each user&apos;s records are strictly isolated at the PostgreSQL kernel level. User A cannot access User B.
             </p>
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mt-2 pt-2 border-t border-slate-200 dark:border-white/10">
-              <span>Total in period:</span>
-              <span className="font-black text-gray-950 dark:text-white font-mono">
-                {formatCurrency(dashboardMetrics.totalSpending)}
-              </span>
-            </div>
           </div>
-        </div>
 
-        {/* Card 2: Today's Income vs Total Income */}
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Today&apos;s Income</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
-              <TrendingUp className="w-4 h-4" />
+          <div className="p-5 rounded-3xl glass-panel border border-white/15 space-y-2">
+            <div className="w-10 h-10 rounded-2xl bg-purple-500/20 text-purple-400 flex items-center justify-center font-black">
+              <Zap className="w-5 h-5" />
             </div>
-          </div>
-          <div>
-            <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
-              {formatCurrency(dashboardMetrics.todayIncome)}
+            <h3 className="font-black text-base text-white">Session Persistence</h3>
+            <p className="text-xs font-semibold text-slate-300">
+              Seamless browser token restoration, automatic refresh tokens, and instant zero-flash state detection.
             </p>
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mt-2 pt-2 border-t border-slate-200 dark:border-white/10">
-              <span>Total in period:</span>
-              <span className="font-black text-gray-950 dark:text-white font-mono">
-                {formatCurrency(dashboardMetrics.totalIncome)}
-              </span>
+          </div>
+
+          <div className="p-5 rounded-3xl glass-panel border border-white/15 space-y-2">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-black">
+              <Users className="w-5 h-5" />
             </div>
+            <h3 className="font-black text-base text-white">Verified Identity</h3>
+            <p className="text-xs font-semibold text-slate-300">
+              Automated email verification, secure password recovery flows, and user profile management.
+            </p>
           </div>
         </div>
+      </main>
 
-        {/* Card 3: Loans Overview (Money Lent & Money Borrowed) */}
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl space-y-3 sm:col-span-2 lg:col-span-1">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200">Active Loan Balances</span>
-            <Link href="/loans" className="text-xs font-black text-purple-600 dark:text-purple-400 hover:underline">
-              View All
-            </Link>
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold">
-              <span className="text-slate-700 dark:text-slate-300">Money Lent (To Others):</span>
-              <span className="font-black text-emerald-600 dark:text-emerald-400 font-mono">
-                {formatCurrency(dashboardMetrics.moneyLent)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs font-semibold pt-1 border-t border-slate-200 dark:border-white/10">
-              <span className="text-slate-700 dark:text-slate-300">Money Borrowed (Owed):</span>
-              <span className="font-black text-purple-600 dark:text-purple-400 font-mono">
-                {formatCurrency(dashboardMetrics.moneyBorrowed)}
-              </span>
-            </div>
-          </div>
+      {/* Footer */}
+      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-400">
+        <p>© {new Date().getFullYear()} Spendy Uganda. All rights reserved.</p>
+        <div className="flex items-center gap-4">
+          <Link href="/login" className="hover:text-white transition-colors">Log In</Link>
+          <Link href="/signup" className="hover:text-white transition-colors">Sign Up</Link>
+          <Link href="/forgot-password" className="hover:text-white transition-colors">Forgot Password</Link>
         </div>
-      </div>
-
-      {/* 5. Middle Tier: Recent Activity & Budgets */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <RecentTransactionsWidget />
-        <BudgetProgressWidget />
-      </div>
-
-      {/* 6. Lower Tier: Savings Goals & Deterministic Financial Health Score */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <SavingsGoalWidget />
-        <FinancialHealthWidget />
-      </div>
+      </footer>
     </div>
   );
 }
