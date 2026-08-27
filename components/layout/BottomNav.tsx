@@ -27,13 +27,6 @@ export function BottomNav() {
   const { openQuickAdd, exportDataCSV } = useSpendy();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  const mainTabs = [
-    { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
-    { label: 'Transactions', href: '/spending', icon: ReceiptText },
-    { label: 'Income', href: '/income', icon: DollarSign },
-    { label: 'Reports', href: '/reports', icon: LineChart },
-  ];
-
   const moreItems = [
     { label: 'Savings & Goals', href: '/goals', icon: PiggyBank },
     { label: 'Monthly Budgets', href: '/budgets', icon: Target },
@@ -47,8 +40,8 @@ export function BottomNav() {
     <>
       {/* Mobile Drawer Sheet */}
       {showMoreMenu && (
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="glass-panel border-t border-black/20 dark:border-white/20 rounded-t-3xl p-5 max-h-[80vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 shadow-2xl">
+        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="glass-panel border-t border-black/20 dark:border-white/20 rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
               <h3 className="font-black text-base text-gray-950 dark:text-white">More Spendy Options</h3>
               <button
@@ -98,66 +91,68 @@ export function BottomNav() {
         </div>
       )}
 
-      {/* Fixed Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-black/15 dark:border-white/15 px-2 py-2 flex items-center justify-around shadow-2xl">
-        {mainTabs.slice(0, 2).map((tab) => {
-          const Icon = tab.icon;
-          const isActive = pathname === tab.href || (tab.href === '/spending' && pathname === '/transactions');
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={cn(
-                'flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all',
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-black'
-                  : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
-              )}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[11px] mt-1">{tab.label}</span>
-            </Link>
-          );
-        })}
+      {/* Fixed Bottom Navigation Bar - Strict 5-Column Grid */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-black/15 dark:border-white/15 px-2 py-1.5 grid grid-cols-5 items-center shadow-2xl safe-area-pb">
+        {/* Tab 1: Dashboard */}
+        <Link
+          href="/app"
+          className={cn(
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all',
+            pathname === '/app'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
+          )}
+        >
+          <LayoutDashboard className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-bold truncate">Dashboard</span>
+        </Link>
 
-        {/* Center Quick Add Button */}
-        <div className="-mt-6">
+        {/* Tab 2: Transactions */}
+        <Link
+          href="/spending"
+          className={cn(
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all',
+            pathname === '/spending' || pathname === '/transactions'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
+          )}
+        >
+          <ReceiptText className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-bold truncate">Activity</span>
+        </Link>
+
+        {/* Tab 3: Dedicated Center Floating Action Button (FAB) */}
+        <div className="flex items-center justify-center -mt-6">
           <button
             onClick={() => openQuickAdd('expense')}
-            aria-label="Quick Add Money Entry"
-            className="w-13 h-13 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/50 active:scale-90 transition-transform cursor-pointer border-3 border-white dark:border-[#070a12]"
+            aria-label="Quick Add Transaction"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-xl shadow-emerald-600/50 active:scale-90 transition-all cursor-pointer ring-4 ring-[#f8fafc] dark:ring-[#070A12]"
           >
-            <Plus className="w-7 h-7 stroke-[3]" />
+            <Plus className="w-6 h-6 stroke-[3]" />
           </button>
         </div>
 
-        {mainTabs.slice(2).map((tab) => {
-          const Icon = tab.icon;
-          const isActive = pathname === tab.href;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={cn(
-                'flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all',
-                isActive
-                  ? 'text-emerald-600 dark:text-emerald-400 font-black'
-                  : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
-              )}
-            >
-              <Icon className="w-5 h-5" />
-              <span className="text-[11px] mt-1">{tab.label}</span>
-            </Link>
-          );
-        })}
+        {/* Tab 4: Income */}
+        <Link
+          href="/income"
+          className={cn(
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all',
+            pathname === '/income'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold'
+          )}
+        >
+          <DollarSign className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5 font-bold truncate">Income</span>
+        </Link>
 
-        {/* More Button */}
+        {/* Tab 5: More */}
         <button
           onClick={() => setShowMoreMenu(true)}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold transition-all cursor-pointer"
+          className="flex flex-col items-center justify-center py-1 rounded-xl text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white font-semibold transition-all cursor-pointer"
         >
           <MoreHorizontal className="w-5 h-5" />
-          <span className="text-[11px] mt-1">More</span>
+          <span className="text-[10px] mt-0.5 font-bold truncate">More</span>
         </button>
       </div>
     </>

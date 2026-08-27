@@ -66,13 +66,30 @@ function MasterDashboardContent() {
   // Recent 5 transactions
   const recentTransactions = transactions.slice(0, 5);
 
-  // Time of day greeting
+  // Time of day greeting & Clean First-Name Display (Section 5)
   const greeting = useMemo(() => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 18) return 'Good afternoon';
     return 'Good evening';
   }, []);
+
+  const cleanDisplayName = useMemo(() => {
+    if (profile?.full_name && profile.full_name.trim()) {
+      return profile.full_name.trim().split(' ')[0];
+    }
+    if (user?.user_metadata?.full_name && typeof user.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()) {
+      return user.user_metadata.full_name.trim().split(' ')[0];
+    }
+    if (user?.email) {
+      const raw = user.email.split('@')[0].replace(/[0-9_.-]+$/, '');
+      if (raw.length >= 2) {
+        return raw.charAt(0).toUpperCase() + raw.slice(1);
+      }
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  }, [profile, user]);
 
   const todayFormatted = useMemo(() => {
     return new Date().toLocaleDateString('en-US', {
@@ -81,6 +98,9 @@ function MasterDashboardContent() {
       day: 'numeric',
     });
   }, []);
+
+  // Check if genuinely no transactions exist (Section 4 Empty State)
+  const hasAnyTransactions = transactions.length > 0;
 
   // Top spending categories in period
   const topCategories = useMemo(() => {
@@ -124,7 +144,7 @@ function MasterDashboardContent() {
             <ShieldCheck className="w-4 h-4" /> Personal Finance Dashboard
           </span>
           <h1 className="text-2xl sm:text-4xl font-black text-gray-950 dark:text-white tracking-tight">
-            {greeting}, {profile?.full_name || user?.email?.split('@')[0] || 'User'}
+            {greeting}, {cleanDisplayName}
           </h1>
           <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">
             {todayFormatted}
@@ -148,50 +168,64 @@ function MasterDashboardContent() {
         </div>
       </div>
 
-      {/* 2. Quick Actions Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-        <button
-          onClick={() => openQuickAdd('expense')}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 text-white font-black text-xs shadow-md shadow-red-600/20 active:scale-95 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Expense</span>
-        </button>
+      {/* 2. Structured Action Toolbar (Section 3: Primary + Secondary Hierarchy) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Primary Habit Loop Actions: Prominent, Filled, Semantic Colors */}
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => openQuickAdd('expense')}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-500 hover:from-red-500 hover:to-rose-400 text-white font-black text-xs shadow-lg shadow-red-600/25 active:scale-95 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Add Expense</span>
+          </button>
 
-        <button
-          onClick={() => openQuickAdd('income')}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Income</span>
-        </button>
+          <button
+            onClick={() => openQuickAdd('income')}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-black text-xs shadow-lg shadow-emerald-600/25 active:scale-95 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            <span>Add Income</span>
+          </button>
+        </div>
 
-        <Link
-          href="/goals"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black text-xs shadow-md shadow-purple-600/20 active:scale-95 transition-all"
-        >
-          <Target className="w-4 h-4" />
-          <span>Create Goal</span>
-        </Link>
+        {/* Secondary Management Actions: Unified Glass Pill Grid */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <Link
+            href="/budgets"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/10 dark:border-white/15 transition-all shrink-0"
+          >
+            <PiggyBank className="w-4 h-4 text-amber-500" />
+            <span>Set Budget</span>
+          </Link>
 
-        <Link
-          href="/budgets"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/15 dark:border-white/20 transition-all"
-        >
-          <PiggyBank className="w-4 h-4 text-amber-500" />
-          <span>Set Budget</span>
-        </Link>
+          <Link
+            href="/goals"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/10 dark:border-white/15 transition-all shrink-0"
+          >
+            <Target className="w-4 h-4 text-purple-500" />
+            <span>Create Goal</span>
+          </Link>
 
-        <Link
-          href="/calendar"
-          className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/15 dark:border-white/20 transition-all ml-auto"
-        >
-          <Calendar className="w-4 h-4 text-emerald-500" />
-          <span>Calendar</span>
-        </Link>
+          <Link
+            href="/calendar"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/10 dark:border-white/15 transition-all shrink-0"
+          >
+            <Calendar className="w-4 h-4 text-emerald-500" />
+            <span>Calendar</span>
+          </Link>
+
+          <Link
+            href="/reports"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-gray-950 dark:text-white font-bold text-xs border border-black/10 dark:border-white/15 transition-all shrink-0"
+          >
+            <TrendingUp className="w-4 h-4 text-cyan-500" />
+            <span>Reports</span>
+          </Link>
+        </div>
       </div>
 
-      {/* 3. Four Primary Financial Summary Cards (Fintech Glass Elevations) */}
+      {/* 3. Four Primary Financial Summary Cards (Section 4: Meaningful Empty States) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Balance */}
         <div className="p-5 sm:p-6 rounded-3xl glass-panel-elevated space-y-2 relative overflow-hidden group hover:border-emerald-500/50 transition-all">
@@ -206,7 +240,11 @@ function MasterDashboardContent() {
             {formatCurrency(totalBalance)}
           </p>
           <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
-            <span>Net position across all accounts</span>
+            <span>
+              {!hasAnyTransactions && totalBalance === 0
+                ? 'No transactions yet — add your first expense or income to start'
+                : 'Net position across all accounts'}
+            </span>
           </div>
         </div>
 
@@ -223,7 +261,9 @@ function MasterDashboardContent() {
             {formatCurrency(periodIncome)}
           </p>
           <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
-            {periodTransactions.filter((t) => t.type === 'income').length} credit records in period
+            {!hasAnyTransactions && periodIncome === 0
+              ? 'No income logged yet'
+              : `${periodTransactions.filter((t) => t.type === 'income').length} credit logs in period`}
           </div>
         </div>
 
@@ -240,7 +280,9 @@ function MasterDashboardContent() {
             {formatCurrency(periodExpense)}
           </p>
           <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 relative z-10">
-            {expensePercentageOfIncome.toFixed(0)}% of income spent
+            {!hasAnyTransactions && periodExpense === 0
+              ? 'No expenses recorded yet'
+              : `${expensePercentageOfIncome.toFixed(0)}% of income spent`}
           </div>
         </div>
 
@@ -257,7 +299,9 @@ function MasterDashboardContent() {
             {formatCurrency(Math.max(0, periodSavings))}
           </p>
           <div className="text-xs font-bold text-purple-600 dark:text-purple-400 relative z-10">
-            {savingsRate.toFixed(1)}% savings rate
+            {!hasAnyTransactions && periodSavings === 0
+              ? 'Savings calculated as income exceeds expenses'
+              : `${savingsRate.toFixed(1)}% savings rate`}
           </div>
         </div>
       </div>

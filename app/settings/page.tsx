@@ -16,6 +16,10 @@ import {
   Plus,
   Tag,
   Wallet,
+  Cloud,
+  RotateCcw,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -29,6 +33,10 @@ export default function SettingsPage() {
     exportDataCSV,
     resetToDemoData,
     clearAllData,
+    syncState,
+    pendingSyncCount,
+    lastSyncTime,
+    triggerManualSync,
   } = useSpendy();
   const { theme, setTheme } = useTheme();
 
@@ -173,6 +181,54 @@ export default function SettingsPage() {
               <span>Obsidian Dark Mode</span>
             </button>
           </div>
+        </div>
+
+        {/* Cloud Synchronization & Offline Storage Center */}
+        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
+              <Cloud className="w-4 h-4 text-cyan-500 font-bold" />
+              <span>Offline Database & Cloud Sync</span>
+            </h3>
+            <span
+              className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
+                syncState === 'synced'
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                  : syncState === 'offline'
+                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
+                  : 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30'
+              }`}
+            >
+              {syncState === 'synced' ? 'Live Synced' : syncState === 'offline' ? 'Offline Storage' : 'Syncing'}
+            </span>
+          </div>
+
+          <div className="space-y-2.5 text-xs">
+            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
+              <span className="font-bold text-slate-700 dark:text-slate-300">Local Database</span>
+              <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">IndexedDB (Active)</span>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
+              <span className="font-bold text-slate-700 dark:text-slate-300">Pending Sync Queue</span>
+              <span className="font-mono font-black text-gray-950 dark:text-white">{pendingSyncCount} operations</span>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
+              <span className="font-bold text-slate-700 dark:text-slate-300">Last Successful Sync</span>
+              <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
+                {lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString() : 'Current session active'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={triggerManualSync}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-black text-xs shadow-lg shadow-cyan-600/20 active:scale-95 transition-all cursor-pointer"
+          >
+            <RotateCcw className={`w-4 h-4 ${syncState === 'syncing' ? 'animate-spin' : ''}`} />
+            <span>{syncState === 'syncing' ? 'Syncing Now...' : 'Force Cloud Sync Now'}</span>
+          </button>
         </div>
 
         {/* Starting Balance Configuration */}

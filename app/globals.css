@@ -1,45 +1,61 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   SPENDY DESIGN SYSTEM — PREMIUM FINTECH UI / GRAPHIC DESIGN TOKENS
-   Inspired by Apple Wallet, Stripe & Revolut: Vibrant, Deep, Crisp & Clear
+   SPENDY MODERN TECH DESIGN SYSTEM (LIGHT & DARK MODES)
+   Crafted with Obsidian Glass (Dark) and Studio Titanium (Light)
    ========================================================================== */
 
 :root {
+  /* LIGHT MODE (Studio Titanium & Crisp Glass) */
   --background: #f8fafc;
+  --background-secondary: #f1f5f9;
   --surface: #ffffff;
-  --surface-elevated: #f1f5f9;
-  --surface-glass: rgba(255, 255, 255, 0.92);
-  --border-glass: rgba(15, 23, 42, 0.14);
-  --border-highlight: rgba(16, 185, 129, 0.3);
+  --surface-elevated: #ffffff;
+  --surface-glass: rgba(255, 255, 255, 0.94);
+  --surface-hover: rgba(241, 245, 249, 0.8);
+  
+  --border-glass: rgba(15, 23, 42, 0.12);
+  --border-subtle: rgba(15, 23, 42, 0.08);
+  --border-highlight: rgba(16, 185, 129, 0.4);
+  
   --foreground: #090d16;
+  --foreground-heading: #000000;
   --foreground-muted: #1e293b;
+  --foreground-subtle: #334155;
   
   --primary: #059669;
   --primary-hover: #047857;
-  --primary-glow: rgba(16, 185, 129, 0.25);
+  --primary-glow: rgba(16, 185, 129, 0.2);
 
-  --accent-emerald: #10b981;
-  --accent-ruby: #f43f5e;
-  --accent-violet: #8b5cf6;
-  --accent-amber: #f59e0b;
-  --accent-cyan: #06b6d4;
+  --accent-emerald: #059669;
+  --accent-ruby: #e11d48;
+  --accent-violet: #7c3aed;
+  --accent-amber: #d97706;
+  --accent-cyan: #0891b2;
 
-  --momo-yellow: #d97706;
-  --airtel-red: #dc2626;
-  --bank-blue: #2563eb;
-  --wallet-purple: #7c3aed;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 12px 30px -4px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+  --shadow-xl: 0 20px 40px -8px rgba(15, 23, 42, 0.12);
 }
 
 .dark {
+  /* DARK MODE (Deep Obsidian & Radiant Neon Glass) */
   --background: #070a12;
-  --surface: #0e1424;
-  --surface-elevated: #151d33;
-  --surface-glass: rgba(14, 20, 36, 0.88);
+  --background-secondary: #0c111e;
+  --surface: #0e1526;
+  --surface-elevated: #131d35;
+  --surface-glass: rgba(14, 21, 38, 0.88);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+  
   --border-glass: rgba(255, 255, 255, 0.16);
-  --border-highlight: rgba(16, 185, 129, 0.4);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(52, 211, 153, 0.45);
+  
   --foreground: #ffffff;
+  --foreground-heading: #ffffff;
   --foreground-muted: #f1f5f9;
+  --foreground-subtle: #cbd5e1;
   
   --primary: #10b981;
   --primary-hover: #34d399;
@@ -51,10 +67,10 @@
   --accent-amber: #fbbf24;
   --accent-cyan: #22d3ee;
 
-  --momo-yellow: #fbbf24;
-  --airtel-red: #f87171;
-  --bank-blue: #60a5fa;
-  --wallet-purple: #c084fc;
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  --shadow-xl: 0 24px 50px -10px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
 }
 
 body {
@@ -82,44 +98,45 @@ body {
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-md);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-panel-elevated {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), var(--surface-glass);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%), var(--surface-glass);
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   border: 1px solid var(--border-glass);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  box-shadow: var(--shadow-lg);
 }
 
 .glass-card-interactive {
   background: var(--surface-glass);
   backdrop-filter: blur(16px);
   border: 1px solid var(--border-glass);
+  box-shadow: var(--shadow-sm);
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
 }
 
 .glass-card-interactive:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.25), 0 0 20px -5px var(--primary-glow);
+  box-shadow: var(--shadow-lg), 0 0 20px -5px var(--primary-glow);
   border-color: var(--border-highlight);
 }
 
-/* Gradient Mesh Accents */
+/* Radial Glow Ambient Lights */
 .mesh-gradient-emerald {
-  background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.18) 0%, transparent 60%),
-              radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.15) 0%, transparent 60%);
+  background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.16) 0%, transparent 60%),
+              radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 60%);
 }
 
 .mesh-gradient-purple {
-  background: radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
-              radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 60%);
+  background: radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.16) 0%, transparent 60%),
+              radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 60%);
 }
 
 /* ==========================================================================
    HIGH-CONTRAST & ULTRA-LEGIBLE TYPOGRAPHY
-   Ensures 100% visible, razor-sharp, zero-faint text in both light & dark modes
    ========================================================================== */
 
 .dark,
@@ -200,7 +217,7 @@ label {
 }
 
 /* ==========================================================================
-   SMOOTH CUSTOM SCROLLBARS
+   CUSTOM SCROLLBARS
    ========================================================================== */
 
 ::-webkit-scrollbar {
@@ -213,37 +230,18 @@ label {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.25);
+  background: rgba(100, 116, 139, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.45);
+  background: rgba(100, 116, 139, 0.5);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes pulseGlow {
-  0%, 100% { opacity: 0.6; filter: blur(24px); }
-  50% { opacity: 1; filter: blur(32px); }
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulseGlow 5s ease-in-out infinite;
+  background: rgba(255, 255, 255, 0.4);
 }

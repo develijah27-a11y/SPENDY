@@ -57,6 +57,20 @@ import { createClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { formatCurrency, getCurrentMonthKey } from '../formatters';
 import { defaultPaymentProvider } from '../payments/providers/MockPaymentProvider';
 import { generateUUID } from '../utils';
+import {
+  getStoreAll,
+  putStoreItem,
+  putStoreAll,
+  deleteStoreItem,
+  enqueueSync,
+  getPendingSyncQueue,
+  clearAllOfflineStores,
+} from '../offline/indexedDb';
+import {
+  processSyncQueue,
+  verifyCloudReachability,
+  SyncState,
+} from '../offline/syncEngine';
 
 interface SpendyContextType {
   user: UserProfile;
@@ -75,6 +89,12 @@ interface SpendyContextType {
   financialGoals: FinancialGoal[];
   recurringTransactions: RecurringTransaction[];
   notifications: Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>;
+
+  // Offline & Synchronization
+  syncState: SyncState;
+  pendingSyncCount: number;
+  lastSyncTime: string | null;
+  triggerManualSync: () => Promise<void>;
 
   // Time Period Filtering
   periodFilter: PeriodFilter;
@@ -365,7 +385,73 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const openReceipt = (receipt: PaymentReceipt) => setActiveReceipt(receipt);
   const closeReceipt = () => setActiveReceipt(null);
 
-  // Add Transaction
+  // Offline Synchronization State
+  const [syncState, setSyncState] = useState<SyncState>('synced');
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+
+  // Sync Runner
+  const triggerAutoSync = async () => {
+    if (!isSupabaseConfigured() || !user.id || typeof navigator === 'undefined' || !navigator.onLine) {
+      setSyncState('offline');
+      const pending = await getPendingSyncQueue(user.id);
+      setPendingSyncCount(pending.length);
+      return;
+    }
+
+    try {
+      setSyncState('syncing');
+      const result = await processSyncQueue(supabase, user.id);
+      const remaining = await getPendingSyncQueue(user.id);
+      setPendingSyncCount(remaining.length);
+
+      if (result.success) {
+        setSyncState(remaining.length === 0 ? 'synced' : 'pending_sync');
+        setLastSyncTime(new Date().toISOString());
+      } else {
+        setSyncState(remaining.length > 0 ? 'pending_sync' : 'synced');
+      }
+    } catch {
+      setSyncState('error');
+    }
+  };
+
+  const triggerManualSync = async () => {
+    await triggerAutoSync();
+  };
+
+  // Sync Event Listeners
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleOnline = () => {
+      triggerAutoSync();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        triggerAutoSync();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Periodic sync poll every 30 seconds
+    const interval = setInterval(() => {
+      if (navigator.onLine && pendingSyncCount > 0) {
+        triggerAutoSync();
+      }
+    }, 30000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
+    };
+  }, [user.id, pendingSyncCount]);
+
+  // Add Transaction (Offline-First)
   const addTransaction = (data: {
     type: 'expense' | 'income';
     amount: number;
@@ -402,9 +488,9 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString(),
     };
 
+    // 1. Immediately update UI state & recalculate derived balances
     setTransactions((prev) => [newTx, ...prev]);
 
-    // Update corresponding account balance if present
     setAccounts((prev) =>
       prev.map((acc) => {
         if (acc.id === defaultAccId) {
@@ -414,27 +500,78 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         return acc;
       })
     );
+
+    // 2. Persist locally to IndexedDB & enqueue sync
+    putStoreItem('transactions', newTx);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'transactions',
+      entity_id: newTx.id,
+      operation: 'CREATE',
+      payload: {
+        id: newTx.id,
+        user_id: user.id,
+        account_id: newTx.account_id,
+        category_id: newTx.category_id,
+        type: newTx.type,
+        amount: newTx.amount,
+        currency: newTx.currency,
+        note: newTx.note,
+        merchant_name: newTx.merchant_name,
+        receipt_number: newTx.receipt_number,
+        transaction_date: newTx.transaction_date,
+        created_at: newTx.created_at,
+        updated_at: newTx.updated_at,
+      },
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    }).then(() => {
+      setPendingSyncCount((prev) => prev + 1);
+      triggerAutoSync();
+    });
   };
 
-  // Edit Transaction
+  // Edit Transaction (Offline-First)
   const editTransaction = (id: string, updates: Partial<Transaction>) => {
+    let updatedTx: Transaction | null = null;
     setTransactions((prev) =>
       prev.map((t) => {
         if (t.id === id) {
           const updatedAmount = updates.amount !== undefined ? Math.round(updates.amount) : t.amount;
-          return {
+          updatedTx = {
             ...t,
             ...updates,
             amount: updatedAmount,
             updated_at: new Date().toISOString(),
           };
+          return updatedTx;
         }
         return t;
       })
     );
+
+    if (updatedTx) {
+      putStoreItem('transactions', updatedTx);
+      enqueueSync({
+        id: generateUUID(),
+        user_id: user.id,
+        entity_type: 'transactions',
+        entity_id: id,
+        operation: 'UPDATE',
+        payload: updatedTx,
+        created_at: new Date().toISOString(),
+        attempt_count: 0,
+        status: 'PENDING',
+      }).then(() => {
+        setPendingSyncCount((prev) => prev + 1);
+        triggerAutoSync();
+      });
+    }
   };
 
-  // Delete Transaction
+  // Delete Transaction (Offline-First)
   const deleteTransaction = (id: string) => {
     const tx = transactions.find((t) => t.id === id);
     if (!tx) return;
@@ -451,6 +588,22 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     );
 
     setTransactions((prev) => prev.filter((t) => t.id !== id));
+
+    deleteStoreItem('transactions', id);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'transactions',
+      entity_id: id,
+      operation: 'DELETE',
+      payload: { id },
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    }).then(() => {
+      setPendingSyncCount((prev) => prev + 1);
+      triggerAutoSync();
+    });
   };
 
   // Loan Management
@@ -529,9 +682,21 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       created_at: new Date().toISOString(),
     };
     setCategories((prev) => [...prev, newCat]);
+    putStoreItem('categories', newCat);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'categories',
+      entity_id: newCat.id,
+      operation: 'CREATE',
+      payload: newCat,
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    });
   };
 
-  // Legacy Accounts & Transfers
+  // Accounts & Transfers
   const addAccount = (data: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     const newAcc: Account = {
       ...data,
@@ -541,18 +706,42 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString(),
     };
     setAccounts((prev) => [...prev, newAcc]);
+    putStoreItem('accounts', newAcc);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'accounts',
+      entity_id: newAcc.id,
+      operation: 'CREATE',
+      payload: newAcc,
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    });
   };
 
   const updateAccount = (id: string, updates: Partial<Account>) => {
+    let updatedAcc: Account | null = null;
     setAccounts((prev) =>
-      prev.map((acc) => (acc.id === id ? { ...acc, ...updates, updated_at: new Date().toISOString() } : acc))
+      prev.map((acc) => {
+        if (acc.id === id) {
+          updatedAcc = { ...acc, ...updates, updated_at: new Date().toISOString() };
+          return updatedAcc;
+        }
+        return acc;
+      })
     );
+    if (updatedAcc) {
+      putStoreItem('accounts', updatedAcc);
+    }
   };
 
   const deleteAccount = (id: string) => {
     setAccounts((prev) => prev.filter((acc) => acc.id !== id));
+    deleteStoreItem('accounts', id);
   };
 
+  // Atomic Transfer (Offline-First)
   const createTransfer = (data: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => {
     const amt = Math.round(data.amount);
     if (amt <= 0 || data.from_account_id === data.to_account_id) return;
@@ -581,29 +770,69 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         return acc;
       })
     );
+
+    putStoreItem('transfers', newTransfer);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'transfers',
+      entity_id: newTransfer.id,
+      operation: 'CREATE',
+      payload: {
+        id: newTransfer.id,
+        user_id: user.id,
+        from_account_id: newTransfer.from_account_id,
+        to_account_id: newTransfer.to_account_id,
+        amount: newTransfer.amount,
+        transfer_date: newTransfer.transfer_date,
+        note: newTransfer.note,
+        created_at: newTransfer.created_at,
+      },
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    }).then(() => {
+      setPendingSyncCount((prev) => prev + 1);
+      triggerAutoSync();
+    });
   };
 
   const setBudget = (data: { category_id?: string | null; planned_amount: number; month?: string }) => {
     const month = data.month || currentMonthKey;
+    const newBudget: Budget = {
+      id: generateUUID(),
+      user_id: user.id,
+      category_id: data.category_id || null,
+      month,
+      planned_amount: Math.round(data.planned_amount),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
     setBudgets((prev) => {
       const filtered = prev.filter(
         (b) => !(b.month === month && (b.category_id || null) === (data.category_id || null))
       );
-      const newBudget: Budget = {
-        id: generateUUID(),
-        user_id: user.id,
-        category_id: data.category_id || null,
-        month,
-        planned_amount: Math.round(data.planned_amount),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
       return [...filtered, newBudget];
+    });
+
+    putStoreItem('budgets', newBudget);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'budgets',
+      entity_id: newBudget.id,
+      operation: 'CREATE',
+      payload: newBudget,
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
     });
   };
 
   const deleteBudget = (id: string) => {
     setBudgets((prev) => prev.filter((b) => b.id !== id));
+    deleteStoreItem('budgets', id);
   };
 
   const addSavingsGoal = (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => {
@@ -617,6 +846,18 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString(),
     };
     setSavingsGoals((prev) => [...prev, newGoal]);
+    putStoreItem('savings_goals', newGoal);
+    enqueueSync({
+      id: generateUUID(),
+      user_id: user.id,
+      entity_type: 'savings_goals',
+      entity_id: newGoal.id,
+      operation: 'CREATE',
+      payload: newGoal,
+      created_at: new Date().toISOString(),
+      attempt_count: 0,
+      status: 'PENDING',
+    });
   };
 
   const contributeToGoal = (goalId: string, amount: number, accountId?: string) => {
@@ -1162,6 +1403,10 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         financialGoals,
         recurringTransactions,
         notifications,
+        syncState,
+        pendingSyncCount,
+        lastSyncTime,
+        triggerManualSync,
         periodFilter,
         setPeriodFilter,
         dashboardMetrics,
