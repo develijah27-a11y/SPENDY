@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ==========================================================================
    SPENDY MODERN TECH DESIGN SYSTEM (HIGH CONTRAST & ULTRA SHARP TYPOGRAPHY)
    ========================================================================== */
@@ -148,77 +150,12 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 800;
 }
 
-/* Form inputs: High contrast and legible in all modes */
+/* Inputs & Form Controls */
 input, select, textarea {
-  color: inherit;
+  color-scheme: light dark;
 }
 
-.dark input::placeholder,
-.dark select::placeholder,
-.dark textarea::placeholder {
-  color: #94a3b8 !important;
-  opacity: 1 !important;
-}
-
-:root:not(.dark) input::placeholder,
-:root:not(.dark) select::placeholder,
-:root:not(.dark) textarea::placeholder {
-  color: #64748b !important;
-  opacity: 1 !important;
-}
-
-/* Ensure secondary slate text has excellent contrast in Dark mode */
-.dark .text-slate-400 {
-  color: #94a3b8;
-}
-
-.dark .text-slate-300 {
-  color: #cbd5e1;
-}
-
-.dark .text-slate-200 {
-  color: #e2e8f0;
-}
-
-.dark .text-slate-100 {
-  color: #f8fafc;
-}
-
-.dark .text-gray-400 {
-  color: #9ca3af;
-}
-
-.dark .text-gray-300 {
-  color: #d1d5db;
-}
-
-.dark .text-gray-200 {
-  color: #e5e7eb;
-}
-
-/* Ensure deep dark text has maximum contrast in Light mode */
-:root:not(.dark) .text-slate-700 {
-  color: #334155;
-}
-
-:root:not(.dark) .text-slate-600 {
-  color: #475569;
-}
-
-:root:not(.dark) .text-slate-800 {
-  color: #1e293b;
-}
-
-:root:not(.dark) .text-slate-900,
-:root:not(.dark) .text-gray-900,
-:root:not(.dark) .text-gray-950 {
-  color: #090d16;
-}
-
-/* ==========================================================================
-   CUSTOM SCROLLBARS
-   ========================================================================== */
-
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -229,18 +166,27 @@ input, select, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(148, 163, 184, 0.3);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(148, 163, 184, 0.5);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide scrollbar for clean UI carousels/tabs */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

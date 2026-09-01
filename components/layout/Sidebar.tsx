@@ -15,9 +15,12 @@ import {
   Download,
   LogOut,
   Plus,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { useAuth } from '@/lib/auth/AuthContext';
+import { useTheme } from '@/lib/theme/ThemeContext';
 import { formatCurrency } from '@/lib/formatters';
 import { SpendyLogo } from '@/components/ui/SpendyLogo';
 
@@ -26,6 +29,7 @@ export function Sidebar() {
   const router = useRouter();
   const { dashboardMetrics, exportDataCSV, openQuickAdd } = useSpendy();
   const { user, profile, signOut } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   const navItems = [
     { label: 'Dashboard', href: '/app', icon: LayoutDashboard },
@@ -47,10 +51,21 @@ export function Sidebar() {
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 glass-panel border-r border-black/10 dark:border-white/10 p-5 shrink-0 shadow-lg z-30">
       {/* Brand Header */}
-      <div className="pb-5 border-b border-black/10 dark:border-white/10">
+      <div className="pb-5 border-b border-black/10 dark:border-white/10 flex items-center justify-between">
         <Link href="/app" className="inline-block cursor-pointer">
           <SpendyLogo size="sm" showTagline={false} />
         </Link>
+        <button
+          onClick={toggleTheme}
+          title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          className="p-2 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-slate-700 dark:text-slate-200 transition-all cursor-pointer"
+        >
+          {resolvedTheme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-indigo-600" />
+          )}
+        </button>
       </div>
 
       {/* Quick Add Button */}
