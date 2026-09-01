@@ -123,7 +123,7 @@ export default function SettingsPage() {
           className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all cursor-pointer w-fit"
         >
           <Download className="w-4 h-4" />
-          <span>Export CSV Report</span>
+          <span>Download Report</span>
         </button>
       </div>
 
@@ -326,7 +326,7 @@ export default function SettingsPage() {
 
         <div className="flex items-center justify-between pt-2">
           <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold max-w-lg">
-            This action cannot be undone. Make sure you have exported a CSV copy of your data beforehand if you need a record.
+            This action cannot be undone. Make sure you have downloaded a report of your data beforehand if you need a record.
           </p>
           <button
             onClick={handleClearAll}

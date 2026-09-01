@@ -34,9 +34,9 @@ export function SpendyLogo({
         variant === 'stacked' ? 'flex-col text-center gap-3' : 'gap-3'
       } ${className}`}
     >
-      {/* Brand Icon SVG from user logo */}
+      {/* Brand Icon SVG */}
       <div
-        className="relative shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/25 ring-1 ring-white/20 transition-transform duration-200 group-hover:scale-105"
+        className="relative shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/20 ring-1 ring-black/10 dark:ring-white/20 transition-transform duration-200 group-hover:scale-105"
         style={{ width: iconDimensions, height: iconDimensions }}
       >
         <Image
@@ -51,20 +51,16 @@ export function SpendyLogo({
 
       {variant !== 'icon-only' && (
         <div className={`flex flex-col ${variant === 'stacked' ? 'items-center' : 'items-start'}`}>
-          <div className="flex items-center gap-1 leading-none">
+          <div className="flex items-center leading-none">
             <span
-              className={`${titleSize} tracking-tight text-gray-900 dark:text-white flex items-center`}
+              className={`${titleSize} tracking-tight text-gray-950 dark:text-white flex items-center`}
             >
-              <span className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-green-500 bg-clip-text text-transparent drop-shadow-sm">
+              <span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
                 Spend
               </span>
-              <span className="relative text-gray-900 dark:text-white">
+              <span className="text-gray-950 dark:text-white">
                 y
-                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-emerald-500/40 shadow-sm shadow-amber-500/80 animate-pulse" />
               </span>
-            </span>
-            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 ml-1.5">
-              UGX
             </span>
           </div>
           {showTagline && (
@@ -77,4 +73,3 @@ export function SpendyLogo({
     </div>
   );
 }
-

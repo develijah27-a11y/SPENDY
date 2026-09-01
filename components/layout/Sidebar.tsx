@@ -157,7 +157,7 @@ export function Sidebar() {
           className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 text-gray-950 dark:text-white text-xs font-bold border border-slate-200 dark:border-slate-800 transition-colors cursor-pointer shadow-sm"
         >
           <Download className="w-3.5 h-3.5 text-slate-500" />
-          <span>Export CSV</span>
+          <span>Download Report</span>
         </button>
       </div>
     </aside>

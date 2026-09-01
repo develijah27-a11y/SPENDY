@@ -83,7 +83,7 @@ export function BottomNav() {
               className="w-full mt-1 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 cursor-pointer"
             >
               <Download className="w-4 h-4" />
-              <span>Export CSV Report</span>
+              <span>Download Report</span>
             </button>
           </div>
         </div>

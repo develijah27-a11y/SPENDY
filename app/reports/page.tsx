@@ -104,8 +104,8 @@ export default function ReportsPage() {
             onClick={exportDataCSV}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
           >
-            <FileSpreadsheet className="w-4 h-4" />
-            <span>Export CSV</span>
+            <Download className="w-4 h-4" />
+            <span>Download Report</span>
           </button>
         </div>
       </div>

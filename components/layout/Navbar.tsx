@@ -30,7 +30,7 @@ export function Navbar() {
     triggerManualSync,
   } = useSpendy();
   const { user, profile, isAuthenticated, signOut } = useAuth();
-  const { theme, resolvedTheme, toggleTheme } = useTheme();
+  const { resolvedTheme, toggleTheme } = useTheme();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navRef = useRef<HTMLElement>(null);
@@ -119,7 +119,20 @@ export function Navbar() {
         </div>
 
         {/* Action Center */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Theme Quick Toggle (Visible on top navbar for easy access) */}
+          <button
+            onClick={toggleTheme}
+            title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            className="p-2 sm:p-2.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/15 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shrink-0 active:scale-95 shadow-sm"
+          >
+            {resolvedTheme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-600" />
+            )}
+          </button>
+
           {/* Quick Add Button */}
           <button
             onClick={() => openQuickAdd('expense')}
@@ -144,8 +157,8 @@ export function Navbar() {
                 <span className="font-black text-gray-950 dark:text-white text-xs leading-none truncate max-w-[90px]">
                   {displayName}
                 </span>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 font-mono mt-0.5">
-                  UGX
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+                  Account
                 </span>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
@@ -203,31 +216,6 @@ export function Navbar() {
                   </button>
                 </div>
 
-                {/* Theme & Currency */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <button
-                    onClick={toggleTheme}
-                    className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 border border-black/5 dark:border-white/10 flex items-center justify-between font-bold text-gray-950 dark:text-white transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      {resolvedTheme === 'dark' ? (
-                        <Sun className="w-4 h-4 text-amber-400" />
-                      ) : (
-                        <Moon className="w-4 h-4 text-indigo-600" />
-                      )}
-                      <span>{resolvedTheme === 'dark' ? 'Dark' : 'Light'}</span>
-                    </div>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-black">Mode</span>
-                  </button>
-
-                  <div className="p-2.5 rounded-xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/10 flex items-center justify-between font-bold text-gray-950 dark:text-white">
-                    <span className="font-bold text-slate-600 dark:text-slate-300">Currency</span>
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-mono font-black text-[11px]">
-                      UGX
-                    </span>
-                  </div>
-                </div>
-
                 {/* Links */}
                 <div className="space-y-1 pt-1 text-xs">
                   <Link
@@ -236,7 +224,7 @@ export function Navbar() {
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-gray-950 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 font-bold transition-all"
                   >
                     <Settings className="w-4 h-4 text-slate-500" />
-                    <span>Settings &amp; Account</span>
+                    <span>Settings &amp; Preferences</span>
                   </Link>
 
                   <Link
