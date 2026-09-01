@@ -12,7 +12,6 @@ import {
   ArrowRight,
   AlertCircle,
   Loader2,
-  Sparkles,
   ShieldCheck,
 } from 'lucide-react';
 
@@ -65,18 +64,12 @@ function LoginContent() {
     }
   };
 
-  // Quick fill for testing
-  const handleFillDemo = (demoEmail: string, demoPass: string) => {
-    setEmail(demoEmail);
-    setPassword(demoPass);
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-[#060911] text-white selection:bg-emerald-500">
       <div className="w-full max-w-md space-y-6 animate-in fade-in zoom-in-95 duration-300">
         {/* Logo */}
         <div className="text-center flex justify-center">
-          <Link href="/" className="inline-block">
+          <Link href="/" className="inline-block cursor-pointer">
             <SpendyLogo size="lg" showTagline={true} />
           </Link>
         </div>
@@ -88,7 +81,7 @@ function LoginContent() {
               Welcome back
             </h1>
             <p className="text-xs font-semibold text-slate-300">
-              Sign in to manage your money and track your financial growth.
+              Sign in to manage your finances, track spending, and review your savings.
             </p>
           </div>
 
@@ -170,36 +163,10 @@ function LoginContent() {
             </button>
           </form>
 
-          {/* Quick Demo Test Logins */}
-          <div className="pt-2">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[11px] font-bold text-slate-300">Quick Demo Test Fill:</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => handleFillDemo('david.mukasa@spendy.ug', 'Mukasa2026!')}
-                className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-left transition-colors cursor-pointer"
-              >
-                <p className="text-[11px] font-black text-white">David Mukasa</p>
-                <p className="text-[10px] text-slate-400 truncate">david.mukasa@spendy.ug</p>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleFillDemo('sarah.namubiru@spendy.ug', 'Namubiru2026!')}
-                className="p-2 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-left transition-colors cursor-pointer"
-              >
-                <p className="text-[11px] font-black text-white">Sarah Namubiru</p>
-                <p className="text-[10px] text-slate-400 truncate">sarah.namubiru@spendy.ug</p>
-              </button>
-            </div>
-          </div>
-
           {/* Security Badge */}
           <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-semibold text-center pt-2">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Encrypted credentials & secure JWT sessions</span>
+            <span>Encrypted credentials &amp; isolated database access</span>
           </div>
 
           {/* Link to Signup */}

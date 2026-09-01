@@ -11,14 +11,11 @@ import {
   Sun,
   Moon,
   Trash2,
-  Sparkles,
   Download,
   Plus,
   Tag,
-  Wallet,
-  Cloud,
+  ShieldCheck,
   RotateCcw,
-  Wifi,
   WifiOff,
 } from 'lucide-react';
 
@@ -31,11 +28,9 @@ export default function SettingsPage() {
     categories,
     addCategory,
     exportDataCSV,
-    resetToDemoData,
     clearAllData,
     syncState,
     pendingSyncCount,
-    lastSyncTime,
     triggerManualSync,
   } = useSpendy();
   const { theme, setTheme } = useTheme();
@@ -97,35 +92,29 @@ export default function SettingsPage() {
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleResetToDemo = () => {
-    if (confirm('Load Uganda sample transactions and balances? This is great for exploring all features.')) {
-      resetToDemoData();
-      setStartingBalInput('0');
-      setSuccessMsg('Sample Uganda dataset loaded!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    }
-  };
-
   const handleClearAll = () => {
-    if (confirm('Clear all sample data and start completely fresh with a clean slate?')) {
+    if (confirm('Are you sure you want to clear all your transactions, budgets, and savings goals? This action is permanent.')) {
       clearAllData();
       setStartingBalInput('0');
-      setSuccessMsg('All sample data removed! You now have a clean slate.');
+      setSuccessMsg('All your financial records have been reset to a clean slate.');
       setTimeout(() => setSuccessMsg(''), 3000);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/10 dark:border-white/10">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight flex items-center gap-2.5">
-            <SettingsIcon className="w-7 h-7 text-emerald-600 dark:text-emerald-400 font-black" />
-            <span>App Settings & Preferences</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+            <SettingsIcon className="w-4 h-4" />
+            <span>Preferences & Data Management</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight">
+            App Settings & Account
           </h1>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
-            Configure appearance theme, profile, starting balances, custom categories, and CSV data export
+          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            Configure appearance theme, profile details, starting balance, custom categories, and export your data.
           </p>
         </div>
 
@@ -178,73 +167,25 @@ export default function SettingsPage() {
               }`}
             >
               <Moon className="w-6 h-6 text-indigo-400" />
-              <span>Obsidian Dark Mode</span>
+              <span>Sleek Dark Mode</span>
             </button>
           </div>
         </div>
 
-        {/* Cloud Synchronization & Offline Storage Center */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-              <Cloud className="w-4 h-4 text-cyan-500 font-bold" />
-              <span>Offline Database & Cloud Sync</span>
-            </h3>
-            <span
-              className={`text-[10px] font-black uppercase px-2.5 py-1 rounded-full border ${
-                syncState === 'synced'
-                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
-                  : syncState === 'offline'
-                  ? 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30'
-                  : 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30'
-              }`}
-            >
-              {syncState === 'synced' ? 'Live Synced' : syncState === 'offline' ? 'Offline Storage' : 'Syncing'}
-            </span>
-          </div>
-
-          <div className="space-y-2.5 text-xs">
-            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Local Database</span>
-              <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">IndexedDB (Active)</span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Pending Sync Queue</span>
-              <span className="font-mono font-black text-gray-950 dark:text-white">{pendingSyncCount} operations</span>
-            </div>
-
-            <div className="p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 flex items-center justify-between">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Last Successful Sync</span>
-              <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">
-                {lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString() : 'Current session active'}
-              </span>
-            </div>
-          </div>
-
-          <button
-            onClick={triggerManualSync}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-600 to-teal-600 hover:from-cyan-500 hover:to-teal-500 text-white font-black text-xs shadow-lg shadow-cyan-600/20 active:scale-95 transition-all cursor-pointer"
-          >
-            <RotateCcw className={`w-4 h-4 ${syncState === 'syncing' ? 'animate-spin' : ''}`} />
-            <span>{syncState === 'syncing' ? 'Syncing Now...' : 'Force Cloud Sync Now'}</span>
-          </button>
-        </div>
-
-        {/* Starting Balance Configuration */}
+        {/* Starting Balance */}
         <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
           <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-            <Wallet className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
-            <span>Initial Opening / Starting Balance</span>
+            <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
+            <span>Opening Baseline Starting Balance</span>
           </h3>
 
           <form onSubmit={handleSaveStartingBalance} className="space-y-3 text-xs">
             <div>
               <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">
-                Starting Baseline Balance (UGX)
+                Opening Balance (UGX)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-emerald-600 dark:text-emerald-400 text-xs">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-emerald-600 dark:text-emerald-400">
                   UGX
                 </span>
                 <input
@@ -253,11 +194,11 @@ export default function SettingsPage() {
                   value={startingBalInput}
                   onChange={(e) => setStartingBalInput(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-12 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                  className="w-full pl-14 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
                 />
               </div>
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
-                Your initial cash/bank opening baseline. Current Balance = (Starting Balance + Lifetime Income) - Lifetime Expenses.
+                Your initial cash/bank opening baseline. Net Balance = (Starting Balance + Income) - Expenses.
               </p>
             </div>
 
@@ -270,17 +211,17 @@ export default function SettingsPage() {
           </form>
         </div>
 
-        {/* Profile & Emergency Buffer */}
+        {/* Profile & Currency Preferences */}
         <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
           <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-            <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
-            <span>Profile & Regional Preferences</span>
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
+            <span>Profile &amp; Regional Preferences</span>
           </h3>
 
           <div className="space-y-3 text-xs">
             <div>
               <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">Standard Currency</label>
-              <div className="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
                 <span className="font-black text-gray-950 dark:text-white">Ugandan Shilling (UGX)</span>
                 <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                   Locked UGX 🇺🇬
@@ -289,6 +230,16 @@ export default function SettingsPage() {
             </div>
 
             <form onSubmit={handleSaveProfile} className="space-y-3 pt-1">
+              <div>
+                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">Display Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
+                />
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">
                   Safe-to-Spend Emergency Buffer (UGX)
@@ -301,27 +252,17 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">Display Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
-                />
-              </div>
-
               <button
                 type="submit"
                 className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md cursor-pointer transition-colors"
               >
-                Save Profile
+                Save Profile Preferences
               </button>
             </form>
           </div>
         </div>
 
-        {/* Category Management Overview */}
+        {/* Custom Category Management */}
         <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
             <div>
@@ -330,7 +271,7 @@ export default function SettingsPage() {
                 <span>Categories ({categories.length})</span>
               </h3>
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
-                Expense and income categorization
+                Expense and income categories
               </p>
             </div>
 
@@ -371,53 +312,28 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Data Management: Clean Slate vs Sample Data */}
-      <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
+      {/* Danger Zone: Clean Slate */}
+      <div className="rounded-3xl glass-panel p-6 border border-red-500/20 shadow-xl space-y-4">
         <div>
-          <h3 className="font-black text-sm text-gray-950 dark:text-white">Dataset & Account Ledger Management</h3>
+          <h3 className="font-black text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+            <Trash2 className="w-4 h-4" />
+            <span>Danger Zone &amp; Account Reset</span>
+          </h3>
           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
-            Switch between a clean 0-balance real ledger or explore with sample Uganda data
+            Permanently clear all logged transactions, budgets, and savings goals from your account.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          {/* Start Fresh Button */}
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-3 shadow-sm">
-            <div>
-              <h4 className="font-black text-xs text-gray-950 dark:text-white flex items-center gap-1.5">
-                <Trash2 className="w-4 h-4 text-red-500" />
-                <span>Start Clean (Remove Sample Data)</span>
-              </h4>
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
-                Wipes all mock transactions and resets your accounts to 0 UGX so you can record your real finances.
-              </p>
-            </div>
-            <button
-              onClick={handleClearAll}
-              className="w-full py-2.5 px-3 rounded-xl bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 text-red-700 dark:text-red-300 font-black text-xs transition-colors cursor-pointer"
-            >
-              Clear All Data (Clean Slate)
-            </button>
-          </div>
-
-          {/* Load Sample Data Button */}
-          <div className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 flex flex-col justify-between space-y-3 shadow-sm">
-            <div>
-              <h4 className="font-black text-xs text-gray-950 dark:text-white flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-emerald-500" />
-                <span>Load Sample Uganda Data</span>
-              </h4>
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
-                Loads realistic sample transactions, budgets, MoMo & Bank balances for quick feature exploration.
-              </p>
-            </div>
-            <button
-              onClick={handleResetToDemo}
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 font-black text-xs transition-colors cursor-pointer"
-            >
-              Load Uganda Sample Data
-            </button>
-          </div>
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold max-w-lg">
+            This action cannot be undone. Make sure you have exported a CSV copy of your data beforehand if you need a record.
+          </p>
+          <button
+            onClick={handleClearAll}
+            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-md cursor-pointer transition-colors"
+          >
+            Clear All Data
+          </button>
         </div>
       </div>
 

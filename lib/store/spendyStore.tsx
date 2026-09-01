@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Account,
@@ -27,27 +27,6 @@ import {
   UserProfile,
 } from '@/types';
 import {
-  SEED_ACCOUNTS,
-  SEED_BUDGETS,
-  SEED_CATEGORIES,
-  SEED_DEBTS,
-  SEED_LOANS,
-  SEED_FINANCIAL_GOALS,
-  SEED_RECURRING,
-  SEED_SAVINGS_GOALS,
-  SEED_TRANSACTIONS,
-  SEED_TRANSFERS,
-  DEMO_ACCOUNTS,
-  DEMO_BUDGETS,
-  DEMO_DEBTS,
-  DEMO_LOANS,
-  DEMO_FINANCIAL_GOALS,
-  DEMO_RECURRING,
-  DEMO_SAVINGS_GOALS,
-  DEMO_TRANSACTIONS,
-  DEMO_TRANSFERS,
-} from '../mock/seedData';
-import {
   calculateDashboardMetrics,
   calculateFinancialHealth,
   calculateSafeToSpend,
@@ -72,6 +51,32 @@ import {
   SyncState,
 } from '../offline/syncEngine';
 
+export const DEFAULT_SYSTEM_CATEGORIES: Category[] = [
+  // Expense Categories
+  { id: 'cat-food', name: 'Food & Dining', type: 'expense', icon: 'Utensils', color: '#F59E0B', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-transport', name: 'Transport (Boda & Matatu)', type: 'expense', icon: 'Bus', color: '#3B82F6', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-airtime', name: 'Airtime & Calls', type: 'expense', icon: 'PhoneCall', color: '#EC4899', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-internet', name: 'Internet & Data', type: 'expense', icon: 'Wifi', color: '#8B5CF6', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-rent', name: 'Rent & Housing', type: 'expense', icon: 'Home', color: '#10B981', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-utilities', name: 'Utilities (Umeme & NWSC)', type: 'expense', icon: 'Zap', color: '#EAB308', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-school', name: 'School & Education', type: 'expense', icon: 'GraduationCap', color: '#6366F1', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-medical', name: 'Healthcare & Medical', type: 'expense', icon: 'HeartPulse', color: '#EF4444', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-shopping', name: 'Shopping & Groceries', type: 'expense', icon: 'ShoppingBag', color: '#14B8A6', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-entertainment', name: 'Entertainment & Leisure', type: 'expense', icon: 'Film', color: '#A855F7', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-family', name: 'Family & Relatives', type: 'expense', icon: 'Users', color: '#F97316', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-business-exp', name: 'Business & Inventory', type: 'expense', icon: 'Briefcase', color: '#06B6D4', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-personal', name: 'Personal Care & Salon', type: 'expense', icon: 'Sparkles', color: '#D946EF', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-other-exp', name: 'Other Expenses', type: 'expense', icon: 'MoreHorizontal', color: '#64748B', is_default: true, created_at: new Date().toISOString() },
+  // Income Categories
+  { id: 'cat-salary', name: 'Salary / Wage', type: 'income', icon: 'Banknote', color: '#10B981', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-business-inc', name: 'Business Profit', type: 'income', icon: 'TrendingUp', color: '#059669', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-side-hustle', name: 'Side Hustle', type: 'income', icon: 'Zap', color: '#F59E0B', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-allowance', name: 'Allowance & Stipend', type: 'income', icon: 'Gift', color: '#3B82F6', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-investment', name: 'Investment & SACCO Returns', type: 'income', icon: 'PieChart', color: '#8B5CF6', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-gift', name: 'Gift & Family Support', type: 'income', icon: 'Heart', color: '#EC4899', is_default: true, created_at: new Date().toISOString() },
+  { id: 'cat-other-inc', name: 'Other Income', type: 'income', icon: 'PlusCircle', color: '#64748B', is_default: true, created_at: new Date().toISOString() },
+];
+
 interface SpendyContextType {
   user: UserProfile;
   setUser: (u: UserProfile) => void;
@@ -95,6 +100,7 @@ interface SpendyContextType {
   pendingSyncCount: number;
   lastSyncTime: string | null;
   triggerManualSync: () => Promise<void>;
+  isLoadingData: boolean;
 
   // Time Period Filtering
   periodFilter: PeriodFilter;
@@ -131,51 +137,52 @@ interface SpendyContextType {
     merchant_name?: string;
     receipt_number?: string;
     transaction_date?: string;
-  }) => void;
-  editTransaction: (id: string, updates: Partial<Transaction>) => void;
-  deleteTransaction: (id: string) => void;
+  }) => Promise<void>;
+  editTransaction: (id: string, updates: Partial<Transaction>) => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
 
-  // Loan Management Actions (Money Lent / Borrowed)
+  // Loan Management Actions
   addLoan: (loan: {
     loan_type: LoanType;
     counterparty: string;
     principal_amount: number;
     due_date?: string;
     notes?: string;
-  }) => void;
-  recordLoanRepayment: (loanId: string, amount: number, note?: string) => void;
-  deleteLoan: (id: string) => void;
+  }) => Promise<void>;
+  recordLoanRepayment: (loanId: string, amount: number, note?: string) => Promise<void>;
+  deleteLoan: (id: string) => Promise<void>;
 
-  // Debt Actions (Legacy Compatibility)
-  addDebt: (debt: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => void;
-  recordDebtPayment: (debtId: string, amount: number, accountId?: string, note?: string) => void;
-  deleteDebt: (id: string) => void;
+  // Debt Actions
+  addDebt: (debt: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => Promise<void>;
+  recordDebtPayment: (debtId: string, amount: number, accountId?: string, note?: string) => Promise<void>;
+  deleteDebt: (id: string) => Promise<void>;
 
   // Financial Goals Actions
-  addFinancialGoal: (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => void;
-  updateFinancialGoal: (id: string, updates: Partial<FinancialGoal>) => void;
-  deleteFinancialGoal: (id: string) => void;
+  addFinancialGoal: (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateFinancialGoal: (id: string, updates: Partial<FinancialGoal>) => Promise<void>;
+  deleteFinancialGoal: (id: string) => Promise<void>;
 
   // Recurring Actions
-  addRecurring: (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => void;
-  toggleRecurring: (id: string) => void;
-  deleteRecurring: (id: string) => void;
+  addRecurring: (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => Promise<void>;
+  toggleRecurring: (id: string) => Promise<void>;
+  deleteRecurring: (id: string) => Promise<void>;
 
   // Category Actions
-  addCategory: (category: Omit<Category, 'id' | 'created_at'>) => void;
+  addCategory: (category: Omit<Category, 'id' | 'created_at'>) => Promise<void>;
 
-  // Legacy Accounts & Transfers
-  addAccount: (account: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
-  updateAccount: (id: string, account: Partial<Account>) => void;
-  deleteAccount: (id: string) => void;
-  createTransfer: (transfer: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => void;
+  // Accounts & Transfers
+  addAccount: (account: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateAccount: (id: string, account: Partial<Account>) => Promise<void>;
+  deleteAccount: (id: string) => Promise<void>;
+  createTransfer: (transfer: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => Promise<void>;
 
   // Budgets & Savings
-  setBudget: (budget: { category_id?: string | null; planned_amount: number; month?: string }) => void;
-  deleteBudget: (id: string) => void;
-  addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => void;
-  contributeToGoal: (goalId: string, amount: number, accountId?: string) => void;
-  deleteSavingsGoal: (id: string) => void;
+  setBudget: (budget: { category_id?: string | null; planned_amount: number; month?: string }) => Promise<void>;
+  deleteBudget: (id: string) => Promise<void>;
+  addSavingsGoal: (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => Promise<void>;
+  contributeToGoal: (goalId: string, amount: number, accountId?: string) => Promise<void>;
+  deleteSavingsGoal: (id: string) => Promise<void>;
+
   // Authentication & User Session
   isAuthenticated: boolean;
   isLoadingAuth: boolean;
@@ -183,131 +190,342 @@ interface SpendyContextType {
   signUp: (data: { email: string; password: string; fullName: string; phone?: string; startingBalance?: number }) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error?: string; message?: string }>;
-  quickLoginDemo: (userType?: 'mukasa' | 'namubiru' | 'new_user') => void;
 
   // Payments & Export
   processMerchantPayment: (req: MerchantPaymentRequest) => Promise<PaymentReceipt>;
   exportDataCSV: () => void;
-  resetToDemoData: () => void;
-  clearAllData: () => void;
+  clearAllData: () => Promise<void>;
 }
 
 const SpendyContext = createContext<SpendyContextType | null>(null);
 
-const STORAGE_KEY = 'spendy_uganda_v7_clean_prod';
+const DEFAULT_GUEST_USER: UserProfile = {
+  id: '',
+  email: '',
+  full_name: '',
+  phone_number: '',
+  default_currency: 'UGX',
+  starting_balance: 0,
+  safe_spend_emergency_buffer: 50000,
+};
 
 export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => createClient(), []);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
-  const [user, setUser] = useState<UserProfile>({
-    id: 'user-new-1',
-    email: '',
-    full_name: 'New User',
-    phone_number: '',
-    default_currency: 'UGX',
-    starting_balance: 0,
-    safe_spend_emergency_buffer: 0,
-  });
-
+  const [user, setUser] = useState<UserProfile>(DEFAULT_GUEST_USER);
   const [startingBalance, setStartingBalanceState] = useState<number>(0);
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>('this_month');
 
-  const [accounts, setAccounts] = useState<Account[]>(SEED_ACCOUNTS);
-  const [categories, setCategories] = useState<Category[]>(SEED_CATEGORIES);
-  const [transactions, setTransactions] = useState<Transaction[]>(SEED_TRANSACTIONS);
-  const [loans, setLoans] = useState<Loan[]>(SEED_LOANS);
-  const [transfers, setTransfers] = useState<Transfer[]>(SEED_TRANSFERS);
-  const [budgets, setBudgets] = useState<Budget[]>(SEED_BUDGETS);
-  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>(SEED_SAVINGS_GOALS);
-  const [debts, setDebts] = useState<Debt[]>(SEED_DEBTS);
-  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>(SEED_FINANCIAL_GOALS);
-  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>(SEED_RECURRING);
-  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>>([
-    {
-      id: 'notif-1',
-      title: 'Welcome to Spendy!',
-      message: 'Your clean personal finance ledger is ready. Add transactions or set starting balances.',
-      type: 'system',
-      is_read: false,
-      created_at: new Date().toISOString(),
-    },
-  ]);
+  // Real Database state — Brand new users start with clean arrays
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_SYSTEM_CATEGORIES);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [budgets, setBudgets] = useState<Budget[]>([]);
+  const [savingsGoals, setSavingsGoals] = useState<SavingsGoal[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
+  const [financialGoals, setFinancialGoals] = useState<FinancialGoal[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
+  const [notifications, setNotifications] = useState<Array<{ id: string; title: string; message: string; type: string; is_read: boolean; created_at: string }>>([]);
 
   // Modal UI state
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddInitialTab, setQuickAddInitialTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer'>('expense');
   const [activeReceipt, setActiveReceipt] = useState<PaymentReceipt | null>(null);
 
-  // Sync Supabase Auth Session
-  useEffect(() => {
-    if (!isSupabaseConfigured()) return;
+  // Offline Synchronization State
+  const [syncState, setSyncState] = useState<SyncState>('synced');
+  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
+  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setIsAuthenticated(true);
-        setUser((prev) => ({
-          ...prev,
-          id: session.user.id,
-          email: session.user.email || prev.email,
-          full_name: session.user.user_metadata?.full_name || prev.full_name,
-          phone_number: session.user.user_metadata?.phone_number || prev.phone_number,
-        }));
+  // Fetch all user records from Supabase
+  const loadUserDataFromSupabase = useCallback(async (userId: string, userEmail: string, metaFullName?: string) => {
+    if (!userId) return;
+    setIsLoadingData(true);
+
+    try {
+      // 1. Fetch Profile
+      let profileStartingBal = 0;
+      let profileBuffer = 50000;
+      let profileFullName = metaFullName || userEmail.split('@')[0] || 'User';
+
+      if (isSupabaseConfigured()) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+
+        if (profileData) {
+          profileFullName = profileData.full_name || profileFullName;
+          profileStartingBal = Number(profileData.starting_balance || 0);
+          profileBuffer = Number(profileData.safe_spend_emergency_buffer || 50000);
+        }
+
+        setUser({
+          id: userId,
+          email: userEmail,
+          full_name: profileFullName,
+          default_currency: 'UGX',
+          starting_balance: profileStartingBal,
+          safe_spend_emergency_buffer: profileBuffer,
+        });
+        setStartingBalanceState(profileStartingBal);
+
+        // 2. Fetch Categories
+        const { data: dbCategories } = await supabase
+          .from('categories')
+          .select('*')
+          .or(`user_id.is.null,user_id.eq.${userId}`);
+
+        if (dbCategories && dbCategories.length > 0) {
+          setCategories(dbCategories);
+        } else {
+          setCategories(DEFAULT_SYSTEM_CATEGORIES);
+        }
+
+        // 3. Fetch Accounts
+        const { data: dbAccounts } = await supabase
+          .from('accounts')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: true });
+
+        if (dbAccounts && dbAccounts.length > 0) {
+          setAccounts(dbAccounts);
+        } else {
+          const defaultAcc: Account = {
+            id: generateUUID(),
+            user_id: userId,
+            name: 'Cash / Mobile Money',
+            type: 'cash',
+            balance: 0,
+            currency: 'UGX',
+            color: '#10B981',
+            is_archived: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+          setAccounts([defaultAcc]);
+          await supabase.from('accounts').insert(defaultAcc);
+        }
+
+        // 4. Fetch Transactions
+        const { data: dbTransactions } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('user_id', userId)
+          .order('transaction_date', { ascending: false });
+
+        setTransactions(dbTransactions || []);
+
+        // 5. Fetch Budgets
+        const { data: dbBudgets } = await supabase
+          .from('budgets')
+          .select('*')
+          .eq('user_id', userId);
+
+        setBudgets(dbBudgets || []);
+
+        // 6. Fetch Savings Goals
+        const { data: dbGoals } = await supabase
+          .from('savings_goals')
+          .select('*')
+          .eq('user_id', userId);
+
+        setSavingsGoals(dbGoals || []);
+
+        // 7. Fetch Loans
+        const { data: dbLoans } = await supabase
+          .from('loans')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        setLoans(dbLoans || []);
+
+        // 8. Fetch Transfers
+        const { data: dbTransfers } = await supabase
+          .from('transfers')
+          .select('*')
+          .eq('user_id', userId)
+          .order('transfer_date', { ascending: false });
+
+        setTransfers(dbTransfers || []);
+
+        // 9. Fetch Financial Goals
+        const { data: dbFinGoals } = await supabase
+          .from('financial_goals')
+          .select('*')
+          .eq('user_id', userId);
+
+        setFinancialGoals(dbFinGoals || []);
+
+        // 10. Fetch Recurring Transactions
+        const { data: dbRecurring } = await supabase
+          .from('recurring_transactions')
+          .select('*')
+          .eq('user_id', userId);
+
+        setRecurringTransactions(dbRecurring || []);
+
+        // 11. Fetch Notifications
+        const { data: dbNotifs } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+
+        setNotifications(dbNotifs || []);
+      } else {
+        const storageKey = `spendy_user_vault_${userId}`;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed.transactions) setTransactions(parsed.transactions);
+          if (parsed.budgets) setBudgets(parsed.budgets);
+          if (parsed.savingsGoals) setSavingsGoals(parsed.savingsGoals);
+          if (parsed.loans) setLoans(parsed.loans);
+          if (parsed.accounts) setAccounts(parsed.accounts);
+          if (parsed.categories) setCategories(parsed.categories);
+        } else {
+          setTransactions([]);
+          setBudgets([]);
+          setSavingsGoals([]);
+          setLoans([]);
+          setAccounts([
+            {
+              id: generateUUID(),
+              user_id: userId,
+              name: 'Cash / Mobile Money',
+              type: 'cash',
+              balance: 0,
+              currency: 'UGX',
+              color: '#10B981',
+              is_archived: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ]);
+        }
       }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        setIsAuthenticated(true);
-        setUser((prev) => ({
-          ...prev,
-          id: session.user.id,
-          email: session.user.email || prev.email,
-          full_name: session.user.user_metadata?.full_name || prev.full_name,
-          phone_number: session.user.user_metadata?.phone_number || prev.phone_number,
-        }));
-      }
-    });
-
-    return () => {
-      subscription?.unsubscribe();
-    };
+    } catch (err) {
+      console.warn('Error loading user data:', err);
+    } finally {
+      setIsLoadingData(false);
+    }
   }, [supabase]);
 
-  // Load from localStorage on client mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.accounts) setAccounts(parsed.accounts);
-        if (parsed.categories) setCategories(parsed.categories);
-        if (parsed.transactions) setTransactions(parsed.transactions);
-        if (parsed.loans) setLoans(parsed.loans);
-        if (parsed.transfers) setTransfers(parsed.transfers);
-        if (parsed.budgets) setBudgets(parsed.budgets);
-        if (parsed.savingsGoals) setSavingsGoals(parsed.savingsGoals);
-        if (parsed.debts) setDebts(parsed.debts);
-        if (parsed.financialGoals) setFinancialGoals(parsed.financialGoals);
-        if (parsed.recurringTransactions) setRecurringTransactions(parsed.recurringTransactions);
-        if (parsed.user) setUser(parsed.user);
-        if (parsed.startingBalance !== undefined) setStartingBalanceState(parsed.startingBalance);
-      }
-    } catch (e) {
-      console.warn('Failed to load from storage', e);
-    } finally {
-      setIsLoaded(true);
-    }
+  // Reset store to empty guest state
+  const resetUserStore = useCallback(() => {
+    setUser(DEFAULT_GUEST_USER);
+    setStartingBalanceState(0);
+    setTransactions([]);
+    setBudgets([]);
+    setSavingsGoals([]);
+    setLoans([]);
+    setTransfers([]);
+    setDebts([]);
+    setFinancialGoals([]);
+    setRecurringTransactions([]);
+    setNotifications([]);
+    setAccounts([]);
+    setCategories(DEFAULT_SYSTEM_CATEGORIES);
   }, []);
 
-  // Save to localStorage when state changes
+  // Sync Supabase Auth Session Lifecycle
   useEffect(() => {
-    if (!isLoaded) return;
+    let isMounted = true;
+
+    async function initAuth() {
+      setIsLoadingAuth(true);
+      if (!isSupabaseConfigured()) {
+        try {
+          const savedAuth = localStorage.getItem('spendy_auth_session_v1');
+          if (savedAuth) {
+            const parsed = JSON.parse(savedAuth);
+            if (parsed.user?.id) {
+              if (isMounted) {
+                setIsAuthenticated(true);
+                await loadUserDataFromSupabase(
+                  parsed.user.id,
+                  parsed.user.email || '',
+                  parsed.user.user_metadata?.full_name
+                );
+              }
+            }
+          }
+        } catch {
+          // safe
+        }
+        if (isMounted) setIsLoadingAuth(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (isMounted) {
+          if (session?.user) {
+            setIsAuthenticated(true);
+            await loadUserDataFromSupabase(
+              session.user.id,
+              session.user.email || '',
+              session.user.user_metadata?.full_name
+            );
+          } else {
+            setIsAuthenticated(false);
+            resetUserStore();
+          }
+        }
+      } catch (err) {
+        console.warn('Auth session check error:', err);
+      } finally {
+        if (isMounted) setIsLoadingAuth(false);
+      }
+    }
+
+    initAuth();
+
+    if (isSupabaseConfigured()) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (!isMounted) return;
+
+        if (session?.user) {
+          setIsAuthenticated(true);
+          await loadUserDataFromSupabase(
+            session.user.id,
+            session.user.email || '',
+            session.user.user_metadata?.full_name
+          );
+        } else {
+          setIsAuthenticated(false);
+          resetUserStore();
+        }
+        setIsLoadingAuth(false);
+      });
+
+      return () => {
+        isMounted = false;
+        subscription?.unsubscribe();
+      };
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [supabase, loadUserDataFromSupabase, resetUserStore]);
+
+  // Persist offline cache per user ID
+  useEffect(() => {
+    if (!user.id || typeof window === 'undefined') return;
     try {
+      const userStorageKey = `spendy_user_vault_${user.id}`;
       localStorage.setItem(
-        STORAGE_KEY,
+        userStorageKey,
         JSON.stringify({
           user,
           startingBalance,
@@ -323,15 +541,26 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
           recurringTransactions,
         })
       );
-    } catch (e) {
-      console.warn('Failed to persist to storage', e);
+    } catch {
+      // safe
     }
-  }, [isLoaded, user, startingBalance, accounts, categories, transactions, loans, transfers, budgets, savingsGoals, debts, financialGoals, recurringTransactions]);
+  }, [user, startingBalance, accounts, categories, transactions, loans, transfers, budgets, savingsGoals, debts, financialGoals, recurringTransactions]);
 
-  const setStartingBalance = (amount: number) => {
+  const setStartingBalance = async (amount: number) => {
     const val = Math.max(0, Math.round(amount || 0));
     setStartingBalanceState(val);
     setUser((prev) => ({ ...prev, starting_balance: val }));
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ starting_balance: val, updated_at: new Date().toISOString() })
+          .eq('id', user.id);
+      } catch {
+        // safe
+      }
+    }
   };
 
   // Enriched transactions with Category & Account object mappings
@@ -343,7 +572,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     });
   }, [transactions, accounts, categories]);
 
-  // Dashboard Metrics strictly computed
+  // Dashboard Metrics strictly computed from real transactions
   const dashboardMetrics = useMemo(() => {
     return calculateDashboardMetrics(transactions, loans, periodFilter, startingBalance);
   }, [transactions, loans, periodFilter, startingBalance]);
@@ -375,7 +604,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     return generateDeterministicInsights(enrichedTransactions, budgets, currentMonthKey);
   }, [enrichedTransactions, budgets, currentMonthKey]);
 
-  // Actions
+  // Modal actions
   const openQuickAdd = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer' = 'expense') => {
     setQuickAddInitialTab(tab);
     setQuickAddOpen(true);
@@ -385,17 +614,10 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
   const openReceipt = (receipt: PaymentReceipt) => setActiveReceipt(receipt);
   const closeReceipt = () => setActiveReceipt(null);
 
-  // Offline Synchronization State
-  const [syncState, setSyncState] = useState<SyncState>('synced');
-  const [pendingSyncCount, setPendingSyncCount] = useState<number>(0);
-  const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
-
   // Sync Runner
   const triggerAutoSync = async () => {
     if (!isSupabaseConfigured() || !user.id || typeof navigator === 'undefined' || !navigator.onLine) {
       setSyncState('offline');
-      const pending = await getPendingSyncQueue(user.id);
-      setPendingSyncCount(pending.length);
       return;
     }
 
@@ -420,39 +642,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     await triggerAutoSync();
   };
 
-  // Sync Event Listeners
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const handleOnline = () => {
-      triggerAutoSync();
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        triggerAutoSync();
-      }
-    };
-
-    window.addEventListener('online', handleOnline);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Periodic sync poll every 30 seconds
-    const interval = setInterval(() => {
-      if (navigator.onLine && pendingSyncCount > 0) {
-        triggerAutoSync();
-      }
-    }, 30000);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearInterval(interval);
-    };
-  }, [user.id, pendingSyncCount]);
-
-  // Add Transaction (Offline-First)
-  const addTransaction = (data: {
+  // Add Transaction
+  const addTransaction = async (data: {
     type: 'expense' | 'income';
     amount: number;
     category_id: string;
@@ -467,12 +658,12 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     const rawAmt = Math.round(data.amount);
     if (rawAmt <= 0) return;
 
-    const defaultAccId = data.account_id || accounts[0]?.id || 'acc-cash';
+    const defaultAccId = data.account_id || accounts[0]?.id || generateUUID();
     const desc = data.description || data.note || (data.type === 'expense' ? 'Expense' : 'Income');
 
     const newTx: Transaction = {
       id: generateUUID(),
-      user_id: user.id,
+      user_id: user.id || 'usr_temp',
       account_id: defaultAccId,
       category_id: data.category_id,
       type: data.type,
@@ -488,95 +679,115 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString(),
     };
 
-    // 1. Immediately update UI state & recalculate derived balances
     setTransactions((prev) => [newTx, ...prev]);
 
-    setAccounts((prev) =>
-      prev.map((acc) => {
+    setAccounts((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: defaultAccId,
+            user_id: user.id,
+            name: 'Cash / Mobile Money',
+            type: 'cash',
+            balance: data.type === 'income' ? rawAmt : -rawAmt,
+            currency: 'UGX',
+            color: '#10B981',
+            is_archived: false,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          },
+        ];
+      }
+      return prev.map((acc) => {
         if (acc.id === defaultAccId) {
           const delta = data.type === 'income' ? rawAmt : -rawAmt;
           return { ...acc, balance: acc.balance + delta, updated_at: new Date().toISOString() };
         }
         return acc;
-      })
-    );
-
-    // 2. Persist locally to IndexedDB & enqueue sync
-    putStoreItem('transactions', newTx);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'transactions',
-      entity_id: newTx.id,
-      operation: 'CREATE',
-      payload: {
-        id: newTx.id,
-        user_id: user.id,
-        account_id: newTx.account_id,
-        category_id: newTx.category_id,
-        type: newTx.type,
-        amount: newTx.amount,
-        currency: newTx.currency,
-        note: newTx.note,
-        merchant_name: newTx.merchant_name,
-        receipt_number: newTx.receipt_number,
-        transaction_date: newTx.transaction_date,
-        created_at: newTx.created_at,
-        updated_at: newTx.updated_at,
-      },
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    }).then(() => {
-      setPendingSyncCount((prev) => prev + 1);
-      triggerAutoSync();
-    });
-  };
-
-  // Edit Transaction (Offline-First)
-  const editTransaction = (id: string, updates: Partial<Transaction>) => {
-    let updatedTx: Transaction | null = null;
-    setTransactions((prev) =>
-      prev.map((t) => {
-        if (t.id === id) {
-          const updatedAmount = updates.amount !== undefined ? Math.round(updates.amount) : t.amount;
-          updatedTx = {
-            ...t,
-            ...updates,
-            amount: updatedAmount,
-            updated_at: new Date().toISOString(),
-          };
-          return updatedTx;
-        }
-        return t;
-      })
-    );
-
-    if (updatedTx) {
-      putStoreItem('transactions', updatedTx);
-      enqueueSync({
-        id: generateUUID(),
-        user_id: user.id,
-        entity_type: 'transactions',
-        entity_id: id,
-        operation: 'UPDATE',
-        payload: updatedTx,
-        created_at: new Date().toISOString(),
-        attempt_count: 0,
-        status: 'PENDING',
-      }).then(() => {
-        setPendingSyncCount((prev) => prev + 1);
-        triggerAutoSync();
       });
+    });
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        const { error } = await supabase.from('transactions').insert({
+          id: newTx.id,
+          user_id: user.id,
+          account_id: newTx.account_id,
+          category_id: newTx.category_id,
+          type: newTx.type,
+          amount: newTx.amount,
+          currency: 'UGX',
+          note: newTx.note,
+          merchant_name: newTx.merchant_name,
+          receipt_number: newTx.receipt_number,
+          transaction_date: newTx.transaction_date,
+          created_at: newTx.created_at,
+          updated_at: newTx.updated_at,
+        });
+
+        if (error) {
+          console.warn('Supabase transaction insert failed, falling back to sync queue:', error.message);
+          putStoreItem('transactions', newTx);
+          await enqueueSync({
+            id: generateUUID(),
+            user_id: user.id,
+            entity_type: 'transactions',
+            entity_id: newTx.id,
+            operation: 'CREATE',
+            payload: newTx,
+            created_at: new Date().toISOString(),
+            attempt_count: 0,
+            status: 'PENDING',
+          });
+        }
+      } catch (err) {
+        console.warn('Transaction insert exception:', err);
+      }
     }
   };
 
-  // Delete Transaction (Offline-First)
-  const deleteTransaction = (id: string) => {
+  // Edit Transaction
+  const editTransaction = async (id: string, updates: Partial<Transaction>) => {
+    const existing = transactions.find((t) => t.id === id);
+    if (!existing) return;
+
+    const updatedAmount = updates.amount !== undefined ? Math.round(updates.amount) : existing.amount;
+    const updatedTx: Transaction = {
+      ...existing,
+      ...updates,
+      amount: updatedAmount,
+      updated_at: new Date().toISOString(),
+    };
+
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === id ? updatedTx : t))
+    );
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase
+          .from('transactions')
+          .update({
+            amount: updatedTx.amount,
+            category_id: updatedTx.category_id,
+            note: updatedTx.description || updatedTx.note,
+            merchant_name: updatedTx.merchant_name,
+            transaction_date: updatedTx.transaction_date,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id)
+          .eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
+  };
+
+  // Delete Transaction
+  const deleteTransaction = async (id: string) => {
     const tx = transactions.find((t) => t.id === id);
     if (!tx) return;
 
-    // Revert account balance
     setAccounts((prev) =>
       prev.map((acc) => {
         if (acc.id === tx.account_id) {
@@ -589,25 +800,21 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
     setTransactions((prev) => prev.filter((t) => t.id !== id));
 
-    deleteStoreItem('transactions', id);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'transactions',
-      entity_id: id,
-      operation: 'DELETE',
-      payload: { id },
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    }).then(() => {
-      setPendingSyncCount((prev) => prev + 1);
-      triggerAutoSync();
-    });
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase
+          .from('transactions')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
   };
 
   // Loan Management
-  const addLoan = (data: {
+  const addLoan = async (data: {
     loan_type: LoanType;
     counterparty: string;
     principal_amount: number;
@@ -634,115 +841,93 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     };
 
     setLoans((prev) => [newLoan, ...prev]);
-  };
 
-  const recordLoanRepayment = (loanId: string, amount: number, note?: string) => {
-    const amt = Math.round(amount);
-    if (amt <= 0) return;
-
-    setLoans((prev) =>
-      prev.map((loan) => {
-        if (loan.id === loanId) {
-          const newPaid = loan.amount_paid + amt;
-          const newRemaining = Math.max(0, loan.principal_amount - newPaid);
-          const newStatus: LoanStatus = newRemaining === 0 ? 'paid' : 'partially_paid';
-
-          const repayment: LoanRepayment = {
-            id: generateUUID(),
-            loan_id: loanId,
-            amount: amt,
-            payment_date: new Date().toISOString(),
-            note: note?.trim() || 'Repayment installment',
-            created_at: new Date().toISOString(),
-          };
-
-          return {
-            ...loan,
-            amount_paid: newPaid,
-            remaining_balance: newRemaining,
-            status: newStatus,
-            repayments: [repayment, ...(loan.repayments || [])],
-            updated_at: new Date().toISOString(),
-          };
-        }
-        return loan;
-      })
-    );
-  };
-
-  const deleteLoan = (id: string) => {
-    setLoans((prev) => prev.filter((l) => l.id !== id));
-  };
-
-  // Categories
-  const addCategory = (data: Omit<Category, 'id' | 'created_at'>) => {
-    const newCat: Category = {
-      ...data,
-      id: generateUUID(),
-      created_at: new Date().toISOString(),
-    };
-    setCategories((prev) => [...prev, newCat]);
-    putStoreItem('categories', newCat);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'categories',
-      entity_id: newCat.id,
-      operation: 'CREATE',
-      payload: newCat,
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    });
-  };
-
-  // Accounts & Transfers
-  const addAccount = (data: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    const newAcc: Account = {
-      ...data,
-      id: generateUUID(),
-      user_id: user.id,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setAccounts((prev) => [...prev, newAcc]);
-    putStoreItem('accounts', newAcc);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'accounts',
-      entity_id: newAcc.id,
-      operation: 'CREATE',
-      payload: newAcc,
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    });
-  };
-
-  const updateAccount = (id: string, updates: Partial<Account>) => {
-    let updatedAcc: Account | null = null;
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (acc.id === id) {
-          updatedAcc = { ...acc, ...updates, updated_at: new Date().toISOString() };
-          return updatedAcc;
-        }
-        return acc;
-      })
-    );
-    if (updatedAcc) {
-      putStoreItem('accounts', updatedAcc);
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('loans').insert({
+          id: newLoan.id,
+          user_id: user.id,
+          loan_type: newLoan.loan_type,
+          counterparty: newLoan.counterparty,
+          principal_amount: newLoan.principal_amount,
+          amount_paid: 0,
+          remaining_balance: newLoan.remaining_balance,
+          status: newLoan.status,
+          due_date: newLoan.due_date || null,
+          notes: newLoan.notes || null,
+          created_at: newLoan.created_at,
+          updated_at: newLoan.updated_at,
+        });
+      } catch {
+        // safe
+      }
     }
   };
 
-  const deleteAccount = (id: string) => {
-    setAccounts((prev) => prev.filter((acc) => acc.id !== id));
-    deleteStoreItem('accounts', id);
+  const recordLoanRepayment = async (loanId: string, amount: number, note?: string) => {
+    const amt = Math.round(amount);
+    if (amt <= 0) return;
+
+    const existingLoan = loans.find((l) => l.id === loanId);
+    if (!existingLoan) return;
+
+    const newPaid = existingLoan.amount_paid + amt;
+    const newRemaining = Math.max(0, existingLoan.principal_amount - newPaid);
+    const newStatus: LoanStatus = newRemaining === 0 ? 'paid' : 'partially_paid';
+
+    const repayment: LoanRepayment = {
+      id: generateUUID(),
+      loan_id: loanId,
+      amount: amt,
+      payment_date: new Date().toISOString(),
+      note,
+      created_at: new Date().toISOString(),
+    };
+
+    const targetLoan: Loan = {
+      ...existingLoan,
+      amount_paid: newPaid,
+      remaining_balance: newRemaining,
+      status: newStatus,
+      repayments: [...(existingLoan.repayments || []), repayment],
+      updated_at: new Date().toISOString(),
+    };
+
+    setLoans((prev) =>
+      prev.map((loan) => (loan.id === loanId ? targetLoan : loan))
+    );
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase
+          .from('loans')
+          .update({
+            amount_paid: targetLoan.amount_paid,
+            remaining_balance: targetLoan.remaining_balance,
+            status: targetLoan.status,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', loanId)
+          .eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
   };
 
-  // Atomic Transfer (Offline-First)
-  const createTransfer = (data: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => {
+  const deleteLoan = async (id: string) => {
+    setLoans((prev) => prev.filter((l) => l.id !== id));
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('loans').delete().eq('id', id).eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
+  };
+
+  // Transfers
+  const createTransfer = async (data: { from_account_id: string; to_account_id: string; amount: number; note?: string }) => {
     const amt = Math.round(data.amount);
     if (amt <= 0 || data.from_account_id === data.to_account_id) return;
 
@@ -771,71 +956,80 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       })
     );
 
-    putStoreItem('transfers', newTransfer);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'transfers',
-      entity_id: newTransfer.id,
-      operation: 'CREATE',
-      payload: {
-        id: newTransfer.id,
-        user_id: user.id,
-        from_account_id: newTransfer.from_account_id,
-        to_account_id: newTransfer.to_account_id,
-        amount: newTransfer.amount,
-        transfer_date: newTransfer.transfer_date,
-        note: newTransfer.note,
-        created_at: newTransfer.created_at,
-      },
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    }).then(() => {
-      setPendingSyncCount((prev) => prev + 1);
-      triggerAutoSync();
-    });
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('transfers').insert({
+          id: newTransfer.id,
+          user_id: user.id,
+          from_account_id: newTransfer.from_account_id,
+          to_account_id: newTransfer.to_account_id,
+          amount: newTransfer.amount,
+          transfer_date: newTransfer.transfer_date,
+          note: newTransfer.note,
+          created_at: newTransfer.created_at,
+        });
+      } catch {
+        // safe
+      }
+    }
   };
 
-  const setBudget = (data: { category_id?: string | null; planned_amount: number; month?: string }) => {
+  // Budgets
+  const setBudget = async (data: { category_id?: string | null; planned_amount: number; month?: string }) => {
     const month = data.month || currentMonthKey;
+    const catId = data.category_id || null;
+    const plannedAmt = Math.round(data.planned_amount);
+
     const newBudget: Budget = {
       id: generateUUID(),
       user_id: user.id,
-      category_id: data.category_id || null,
+      category_id: catId,
       month,
-      planned_amount: Math.round(data.planned_amount),
+      planned_amount: plannedAmt,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
     setBudgets((prev) => {
       const filtered = prev.filter(
-        (b) => !(b.month === month && (b.category_id || null) === (data.category_id || null))
+        (b) => !(b.month === month && (b.category_id || null) === catId)
       );
       return [...filtered, newBudget];
     });
 
-    putStoreItem('budgets', newBudget);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'budgets',
-      entity_id: newBudget.id,
-      operation: 'CREATE',
-      payload: newBudget,
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    });
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('budgets').upsert(
+          {
+            id: newBudget.id,
+            user_id: user.id,
+            category_id: newBudget.category_id,
+            month: newBudget.month,
+            planned_amount: newBudget.planned_amount,
+            created_at: newBudget.created_at,
+            updated_at: newBudget.updated_at,
+          },
+          { onConflict: 'user_id,category_id,month' }
+        );
+      } catch {
+        // safe
+      }
+    }
   };
 
-  const deleteBudget = (id: string) => {
+  const deleteBudget = async (id: string) => {
     setBudgets((prev) => prev.filter((b) => b.id !== id));
-    deleteStoreItem('budgets', id);
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('budgets').delete().eq('id', id).eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
   };
 
-  const addSavingsGoal = (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => {
+  // Savings Goals
+  const addSavingsGoal = async (goal: Omit<SavingsGoal, 'id' | 'user_id' | 'current_amount' | 'status' | 'created_at' | 'updated_at'>) => {
     const newGoal: SavingsGoal = {
       ...goal,
       id: generateUUID(),
@@ -845,22 +1039,31 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
+
     setSavingsGoals((prev) => [...prev, newGoal]);
-    putStoreItem('savings_goals', newGoal);
-    enqueueSync({
-      id: generateUUID(),
-      user_id: user.id,
-      entity_type: 'savings_goals',
-      entity_id: newGoal.id,
-      operation: 'CREATE',
-      payload: newGoal,
-      created_at: new Date().toISOString(),
-      attempt_count: 0,
-      status: 'PENDING',
-    });
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('savings_goals').insert({
+          id: newGoal.id,
+          user_id: user.id,
+          name: newGoal.name,
+          purpose: newGoal.purpose,
+          target_amount: newGoal.target_amount,
+          current_amount: 0,
+          deadline: newGoal.deadline || null,
+          color: newGoal.color || '#10B981',
+          status: 'active',
+          created_at: newGoal.created_at,
+          updated_at: newGoal.updated_at,
+        });
+      } catch {
+        // safe
+      }
+    }
   };
 
-  const contributeToGoal = (goalId: string, amount: number, accountId?: string) => {
+  const contributeToGoal = async (goalId: string, amount: number, accountId?: string) => {
     const amt = Math.round(amount);
     if (amt <= 0) return;
 
@@ -869,6 +1072,8 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         prev.map((acc) => (acc.id === accountId ? { ...acc, balance: acc.balance - amt } : acc))
       );
     }
+
+    let updatedGoal: SavingsGoal | null = null;
 
     setSavingsGoals((prev) =>
       prev.map((goal) => {
@@ -887,104 +1092,76 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
               // safe fallback
             }
           }
-          return {
+          updatedGoal = {
             ...goal,
             current_amount: newAmount,
             status: isCompleted ? 'completed' : 'active',
             updated_at: new Date().toISOString(),
           };
+          return updatedGoal;
         }
         return goal;
       })
     );
-  };
 
-  const deleteSavingsGoal = (id: string) => {
-    setSavingsGoals((prev) => prev.filter((g) => g.id !== id));
-  };
-
-  const processMerchantPayment = async (req: MerchantPaymentRequest): Promise<PaymentReceipt> => {
-    const res = await defaultPaymentProvider.processPayment({
-      merchantId: req.merchantId,
-      merchantName: req.merchantName,
-      amount: req.amount,
-      currency: 'UGX',
-      categoryId: req.categoryId,
-      payerAccountId: req.accountId,
-      reference: req.reference,
-      description: req.note,
-    });
-
-    if (!res.success) {
-      throw new Error(res.message);
+    if (updatedGoal && isSupabaseConfigured() && user.id) {
+      try {
+        await supabase
+          .from('savings_goals')
+          .update({
+            current_amount: (updatedGoal as SavingsGoal).current_amount,
+            status: (updatedGoal as SavingsGoal).status,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', goalId)
+          .eq('user_id', user.id);
+      } catch {
+        // safe
+      }
     }
+  };
 
-    const categoryObj = categories.find((c) => c.id === req.categoryId);
-    const accountObj = accounts.find((a) => a.id === req.accountId);
+  const deleteSavingsGoal = async (id: string) => {
+    setSavingsGoals((prev) => prev.filter((g) => g.id !== id));
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('savings_goals').delete().eq('id', id).eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
+  };
 
-    addTransaction({
-      account_id: req.accountId,
-      category_id: req.categoryId,
-      type: 'expense',
-      amount: req.amount,
-      merchant_name: req.merchantName,
-      receipt_number: res.receiptNumber,
-      description: req.note || `Merchant payment to ${req.merchantName}`,
-      note: req.note || `Merchant payment to ${req.merchantName}`,
-    });
-
-    const receipt: PaymentReceipt = {
-      receiptNumber: res.receiptNumber,
-      merchantName: req.merchantName,
-      amount: req.amount,
-      currency: 'UGX',
-      date: new Date().toISOString(),
-      paymentMethod: accountObj?.name || 'Spendi Wallet',
-      category: categoryObj?.name || 'General Expense',
-      reference: req.reference,
-      status: 'SUCCESS',
+  // Add Custom Category
+  const addCategory = async (categoryData: Omit<Category, 'id' | 'created_at'>) => {
+    const newCat: Category = {
+      ...categoryData,
+      id: generateUUID(),
+      created_at: new Date().toISOString(),
     };
 
-    openReceipt(receipt);
-    return receipt;
+    setCategories((prev) => [...prev, newCat]);
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('categories').insert({
+          id: newCat.id,
+          user_id: user.id,
+          name: newCat.name,
+          type: newCat.type,
+          icon: newCat.icon || 'Tag',
+          color: newCat.color || '#10B981',
+          is_default: false,
+          created_at: newCat.created_at,
+        });
+      } catch {
+        // safe
+      }
+    }
   };
 
-  // One-click CSV export of entire financial ledger
-  const exportDataCSV = () => {
-    const headers = ['Record Type', 'Date', 'Type / Direction', 'Amount (UGX)', 'Category / Counterparty', 'Note / Description', 'Status'];
-    const txRows = transactions.map((t) => [
-      'TRANSACTION',
-      t.transaction_date,
-      t.type.toUpperCase(),
-      t.amount,
-      `"${t.category?.name || 'General'}"`,
-      `"${(t.description || t.note || '').replace(/"/g, '""')}"`,
-      'COMPLETED',
-    ]);
-
-    const loanRows = loans.map((l) => [
-      'LOAN',
-      l.created_at,
-      l.loan_type === 'lent' ? 'LENT_OUT' : 'BORROWED',
-      l.principal_amount,
-      `"${l.counterparty}"`,
-      `"Remaining: ${formatCurrency(l.remaining_balance)}. Notes: ${(l.notes || '').replace(/"/g, '""')}"`,
-      l.status.toUpperCase(),
-    ]);
-
-    const allRows = [headers.join(','), ...txRows.map((r) => r.join(',')), ...loanRows.map((r) => r.join(','))];
-    const csvContent = 'data:text/csv;charset=utf-8,' + allRows.join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `Spendi_Financial_Report_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  // Debt Actions (Legacy Compatibility)
-  const addDebt = (debtData: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+  // Legacy Debts & Financial Goals Actions
+  const addDebt = async (debtData: Omit<Debt, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
     const rawAmt = Math.round(debtData.total_amount);
     const newDebt: Debt = {
       id: generateUUID(),
@@ -1003,24 +1180,9 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setDebts((prev) => [newDebt, ...prev]);
   };
 
-  const recordDebtPayment = (debtId: string, amount: number, accountId?: string, note?: string) => {
+  const recordDebtPayment = async (debtId: string, amount: number, accountId?: string, note?: string) => {
     const amt = Math.round(amount);
     if (amt <= 0) return;
-
-    if (accountId) {
-      const debt = debts.find((d) => d.id === debtId);
-      if (debt) {
-        const isExpense = debt.type === 'i_owe';
-        setAccounts((prev) =>
-          prev.map((acc) => {
-            if (acc.id === accountId) {
-              return { ...acc, balance: acc.balance + (isExpense ? -amt : amt), updated_at: new Date().toISOString() };
-            }
-            return acc;
-          })
-        );
-      }
-    }
 
     setDebts((prev) =>
       prev.map((d) => {
@@ -1049,12 +1211,11 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deleteDebt = (id: string) => {
+  const deleteDebt = async (id: string) => {
     setDebts((prev) => prev.filter((d) => d.id !== id));
   };
 
-  // Financial Goals Actions
-  const addFinancialGoal = (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
+  const addFinancialGoal = async (goal: Omit<FinancialGoal, 'id' | 'user_id' | 'status' | 'created_at' | 'updated_at'>) => {
     const newGoal: FinancialGoal = {
       ...goal,
       id: generateUUID(),
@@ -1064,20 +1225,45 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       updated_at: new Date().toISOString(),
     };
     setFinancialGoals((prev) => [...prev, newGoal]);
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('financial_goals').insert({
+          id: newGoal.id,
+          user_id: user.id,
+          title: newGoal.title,
+          description: newGoal.description,
+          target_amount: newGoal.target_amount,
+          current_amount: newGoal.current_amount || 0,
+          target_date: newGoal.target_date || null,
+          status: newGoal.status,
+          created_at: newGoal.created_at,
+          updated_at: newGoal.updated_at,
+        });
+      } catch {
+        // safe
+      }
+    }
   };
 
-  const updateFinancialGoal = (id: string, updates: Partial<FinancialGoal>) => {
+  const updateFinancialGoal = async (id: string, updates: Partial<FinancialGoal>) => {
     setFinancialGoals((prev) =>
       prev.map((g) => (g.id === id ? { ...g, ...updates, updated_at: new Date().toISOString() } : g))
     );
   };
 
-  const deleteFinancialGoal = (id: string) => {
+  const deleteFinancialGoal = async (id: string) => {
     setFinancialGoals((prev) => prev.filter((g) => g.id !== id));
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('financial_goals').delete().eq('id', id).eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
   };
 
-  // Recurring Actions
-  const addRecurring = (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => {
+  const addRecurring = async (tx: Omit<RecurringTransaction, 'id' | 'user_id' | 'is_active' | 'created_at'>) => {
     const newRec: RecurringTransaction = {
       ...tx,
       id: generateUUID(),
@@ -1088,50 +1274,134 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setRecurringTransactions((prev) => [...prev, newRec]);
   };
 
-  const toggleRecurring = (id: string) => {
+  const toggleRecurring = async (id: string) => {
     setRecurringTransactions((prev) =>
       prev.map((r) => (r.id === id ? { ...r, is_active: !r.is_active } : r))
     );
   };
 
-  const deleteRecurring = (id: string) => {
+  const deleteRecurring = async (id: string) => {
     setRecurringTransactions((prev) => prev.filter((r) => r.id !== id));
   };
 
-  // Reset to sample Uganda dataset
-  const resetToDemoData = () => {
-    setAccounts(DEMO_ACCOUNTS);
-    setCategories(SEED_CATEGORIES);
-    setTransactions(DEMO_TRANSACTIONS);
-    setLoans(DEMO_LOANS);
-    setTransfers(DEMO_TRANSFERS);
-    setBudgets(DEMO_BUDGETS);
-    setSavingsGoals(DEMO_SAVINGS_GOALS);
-    setDebts(DEMO_DEBTS);
-    setFinancialGoals(DEMO_FINANCIAL_GOALS);
-    setRecurringTransactions(DEMO_RECURRING);
-    setStartingBalanceState(0);
-    setUser({
-      id: 'user-uganda-1',
-      email: 'david.mukasa@spendy.ug',
-      full_name: 'David Mukasa',
-      phone_number: '0772 123 456',
-      default_currency: 'UGX',
-      starting_balance: 0,
-      safe_spend_emergency_buffer: 50000,
-    });
-    setIsAuthenticated(true);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // safe
+  const addAccount = async (account: Omit<Account, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    const newAcc: Account = {
+      ...account,
+      id: generateUUID(),
+      user_id: user.id,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    setAccounts((prev) => [...prev, newAcc]);
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('accounts').insert(newAcc);
+      } catch {
+        // safe
+      }
     }
   };
 
-  // Clear all dummy data for a fresh real user start
-  const clearAllData = () => {
+  const updateAccount = async (id: string, accountUpdates: Partial<Account>) => {
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...accountUpdates, updated_at: new Date().toISOString() } : a))
+    );
+  };
+
+  const deleteAccount = async (id: string) => {
+    setAccounts((prev) => prev.filter((a) => a.id !== id));
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await supabase.from('accounts').delete().eq('id', id).eq('user_id', user.id);
+      } catch {
+        // safe
+      }
+    }
+  };
+
+  const processMerchantPayment = async (req: MerchantPaymentRequest): Promise<PaymentReceipt> => {
+    const res = await defaultPaymentProvider.processPayment({
+      merchantId: req.merchantId,
+      merchantName: req.merchantName,
+      amount: req.amount,
+      currency: 'UGX',
+      categoryId: req.categoryId,
+      payerAccountId: req.accountId,
+      reference: req.reference,
+      description: req.note,
+    });
+
+    if (!res.success) {
+      throw new Error(res.message);
+    }
+
+    const categoryObj = categories.find((c) => c.id === req.categoryId);
+    const accountObj = accounts.find((a) => a.id === req.accountId);
+
+    await addTransaction({
+      account_id: req.accountId,
+      category_id: req.categoryId,
+      type: 'expense',
+      amount: req.amount,
+      merchant_name: req.merchantName,
+      receipt_number: res.receiptNumber,
+      description: req.note || `Merchant payment to ${req.merchantName}`,
+      note: req.note || `Merchant payment to ${req.merchantName}`,
+    });
+
+    const receipt: PaymentReceipt = {
+      receiptNumber: res.receiptNumber,
+      merchantName: req.merchantName,
+      amount: req.amount,
+      currency: 'UGX',
+      date: new Date().toISOString(),
+      paymentMethod: accountObj?.name || 'Spendy Wallet',
+      category: categoryObj?.name || 'General Expense',
+      reference: req.reference,
+      status: 'SUCCESS',
+    };
+
+    openReceipt(receipt);
+    return receipt;
+  };
+
+  // Export CSV
+  const exportDataCSV = () => {
+    const headers = ['Record Type', 'Date', 'Type / Direction', 'Amount (UGX)', 'Category / Counterparty', 'Note / Description', 'Status'];
+    const txRows = transactions.map((t) => [
+      'TRANSACTION',
+      t.transaction_date,
+      t.type.toUpperCase(),
+      t.amount,
+      `"${t.category?.name || 'General'}"`,
+      `"${(t.description || t.note || '').replace(/"/g, '""')}"`,
+      'COMPLETED',
+    ]);
+
+    const loanRows = loans.map((l) => [
+      'LOAN',
+      l.created_at,
+      l.loan_type === 'lent' ? 'LENT_OUT' : 'BORROWED',
+      l.principal_amount,
+      `"${l.counterparty}"`,
+      `"Remaining: ${formatCurrency(l.remaining_balance)}. Notes: ${(l.notes || '').replace(/"/g, '""')}"`,
+      l.status.toUpperCase(),
+    ]);
+
+    const allRows = [headers.join(','), ...txRows.map((r) => r.join(',')), ...loanRows.map((r) => r.join(','))];
+    const csvContent = 'data:text/csv;charset=utf-8,' + allRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Spendy_Financial_Report_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Clear all data for clean slate
+  const clearAllData = async () => {
     setStartingBalanceState(0);
-    setAccounts(SEED_ACCOUNTS);
     setTransactions([]);
     setLoans([]);
     setTransfers([]);
@@ -1140,71 +1410,55 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     setDebts([]);
     setFinancialGoals([]);
     setRecurringTransactions([]);
-    setUser({
-      id: 'user-new',
-      email: '',
-      full_name: 'New User',
-      phone_number: '',
-      default_currency: 'UGX',
-      starting_balance: 0,
-      safe_spend_emergency_buffer: 0,
-    });
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // safe
+
+    if (isSupabaseConfigured() && user.id) {
+      try {
+        await Promise.all([
+          supabase.from('transactions').delete().eq('user_id', user.id),
+          supabase.from('budgets').delete().eq('user_id', user.id),
+          supabase.from('savings_goals').delete().eq('user_id', user.id),
+          supabase.from('loans').delete().eq('user_id', user.id),
+          supabase.from('transfers').delete().eq('user_id', user.id),
+          supabase.from('financial_goals').delete().eq('user_id', user.id),
+          supabase.from('profiles').update({ starting_balance: 0 }).eq('id', user.id),
+        ]);
+      } catch (err) {
+        console.warn('Clear data exception:', err);
+      }
+    }
+
+    if (user.id && typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`spendy_user_vault_${user.id}`);
+      } catch {
+        // safe
+      }
     }
   };
 
-  // Authentication Handlers
+  // Auth wrappers
   const signIn = async (email: string, password: string): Promise<{ error?: string }> => {
     setIsLoadingAuth(true);
     try {
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
           password,
         });
 
         if (error) {
-          // If offline / local fallback
-          if (email.trim().includes('@')) {
-            const name = email.split('@')[0];
-            const cleanName = name.charAt(0).toUpperCase() + name.slice(1);
-            setUser((prev) => ({
-              ...prev,
-              id: `user-${Date.now()}`,
-              email: email.trim(),
-              full_name: cleanName,
-            }));
-            setIsAuthenticated(true);
-            return {};
-          }
           return { error: error.message };
         }
 
         if (data?.user) {
-          setUser((prev) => ({
-            ...prev,
-            id: data.user.id,
-            email: data.user.email || email.trim(),
-            full_name: data.user.user_metadata?.full_name || prev.full_name,
-            phone_number: data.user.user_metadata?.phone_number || prev.phone_number,
-          }));
           setIsAuthenticated(true);
+          await loadUserDataFromSupabase(
+            data.user.id,
+            data.user.email || email.trim().toLowerCase(),
+            data.user.user_metadata?.full_name
+          );
           return {};
         }
-      } else {
-        // Mock offline fallback
-        const name = email.split('@')[0] || 'User';
-        setUser((prev) => ({
-          ...prev,
-          id: `user-${Date.now()}`,
-          email: email.trim(),
-          full_name: name.charAt(0).toUpperCase() + name.slice(1),
-        }));
-        setIsAuthenticated(true);
-        return {};
       }
       return {};
     } catch (e: unknown) {
@@ -1226,7 +1480,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     try {
       if (isSupabaseConfigured()) {
         const { data: authData, error } = await supabase.auth.signUp({
-          email: data.email.trim(),
+          email: data.email.trim().toLowerCase(),
           password: data.password,
           options: {
             data: {
@@ -1238,56 +1492,22 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (error) {
-          clearAllData();
-          if (data.startingBalance && data.startingBalance > 0) {
-            setStartingBalance(data.startingBalance);
-          }
-          setUser({
-            id: `user-${Date.now()}`,
-            email: data.email.trim(),
-            full_name: data.fullName.trim(),
-            phone_number: data.phone?.trim(),
-            default_currency: 'UGX',
-            starting_balance: data.startingBalance || 0,
-            safe_spend_emergency_buffer: 50000,
-          });
-          setIsAuthenticated(true);
-          return {};
+          return { error: error.message };
         }
 
         if (authData?.user) {
-          clearAllData();
-          if (data.startingBalance && data.startingBalance > 0) {
-            setStartingBalance(data.startingBalance);
-          }
-          setUser({
-            id: authData.user.id,
-            email: data.email.trim(),
-            full_name: data.fullName.trim(),
-            phone_number: data.phone?.trim(),
-            default_currency: 'UGX',
-            starting_balance: data.startingBalance || 0,
-            safe_spend_emergency_buffer: 50000,
-          });
           setIsAuthenticated(true);
+          resetUserStore();
+          await loadUserDataFromSupabase(
+            authData.user.id,
+            data.email.trim().toLowerCase(),
+            data.fullName.trim()
+          );
+          if (data.startingBalance && data.startingBalance > 0) {
+            await setStartingBalance(data.startingBalance);
+          }
           return {};
         }
-      } else {
-        clearAllData();
-        if (data.startingBalance && data.startingBalance > 0) {
-          setStartingBalance(data.startingBalance);
-        }
-        setUser({
-          id: `user-${Date.now()}`,
-          email: data.email.trim(),
-          full_name: data.fullName.trim(),
-          phone_number: data.phone?.trim(),
-          default_currency: 'UGX',
-          starting_balance: data.startingBalance || 0,
-          safe_spend_emergency_buffer: 50000,
-        });
-        setIsAuthenticated(true);
-        return {};
       }
       return {};
     } catch (e: unknown) {
@@ -1308,15 +1528,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       console.warn('Sign out error', e);
     } finally {
       setIsAuthenticated(false);
-      clearAllData();
-      setUser({
-        id: 'guest',
-        email: '',
-        full_name: 'Guest User',
-        default_currency: 'UGX',
-        starting_balance: 0,
-        safe_spend_emergency_buffer: 0,
-      });
+      resetUserStore();
       setIsLoadingAuth(false);
     }
   };
@@ -1329,52 +1541,12 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         if (error) return { error: error.message };
         return { message: `Password reset link sent to ${email.trim()}` };
       }
-      return { message: `Password reset simulation: Instructions sent to ${email.trim()}` };
+      return { message: `Password reset instructions sent to ${email.trim()}` };
     } catch (e: unknown) {
       const err = e as Error;
       return { error: err.message || 'Password reset request failed' };
     } finally {
       setIsLoadingAuth(false);
-    }
-  };
-
-  const quickLoginDemo = (userType: 'mukasa' | 'namubiru' | 'new_user' = 'new_user') => {
-    if (userType === 'mukasa') {
-      resetToDemoData();
-      setUser({
-        id: 'user-uganda-1',
-        email: 'david.mukasa@spendy.ug',
-        full_name: 'David Mukasa',
-        phone_number: '0772 123 456',
-        default_currency: 'UGX',
-        starting_balance: 0,
-        safe_spend_emergency_buffer: 50000,
-      });
-      setIsAuthenticated(true);
-    } else if (userType === 'namubiru') {
-      resetToDemoData();
-      setAccounts(DEMO_ACCOUNTS.map(a => a.id === 'acc-1' ? {...a, balance: 100000} : a));
-      setUser({
-        id: 'user-uganda-2',
-        email: 'sarah.namubiru@spendy.ug',
-        full_name: 'Sarah Namubiru',
-        phone_number: '0701 987 654',
-        default_currency: 'UGX',
-        starting_balance: 100000,
-        safe_spend_emergency_buffer: 80000,
-      });
-      setIsAuthenticated(true);
-    } else {
-      clearAllData();
-      setUser({
-        id: `user-${Date.now()}`,
-        email: 'newuser@spendy.ug',
-        full_name: 'New Spendy User',
-        default_currency: 'UGX',
-        starting_balance: 0,
-        safe_spend_emergency_buffer: 0,
-      });
-      setIsAuthenticated(true);
     }
   };
 
@@ -1385,11 +1557,11 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         setUser,
         isAuthenticated,
         isLoadingAuth,
+        isLoadingData,
         signIn,
         signUp,
         signOut,
         resetPassword,
-        quickLoginDemo,
         startingBalance,
         setStartingBalance,
         accounts,
@@ -1451,7 +1623,6 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         deleteSavingsGoal,
         processMerchantPayment,
         exportDataCSV,
-        resetToDemoData,
         clearAllData,
       }}
     >
