@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { useTheme } from '@/lib/theme/ThemeContext';
+import { useAuth } from '@/lib/auth/AuthContext';
 import { formatCurrency } from '@/lib/formatters';
 import {
   Settings as SettingsIcon,
   CheckCircle2,
-  Coins,
   Sun,
   Moon,
   Trash2,
@@ -15,37 +15,27 @@ import {
   Plus,
   Tag,
   ShieldCheck,
-  RotateCcw,
-  WifiOff,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 export default function SettingsPage() {
   const {
     user,
     setUser,
-    startingBalance,
-    setStartingBalance,
     categories,
     addCategory,
     exportDataCSV,
     clearAllData,
-    syncState,
-    pendingSyncCount,
-    triggerManualSync,
   } = useSpendy();
-  const { theme, setTheme } = useTheme();
+  const { user: authUser, profile, updateProfile, signOut } = useAuth();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const [successMsg, setSuccessMsg] = useState('');
 
   // Editable user profile fields
-  const [fullName, setFullName] = useState(user?.full_name || '');
-  const [phone, setPhone] = useState(user?.phone_number || '');
-  const [emergencyBuffer, setEmergencyBuffer] = useState(
-    user?.safe_spend_emergency_buffer?.toString() || '50000'
-  );
-  const [startingBalInput, setStartingBalInput] = useState(
-    startingBalance?.toString() || '0'
-  );
+  const [fullName, setFullName] = useState(profile?.full_name || user?.full_name || '');
+  const [phone, setPhone] = useState(profile?.phone_number || user?.phone_number || '');
 
   // New Category Modal State
   const [showAddCat, setShowAddCat] = useState(false);
@@ -53,32 +43,28 @@ export default function SettingsPage() {
   const [newCatType, setNewCatType] = useState<'expense' | 'income'>('expense');
   const [newCatColor, setNewCatColor] = useState('#10B981');
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const buf = parseFloat(emergencyBuffer) || 50000;
+    if (updateProfile) {
+      await updateProfile({
+        full_name: fullName.trim(),
+        phone_number: phone.trim() || undefined,
+      });
+    }
     setUser({
       ...user,
       full_name: fullName.trim(),
       phone_number: phone.trim() || undefined,
-      safe_spend_emergency_buffer: buf,
     });
-    setSuccessMsg('Profile and preferences updated successfully!');
+    setSuccessMsg('Profile updated successfully!');
     setTimeout(() => setSuccessMsg(''), 3000);
   };
 
-  const handleSaveStartingBalance = (e: React.FormEvent) => {
-    e.preventDefault();
-    const parsed = Math.round(parseFloat(startingBalInput) || 0);
-    setStartingBalance(parsed);
-    setSuccessMsg(`Starting balance set to ${formatCurrency(parsed)}!`);
-    setTimeout(() => setSuccessMsg(''), 3000);
-  };
-
-  const handleAddCategory = (e: React.FormEvent) => {
+  const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCatName.trim()) return;
 
-    addCategory({
+    await addCategory({
       name: newCatName.trim(),
       type: newCatType,
       icon: 'Tag',
@@ -93,279 +79,284 @@ export default function SettingsPage() {
   };
 
   const handleClearAll = () => {
-    if (confirm('Are you sure you want to clear all your transactions, budgets, and savings goals? This action is permanent.')) {
+    if (
+      confirm(
+        'Are you sure you want to clear all your transactions, budgets, and savings goals? This action cannot be undone.'
+      )
+    ) {
       clearAllData();
-      setStartingBalInput('0');
-      setSuccessMsg('All your financial records have been reset to a clean slate.');
+      setSuccessMsg('All financial records have been reset to a clean slate.');
       setTimeout(() => setSuccessMsg(''), 3000);
     }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/10 dark:border-white/10">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-            <SettingsIcon className="w-4 h-4" />
-            <span>Preferences & Data Management</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight">
-            App Settings & Account
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tight flex items-center gap-2.5">
+            <SettingsIcon className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <span>Settings &amp; Preferences</span>
           </h1>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Configure appearance theme, profile details, starting balance, custom categories, and export your data.
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+            Manage your account details, appearance theme, categories, and data export
           </p>
         </div>
-
-        <button
-          onClick={exportDataCSV}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all cursor-pointer w-fit"
-        >
-          <Download className="w-4 h-4" />
-          <span>Download Report</span>
-        </button>
       </div>
 
+      {/* Success Banner */}
       {successMsg && (
-        <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-800 dark:text-emerald-200 text-xs font-bold flex items-center gap-2 animate-in fade-in shadow-md">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-2 animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           <span>{successMsg}</span>
         </div>
       )}
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Appearance & Theme Settings */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-            <Sun className="w-4 h-4 text-amber-500 font-bold" />
-            <span>Theme & Display Appearance</span>
-          </h3>
-
-          <div className="grid grid-cols-2 gap-3 text-xs">
-            <button
-              type="button"
-              onClick={() => setTheme('light')}
-              className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-                theme === 'light'
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-200 font-black shadow-md'
-                  : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold'
-              }`}
-            >
-              <Sun className="w-6 h-6 text-amber-500" />
-              <span>Clean Light Mode</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setTheme('dark')}
-              className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
-                theme === 'dark'
-                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-200 font-black shadow-md'
-                  : 'bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold'
-              }`}
-            >
-              <Moon className="w-6 h-6 text-indigo-400" />
-              <span>Sleek Dark Mode</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Starting Balance */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-            <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
-            <span>Opening Baseline Starting Balance</span>
-          </h3>
-
-          <form onSubmit={handleSaveStartingBalance} className="space-y-3 text-xs">
-            <div>
-              <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">
-                Opening Balance (UGX)
-              </label>
-              <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-black text-emerald-600 dark:text-emerald-400">
-                  UGX
-                </span>
-                <input
-                  type="number"
-                  min="0"
-                  value={startingBalInput}
-                  onChange={(e) => setStartingBalInput(e.target.value)}
-                  placeholder="0"
-                  className="w-full pl-14 pr-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
-                />
-              </div>
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-1">
-                Your initial cash/bank opening baseline. Net Balance = (Starting Balance + Income) - Expenses.
-              </p>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Profile & Appearance (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Profile Details */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="text-base font-bold text-slate-950 dark:text-white">
+                Profile Details
+              </h2>
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md cursor-pointer transition-colors"
-            >
-              Save Starting Balance
-            </button>
-          </form>
-        </div>
-
-        {/* Profile & Currency Preferences */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />
-            <span>Profile &amp; Regional Preferences</span>
-          </h3>
-
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">Standard Currency</label>
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-                <span className="font-black text-gray-950 dark:text-white">Ugandan Shilling (UGX)</span>
-                <span className="text-[10px] uppercase font-black px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  Locked UGX 🇺🇬
-                </span>
-              </div>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-3 pt-1">
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">Display Name</label>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
+                  placeholder="e.g. John Doe"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1">
-                  Safe-to-Spend Emergency Buffer (UGX)
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Email Address
                 </label>
                 <input
-                  type="number"
-                  value={emergencyBuffer}
-                  onChange={(e) => setEmergencyBuffer(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-base"
+                  type="email"
+                  disabled
+                  value={authUser?.email || user?.email || ''}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-500 dark:text-slate-400 cursor-not-allowed"
+                />
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                  Email is linked to your authentication provider
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Phone Number (Optional)
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="e.g. +256 700 000000"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md cursor-pointer transition-colors"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all active:scale-98 cursor-pointer"
               >
-                Save Profile Preferences
+                Save Profile
               </button>
             </form>
           </div>
+
+          {/* Theme & Currency Preferences */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-950 dark:text-white">
+              App Preferences
+            </h2>
+
+            <div className="space-y-4 text-xs">
+              {/* Theme Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1.5">
+                  Theme Appearance
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTheme('light')}
+                    className={`py-2 px-3 rounded-xl border font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      theme === 'light'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <Sun className="w-4 h-4 text-amber-500" />
+                    <span>Light</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTheme('dark')}
+                    className={`py-2 px-3 rounded-xl border font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      theme === 'dark'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <Moon className="w-4 h-4 text-indigo-400" />
+                    <span>Dark</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTheme('system')}
+                    className={`py-2 px-3 rounded-xl border font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      theme === 'system'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-700 dark:text-emerald-300'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    <span>System</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Currency Standard */}
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Primary Currency
+                </label>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-slate-900 dark:text-white">Ugandan Shilling (UGX)</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Default standard for Spendy Uganda</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                    UGX
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Custom Category Management */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-black text-sm text-gray-950 dark:text-white flex items-center gap-2">
-                <Tag className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Categories ({categories.length})</span>
-              </h3>
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
-                Expense and income categories
-              </p>
+        {/* Right Column: Categories, Data Export, Danger Zone (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Custom Categories Manager */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold text-slate-950 dark:text-white">
+                Categories
+              </h2>
+              <button
+                onClick={() => setShowAddCat(true)}
+                className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Custom</span>
+              </button>
             </div>
 
+            <div className="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+              {categories.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/80 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: c.color }}
+                    />
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                      {c.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                    {c.type}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Data Export Card */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+            <h2 className="text-base font-bold text-slate-950 dark:text-white">
+              Data Management
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              Download your complete transaction ledger as a CSV report for your accounting or tax records.
+            </p>
             <button
-              onClick={() => setShowAddCat(true)}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-gray-950 dark:text-white border border-slate-300 dark:border-slate-700 cursor-pointer shadow-sm"
+              onClick={exportDataCSV}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Custom</span>
+              <Download className="w-4 h-4" />
+              <span>Download Report (CSV)</span>
             </button>
           </div>
 
-          <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
-            {categories.map((cat) => (
-              <div
-                key={cat.id}
-                className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0 shadow-sm"
-                    style={{ backgroundColor: cat.color || '#10B981' }}
-                  />
-                  <span className="font-bold text-gray-950 dark:text-white">{cat.name}</span>
-                </div>
-                <span
-                  className={`text-[10px] uppercase font-black px-2.5 py-0.5 rounded-md ${
-                    cat.type === 'income'
-                      ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
-                      : 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30'
-                  }`}
-                >
-                  {cat.type}
-                </span>
-              </div>
-            ))}
+          {/* Danger Zone */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 space-y-3">
+            <h2 className="text-sm font-bold text-red-700 dark:text-red-400">
+              Reset Financial Records
+            </h2>
+            <p className="text-xs text-red-600 dark:text-red-400/90">
+              Clear all transactions, budgets, and savings targets to restart with a clean slate.
+            </p>
+            <button
+              onClick={handleClearAll}
+              className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs transition-colors cursor-pointer"
+            >
+              Reset All Financial Data
+            </button>
           </div>
-        </div>
-      </div>
-
-      {/* Danger Zone: Clean Slate */}
-      <div className="rounded-3xl glass-panel p-6 border border-red-500/20 shadow-xl space-y-4">
-        <div>
-          <h3 className="font-black text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-            <Trash2 className="w-4 h-4" />
-            <span>Danger Zone &amp; Account Reset</span>
-          </h3>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">
-            Permanently clear all logged transactions, budgets, and savings goals from your account.
-          </p>
-        </div>
-
-        <div className="flex items-center justify-between pt-2">
-          <p className="text-xs text-slate-600 dark:text-slate-400 font-semibold max-w-lg">
-            This action cannot be undone. Make sure you have downloaded a report of your data beforehand if you need a record.
-          </p>
-          <button
-            onClick={handleClearAll}
-            className="px-4 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs shadow-md cursor-pointer transition-colors"
-          >
-            Clear All Data
-          </button>
         </div>
       </div>
 
       {/* Add Custom Category Modal */}
       {showAddCat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl glass-panel p-6 border border-black/20 dark:border-white/20 shadow-2xl space-y-4">
-            <h3 className="font-black text-base text-gray-950 dark:text-white">Add Custom Category</h3>
-
-            <form onSubmit={handleAddCategory} className="space-y-3.5 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <h3 className="text-base font-black text-slate-950 dark:text-white">
+              Add Category
+            </h3>
+            <form onSubmit={handleAddCategory} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Category Name</label>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Category Name
+                </label>
                 <input
                   type="text"
                   required
+                  placeholder="e.g. Freelance, Gym"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  placeholder="e.g. SACCO Contribution, Poultry Feed"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Type</label>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Category Type
+                </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setNewCatType('expense')}
-                    className={`py-2 rounded-xl font-black border ${
+                    className={`py-2 rounded-xl border font-bold cursor-pointer ${
                       newCatType === 'expense'
-                        ? 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/40 shadow-sm'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        ? 'bg-red-50 dark:bg-red-950/60 border-red-500 text-red-600'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Expense
@@ -373,10 +364,10 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setNewCatType('income')}
-                    className={`py-2 rounded-xl font-black border ${
+                    className={`py-2 rounded-xl border font-bold cursor-pointer ${
                       newCatType === 'income'
-                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40 shadow-sm'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-500 text-emerald-600'
+                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Income
@@ -384,36 +375,19 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Badge Color</label>
-                <div className="flex gap-2">
-                  {['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#06B6D4'].map((color) => (
-                    <button
-                      type="button"
-                      key={color}
-                      onClick={() => setNewCatColor(color)}
-                      className={`w-7 h-7 rounded-full transition-transform ${
-                        newCatColor === color ? 'scale-125 ring-2 ring-emerald-500' : ''
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-2">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setShowAddCat(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black cursor-pointer shadow-md"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-colors shadow-sm cursor-pointer"
                 >
-                  Add Category
+                  Save Category
                 </button>
               </div>
             </form>

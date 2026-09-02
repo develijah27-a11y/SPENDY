@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ==========================================================================
-   SPENDY MODERN FINTECH DESIGN SYSTEM (HIGH CONTRAST & ULTRA SHARP TYPOGRAPHY)
+   SPENDY MODERN FINTECH DESIGN SYSTEM (RESTRAINED, HIGH CONTRAST & ACCESSIBLE)
    ========================================================================== */
 
 :root {
@@ -11,71 +11,65 @@
   --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* LIGHT MODE (Studio Titanium & Crisp Glass) */
+  /* LIGHT MODE (Studio Titanium & Restrained Fintech Slate) */
   --background: #f8fafc;
   --background-secondary: #f1f5f9;
   --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-glass: rgba(255, 255, 255, 0.98);
-  --surface-hover: rgba(241, 245, 249, 0.95);
+  --surface-subtle: #f8fafc;
+  --surface-hover: #f1f5f9;
   
-  --border-glass: rgba(15, 23, 42, 0.14);
-  --border-subtle: rgba(15, 23, 42, 0.08);
-  --border-highlight: rgba(16, 185, 129, 0.5);
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-highlight: #059669;
   
   --foreground: #090d16;
-  --foreground-heading: #000000;
-  --foreground-muted: #1e293b;
-  --foreground-subtle: #334155;
+  --foreground-heading: #0f172a;
+  --foreground-muted: #334155;
+  --foreground-subtle: #475569;
   
   --primary: #059669;
   --primary-hover: #047857;
-  --primary-glow: rgba(16, 185, 129, 0.25);
+  --primary-subtle: rgba(5, 150, 105, 0.10);
 
-  --accent-emerald: #059669;
-  --accent-ruby: #e11d48;
-  --accent-violet: #7c3aed;
-  --accent-amber: #d97706;
-  --accent-cyan: #0891b2;
+  --accent-income: #059669;
+  --accent-expense: #dc2626;
+  --accent-savings: #7c3aed;
+  --accent-warning: #d97706;
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 14px -2px rgba(15, 23, 42, 0.10), 0 2px 6px -1px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
-  --shadow-xl: 0 20px 45px -8px rgba(15, 23, 42, 0.15);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.10), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
 }
 
 .dark {
-  /* DARK MODE (Ultra-Rich Deep Obsidian & Radiant Neon Glass) */
+  /* DARK MODE (Deep Midnight Obsidian & High Contrast Typography) */
   --background: #070a12;
-  --background-secondary: #0c1220;
+  --background-secondary: #0b1120;
   --surface: #0e1628;
   --surface-elevated: #131d35;
-  --surface-glass: rgba(14, 22, 40, 0.96);
-  --surface-hover: rgba(255, 255, 255, 0.10);
+  --surface-subtle: #090e1c;
+  --surface-hover: #17233f;
   
-  --border-glass: rgba(255, 255, 255, 0.18);
-  --border-subtle: rgba(255, 255, 255, 0.12);
-  --border-highlight: rgba(52, 211, 153, 0.6);
+  --border-subtle: #1e293b;
+  --border-strong: #334155;
+  --border-highlight: #10b981;
   
   --foreground: #ffffff;
   --foreground-heading: #ffffff;
-  --foreground-muted: #f8fafc;
-  --foreground-subtle: #e2e8f0;
+  --foreground-muted: #f1f5f9;
+  --foreground-subtle: #cbd5e1;
   
   --primary: #10b981;
   --primary-hover: #34d399;
-  --primary-glow: rgba(16, 185, 129, 0.45);
+  --primary-subtle: rgba(16, 185, 129, 0.15);
 
-  --accent-emerald: #34d399;
-  --accent-ruby: #fb7185;
-  --accent-violet: #a78bfa;
-  --accent-amber: #fbbf24;
-  --accent-cyan: #22d3ee;
+  --accent-income: #10b981;
+  --accent-expense: #f87171;
+  --accent-savings: #a78bfa;
+  --accent-warning: #fbbf24;
 
-  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.10) inset;
-  --shadow-lg: 0 16px 36px -4px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
-  --shadow-xl: 0 24px 50px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.18) inset;
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-dropdown: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
 }
 
 body {
@@ -87,82 +81,95 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
-  transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .font-mono {
   font-family: var(--font-mono);
+  font-feature-settings: 'tnum' 1, 'zero' 1;
 }
 
 /* ==========================================================================
-   GLASSMORPHISM & DEPTH SURFACES
+   RESTRAINED FINTECH CARD SURFACES
    ========================================================================== */
 
+.fintech-card {
+  background: var(--surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fintech-card-subtle {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.75rem;
+}
+
+.fintech-card-hover:hover {
+  border-color: var(--border-strong);
+}
+
+/* Glass panel for navigation headers */
 .glass-panel {
-  background: var(--surface-glass);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-md);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-panel-elevated {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%), var(--surface-glass);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-lg);
-}
-
-.glass-card-interactive {
-  background: var(--surface-glass);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
-  border: 1px solid var(--border-glass);
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
 }
 
-.glass-card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), 0 0 20px -5px var(--primary-glow);
-  border-color: var(--border-highlight);
-}
-
-/* Radial Glow Ambient Lights */
-.mesh-gradient-emerald {
-  background: radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.18) 0%, transparent 60%),
-              radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.14) 0%, transparent 60%);
-}
-
-.mesh-gradient-purple {
-  background: radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.18) 0%, transparent 60%),
-              radial-gradient(circle at 20% 80%, rgba(236, 72, 153, 0.14) 0%, transparent 60%);
+.dark .glass-panel {
+  background: rgba(14, 22, 40, 0.92);
+  border-color: var(--border-subtle);
 }
 
 /* ==========================================================================
-   HIGH-CONTRAST TYPOGRAPHY & VISIBILITY ENHANCEMENTS
+   ACCESSIBILITY & TOUCH TARGETS
    ========================================================================== */
+
+/* Minimum touch target size */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Tabular numbers for financial balance alignment */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Focus visibility for keyboard navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
 
 /* Headings: Crisp & Bold */
 h1, h2, h3, h4, h5, h6 {
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   font-weight: 800;
+  color: var(--foreground-heading);
 }
 
-/* Enforce crisp, radiant contrast in dark mode so text is NEVER faint */
+/* High contrast text guarantees in dark mode */
 .dark .text-slate-400,
 .dark .text-gray-400,
-.dark .text-zinc-400,
-.dark .text-slate-500,
-.dark .text-gray-500 {
+.dark .text-zinc-400 {
   color: #cbd5e1;
 }
 
+.dark .text-slate-500,
+.dark .text-gray-500 {
+  color: #94a3b8;
+}
+
 .dark .text-slate-600,
-.dark .text-slate-700,
-.dark .text-gray-600,
-.dark .text-gray-700 {
+.dark .text-slate-700 {
   color: #e2e8f0;
 }
 
@@ -198,7 +205,6 @@ input, select, textarea {
   background: rgba(255, 255, 255, 0.4);
 }
 
-/* Hide scrollbar for clean UI carousels/tabs */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

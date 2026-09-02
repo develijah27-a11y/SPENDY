@@ -3,29 +3,25 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
-import { formatCurrency, formatUGX, formatDate, isDateInPeriod, getCurrentMonthKey } from '@/lib/formatters';
+import { formatCurrency, formatMonthName, isDateInPeriod } from '@/lib/formatters';
 import { PeriodFilter } from '@/types';
 import {
-  LineChart,
-  Calendar,
+  PieChart,
   Download,
   ArrowDownRight,
   ArrowUpRight,
   TrendingUp,
   TrendingDown,
-  PieChart,
-  Percent,
   Layers,
-  ArrowRight,
-  Sparkles,
-  FileSpreadsheet,
+  ReceiptText,
+  Plus,
+  Percent,
 } from 'lucide-react';
 
-export default function ReportsPage() {
-  const { transactions, categories, exportDataCSV, budgets, savingsGoals, startingBalance } = useSpendy();
+export default function InsightsPage() {
+  const { transactions, categories, exportDataCSV, openQuickAdd } = useSpendy();
 
   const [period, setPeriod] = useState<PeriodFilter>('this_month');
-  const [reportType, setReportType] = useState<'summary' | 'monthly' | 'yearly'>('summary');
 
   // Filter transactions by active period
   const filteredTx = useMemo(() => {
@@ -41,8 +37,8 @@ export default function ReportsPage() {
     .filter((t) => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const netSavings = totalIncome - totalExpense;
-  const savingsRate = totalIncome > 0 ? (Math.max(0, netSavings) / totalIncome) * 100 : 0;
+  const netChange = totalIncome - totalExpense;
+  const savingsRate = totalIncome > 0 ? (Math.max(0, netChange) / totalIncome) * 100 : 0;
 
   // Category breakdown
   const categoryBreakdown = useMemo(() => {
@@ -66,31 +62,28 @@ export default function ReportsPage() {
       .sort((a, b) => b.amount - a.amount);
   }, [filteredTx, categories, totalExpense]);
 
-  const largestCategory = categoryBreakdown[0];
+  const biggestCategory = categoryBreakdown[0];
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-black/15 dark:border-white/15">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-            <LineChart className="w-4 h-4" />
-            <span>Financial Statements & Reports</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight">
-            Financial Reports & Analytics
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tight flex items-center gap-2.5">
+            <PieChart className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <span>Insights &amp; Analytics</span>
           </h1>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Comprehensive audit of income, expenditures, savings rate, and category breakdowns.
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+            Factual breakdown of income, expenses, and category allocation
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Period Filter Dropdown */}
+        <div className="flex items-center gap-2.5">
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value as PeriodFilter)}
-            className="px-3.5 py-2.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/15 dark:border-white/20 text-xs font-bold text-gray-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+            aria-label="Filter insights period"
+            className="px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-sm touch-target"
           >
             <option value="today">Today</option>
             <option value="this_week">This Week</option>
@@ -102,7 +95,7 @@ export default function ReportsPage() {
 
           <button
             onClick={exportDataCSV}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-sm touch-target"
           >
             <Download className="w-4 h-4" />
             <span>Download Report</span>
@@ -110,123 +103,104 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Primary KPI Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Income */}
-        <div className="p-5 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-lg space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Income</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <ArrowUpRight className="w-4 h-4" />
-            </div>
+      {filteredTx.length === 0 ? (
+        <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 text-center max-w-2xl mx-auto space-y-3 my-8">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+            <PieChart className="w-6 h-6" />
           </div>
-          <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono">
-            {formatCurrency(totalIncome)}
+          <h2 className="text-lg sm:text-xl font-black text-slate-950 dark:text-white">
+            Add more transactions to unlock spending insights.
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            Once you log your income and expenses in this period, Spendy will automatically calculate your spending allocation and trends.
           </p>
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-            {filteredTx.filter((t) => t.type === 'income').length} income records
-          </span>
+          <button
+            onClick={() => openQuickAdd('expense')}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all mt-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Transaction</span>
+          </button>
         </div>
-
-        {/* Total Expense */}
-        <div className="p-5 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-lg space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Total Expenses</span>
-            <div className="w-8 h-8 rounded-xl bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center">
-              <ArrowDownRight className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-red-600 dark:text-red-400 font-mono">
-            {formatCurrency(totalExpense)}
-          </p>
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-            {filteredTx.filter((t) => t.type === 'expense').length} expense logs
-          </span>
-        </div>
-
-        {/* Net Savings */}
-        <div className="p-5 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-lg space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Net Period Savings</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-          </div>
-          <p className={`text-2xl font-black font-mono ${netSavings >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-            {netSavings >= 0 ? '+' : ''}{formatCurrency(netSavings)}
-          </p>
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-            Income minus expenses
-          </span>
-        </div>
-
-        {/* Savings Rate */}
-        <div className="p-5 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-lg space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Savings Rate</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center">
-              <Percent className="w-4 h-4" />
-            </div>
-          </div>
-          <p className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono">
-            {savingsRate.toFixed(1)}%
-          </p>
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-            Target recommended: 20%+
-          </span>
-        </div>
-      </div>
-
-      {/* Main Report Sections: Category Breakdown & Spending Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Category Breakdown (2 cols) */}
-        <div className="lg:col-span-2 rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
-                <PieChart className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-black text-sm text-gray-950 dark:text-white">
-                  Spending by Category
-                </h3>
-                <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                  Where your money went during this period
-                </p>
-              </div>
-            </div>
-
-            {largestCategory && (
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/15 px-3 py-1 rounded-full">
-                Largest: {largestCategory.name} ({largestCategory.percent.toFixed(0)}%)
+      ) : (
+        <>
+          {/* 2. Financial Summary KPIs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Total Income
               </span>
-            )}
+              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
+                + {formatCurrency(totalIncome).replace('UGX ', 'UGX ')}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Total Expenses
+              </span>
+              <p className="text-2xl font-black text-red-600 dark:text-red-400 font-mono tabular-nums">
+                - {formatCurrency(totalExpense).replace('UGX ', 'UGX ')}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Net Change
+              </span>
+              <p
+                className={`text-2xl font-black font-mono tabular-nums ${
+                  netChange >= 0
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-red-600 dark:text-red-400'
+                }`}
+              >
+                {netChange >= 0 ? '+' : '-'} {formatCurrency(Math.abs(netChange)).replace('UGX ', 'UGX ')}
+              </p>
+            </div>
+
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Savings Rate
+              </span>
+              <p className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono tabular-nums">
+                {savingsRate.toFixed(0)}%
+              </p>
+            </div>
           </div>
 
-          {categoryBreakdown.length === 0 ? (
-            <div className="py-12 text-center text-xs font-bold text-slate-700 dark:text-slate-300">
-              No expense records found in this time period.
+          {/* 3. Key Takeaway Highlight */}
+          {biggestCategory && (
+            <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              <span>
+                <strong>{biggestCategory.name}</strong> is currently your biggest expense at{' '}
+                <strong className="font-mono">{formatCurrency(biggestCategory.amount)}</strong> (
+                {biggestCategory.percent.toFixed(0)}% of total expenses).
+              </span>
             </div>
-          ) : (
-            <div className="space-y-4">
+          )}
+
+          {/* 4. Spending by Category Breakdown Table */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+            <h2 className="text-base font-bold text-slate-950 dark:text-white">
+              Category Allocation
+            </h2>
+
+            <div className="space-y-3">
               {categoryBreakdown.map((cat) => (
                 <div key={cat.id} className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-gray-950 dark:text-white flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }} />
-                      {cat.name}
-                    </span>
-                    <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">
-                      <strong className="text-gray-950 dark:text-white font-black">{formatCurrency(cat.amount)}</strong>{' '}
-                      ({cat.percent.toFixed(1)}%)
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-800 dark:text-slate-200">{cat.name}</span>
+                    <span className="font-mono font-bold text-slate-950 dark:text-white">
+                      {formatCurrency(cat.amount)} ({cat.percent.toFixed(0)}%)
                     </span>
                   </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
-                      className="h-full rounded-full transition-all duration-500"
+                      className="h-full rounded-full transition-all duration-300"
                       style={{
-                        width: `${Math.min(100, cat.percent)}%`,
+                        width: `${Math.min(100, Math.max(3, cat.percent))}%`,
                         backgroundColor: cat.color,
                       }}
                     />
@@ -234,44 +208,9 @@ export default function ReportsPage() {
                 </div>
               ))}
             </div>
-          )}
-        </div>
-
-        {/* Financial Review & Smart Highlights (1 col) */}
-        <div className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 shadow-xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-200 dark:border-white/10">
-            <Sparkles className="w-5 h-5 text-amber-500" />
-            <h3 className="font-black text-sm text-gray-950 dark:text-white">
-              Statement Summary
-            </h3>
           </div>
-
-          <div className="space-y-3 text-xs">
-            <div className="p-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 space-y-1">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Period Ratio</span>
-              <p className="font-black text-gray-950 dark:text-white text-sm">
-                {totalIncome > 0 ? ((totalExpense / totalIncome) * 100).toFixed(1) : 0}% Spent vs Earned
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 space-y-1">
-              <span className="font-bold text-slate-700 dark:text-slate-300">Total Transactions</span>
-              <p className="font-black text-gray-950 dark:text-white text-sm">
-                {filteredTx.length} records processed
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-              <span className="font-bold text-emerald-700 dark:text-emerald-300">Cash Flow Status</span>
-              <p className="font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
-                {netSavings >= 0
-                  ? `You retained ${formatCurrency(netSavings)} of cash in this period.`
-                  : `Expenses exceeded income by ${formatCurrency(Math.abs(netSavings))}. Consider reviewing non-essential budgets.`}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

@@ -2,195 +2,371 @@
 
 import React, { useState } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
-import { formatUGX } from '@/lib/formatters';
+import { formatCurrency, formatDate } from '@/lib/formatters';
 import {
-  Flame,
+  Target,
   Plus,
   Trash2,
   Calendar,
   X,
   TrendingUp,
+  CheckCircle2,
+  DollarSign,
+  PiggyBank,
 } from 'lucide-react';
 
 export default function GoalsPage() {
-  const { financialGoals, addFinancialGoal, deleteFinancialGoal } = useSpendy();
+  const { savingsGoals, addSavingsGoal, contributeToGoal, deleteSavingsGoal, accounts } = useSpendy();
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  // Modals
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [contributeGoalId, setContributeGoalId] = useState<string | null>(null);
+  const [contributionAmount, setContributionAmount] = useState('');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('');
+
+  // Form Fields
+  const [goalName, setGoalName] = useState('');
+  const [goalPurpose, setGoalPurpose] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
-  const [targetDate, setTargetDate] = useState('');
+  const [deadline, setDeadline] = useState('');
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault();
-    const target = parseFloat(targetAmount.replace(/,/g, ''));
-    if (!isNaN(target) && target > 0 && title.trim()) {
-      addFinancialGoal({
-        title: title.trim(),
-        description: description.trim() || undefined,
+    const target = parseFloat(targetAmount.replace(/[^0-9]/g, ''));
+    if (!isNaN(target) && target > 0 && goalName.trim()) {
+      await addSavingsGoal({
+        name: goalName.trim(),
+        purpose: goalPurpose.trim() || undefined,
         target_amount: target,
-        current_amount: 0,
-        target_date: targetDate || undefined,
+        deadline: deadline || undefined,
+        color: '#8B5CF6',
       });
-      setShowAddModal(false);
-      setTitle('');
-      setDescription('');
+      setShowCreateModal(false);
+      setGoalName('');
+      setGoalPurpose('');
       setTargetAmount('');
-      setTargetDate('');
+      setDeadline('');
+    }
+  };
+
+  const handleContribute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!contributeGoalId) return;
+
+    const amt = parseFloat(contributionAmount.replace(/[^0-9]/g, ''));
+    if (!isNaN(amt) && amt > 0) {
+      await contributeToGoal(contributeGoalId, amt, selectedAccountId || undefined);
+      setContributeGoalId(null);
+      setContributionAmount('');
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* 1. Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight flex items-center gap-2.5">
-            <Flame className="w-7 h-7 text-amber-500 font-black" />
-            <span>Financial Milestones</span>
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white tracking-tight flex items-center gap-2.5">
+            <Target className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+            <span>Savings Goals</span>
           </h1>
-          <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
-            Plan multi-year financial goals (starting a business, buying land, commercial boda)
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-0.5">
+            Track milestones for emergency funds, major purchases, and investments
           </p>
         </div>
 
         <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all cursor-pointer w-fit"
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all active:scale-98 cursor-pointer touch-target w-fit"
         >
-          <Plus className="w-4 h-4" />
-          <span>New Financial Milestone</span>
+          <Plus className="w-4 h-4 stroke-[2.5]" />
+          <span>New Savings Goal</span>
         </button>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {financialGoals.map((fg) => {
-          const pct = Math.min(100, (fg.current_amount / fg.target_amount) * 100);
+      {/* 2. Goals Grid */}
+      {savingsGoals.length === 0 ? (
+        <div className="p-8 sm:p-12 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 text-center max-w-2xl mx-auto space-y-3 my-8">
+          <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center mx-auto">
+            <Target className="w-6 h-6" />
+          </div>
+          <h2 className="text-lg sm:text-xl font-black text-slate-950 dark:text-white">
+            Set your first savings milestone
+          </h2>
+          <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            Whether it&apos;s a new laptop, emergency cushion, or tuition, tracking your goals keeps you focused.
+          </p>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all mt-2"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create a Savings Goal</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {savingsGoals.map((g) => {
+            const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0;
+            const remaining = Math.max(0, g.target_amount - g.current_amount);
+            const isCompleted = g.current_amount >= g.target_amount;
 
-          return (
-            <div
-              key={fg.id}
-              className="rounded-3xl glass-panel p-6 border border-black/15 dark:border-white/20 relative group hover:border-amber-500/40 transition-all flex flex-col justify-between shadow-lg"
-            >
-              <div>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-500/30 shadow-sm">
-                      <TrendingUp className="w-5 h-5 font-black" />
+            return (
+              <div
+                key={g.id}
+                className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+                        <Target className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-950 dark:text-white leading-tight">
+                          {g.name}
+                        </h3>
+                        {g.purpose && (
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                            {g.purpose}
+                          </p>
+                        )}
+                      </div>
                     </div>
+
+                    <button
+                      onClick={() => deleteSavingsGoal(g.id)}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                      title="Delete goal"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Numbers Breakdown */}
+                  <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
                     <div>
-                      <h3 className="font-black text-base text-gray-950 dark:text-white">{fg.title}</h3>
-                      <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-0.5">{fg.description || 'Long term dream'}</p>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        Saved
+                      </span>
+                      <p className="font-mono font-bold text-slate-950 dark:text-white">
+                        {formatCurrency(g.current_amount)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
+                        Target
+                      </span>
+                      <p className="font-mono font-bold text-slate-950 dark:text-white">
+                        {formatCurrency(g.target_amount)}
+                      </p>
                     </div>
                   </div>
+
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-slate-700 dark:text-slate-300">
+                        {isCompleted ? 'Goal Completed! 🎉' : `Remaining: ${formatCurrency(remaining)}`}
+                      </span>
+                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                        {pct.toFixed(0)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          isCompleted ? 'bg-emerald-500' : 'bg-purple-600'
+                        }`}
+                        style={{ width: `${Math.min(100, Math.max(3, pct))}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contribute Trigger */}
+                <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                  {g.deadline && (
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      <span>Due {formatDate(g.deadline)}</span>
+                    </span>
+                  )}
 
                   <button
-                    onClick={() => deleteFinancialGoal(fg.id)}
-                    aria-label="Delete milestone"
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-opacity cursor-pointer"
+                    onClick={() => {
+                      setContributeGoalId(g.id);
+                      setContributionAmount('');
+                    }}
+                    className="ml-auto px-3.5 py-1.5 rounded-lg bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300 text-xs font-bold transition-colors cursor-pointer"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    + Add Contribution
                   </button>
                 </div>
-
-                <div className="mt-5">
-                  <div className="flex items-baseline justify-between text-xs">
-                    <span className="text-slate-700 dark:text-slate-300 font-bold">Target Capital:</span>
-                    <span className="font-black font-mono text-gray-950 dark:text-white text-base">
-                      {formatUGX(fg.target_amount)}
-                    </span>
-                  </div>
-
-                  <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden mt-2 shadow-inner">
-                    <div
-                      className="bg-gradient-to-r from-amber-500 to-emerald-400 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mt-2">
-                    <span>Allocated: {formatUGX(fg.current_amount)}</span>
-                    <span>{pct.toFixed(0)}% ready</span>
-                  </div>
-                </div>
-
-                {fg.target_date && (
-                  <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 pt-3 border-t border-slate-200 dark:border-white/10">
-                    <Calendar className="w-4 h-4 text-slate-500" />
-                    <span>Target Achievement Date: {fg.target_date}</span>
-                  </div>
-                )}
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Modal */}
-      {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl glass-panel p-6 border border-black/20 dark:border-white/20 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
-              <h3 className="font-black text-base text-gray-950 dark:text-white">Create Financial Milestone</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-                <X className="w-4 h-4" />
+      {/* 3. Create Goal Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-base font-black text-slate-950 dark:text-white">
+                New Savings Goal
+              </h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-3.5 mt-4 text-xs">
+            <form onSubmit={handleCreateGoal} className="space-y-4 text-xs">
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Milestone Title</label>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Goal Name
+                </label>
                 <input
                   type="text"
                   required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Start Mukono Poultry Farm, Buy Plot in Gayaza"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
+                  placeholder="e.g. New Laptop, Emergency Fund"
+                  value={goalName}
+                  onChange={(e) => setGoalName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Description</label>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Target Amount (UGX)
+                </label>
                 <input
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. 500 layers chicks & land lease"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
+                  type="number"
+                  min="1"
+                  required
+                  placeholder="e.g. 3000000"
+                  value={targetAmount}
+                  onChange={(e) => setTargetAmount(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm font-black font-mono text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-gray-900 dark:text-white mb-1">Target Capital (UGX)</label>
-                  <input
-                    type="number"
-                    required
-                    value={targetAmount}
-                    onChange={(e) => setTargetAmount(e.target.value)}
-                    placeholder="6,000,000"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black text-base"
-                  />
-                </div>
-                <div>
-                  <label className="block font-bold text-gray-900 dark:text-white mb-1">Target Date</label>
-                  <input
-                    type="date"
-                    value={targetDate}
-                    onChange={(e) => setTargetDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Purpose / Category (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Tech upgrade, Safety buffer"
+                  value={goalPurpose}
+                  onChange={(e) => setGoalPurpose(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-medium text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
               </div>
 
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Target Date (Optional)
+                </label>
+                <input
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-sm cursor-pointer"
+                >
+                  Create Goal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* 4. Add Contribution Modal */}
+      {contributeGoalId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-base font-black text-slate-950 dark:text-white">
+                Add Contribution
+              </h2>
               <button
-                type="submit"
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer mt-2"
+                onClick={() => setContributeGoalId(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
               >
-                Create Milestone
+                <X className="w-5 h-5" />
               </button>
+            </div>
+
+            <form onSubmit={handleContribute} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                  Contribution Amount (UGX)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  required
+                  placeholder="e.g. 100000"
+                  value={contributionAmount}
+                  onChange={(e) => setContributionAmount(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-sm font-black font-mono text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+
+              {accounts.length > 0 && (
+                <div>
+                  <label className="block text-xs font-bold text-slate-900 dark:text-white mb-1">
+                    Deduct from Account (Optional)
+                  </label>
+                  <select
+                    value={selectedAccountId}
+                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs font-bold text-slate-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="">Do not deduct balance</option>
+                    {accounts.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.name} ({formatCurrency(a.balance)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setContributeGoalId(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold transition-colors shadow-sm cursor-pointer"
+                >
+                  Record Contribution
+                </button>
+              </div>
             </form>
           </div>
         </div>
