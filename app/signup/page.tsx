@@ -13,7 +13,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  ShieldCheck,
 } from 'lucide-react';
 
 export default function SignupPage() {
@@ -313,12 +312,6 @@ export default function SignupPage() {
               )}
             </button>
           </form>
-
-          {/* Privacy Guarantee */}
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-semibold text-center">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Bank-grade encryption & 100% private data isolation</span>
-          </div>
 
           {/* Link to Login */}
           <div className="pt-3 border-t border-white/10 text-center text-xs">

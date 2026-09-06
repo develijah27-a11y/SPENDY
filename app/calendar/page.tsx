@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
-import { formatCurrency, formatUGX, formatDate } from '@/lib/formatters';
+import { formatCurrency, formatUGX, formatCompactUGX, formatDate } from '@/lib/formatters';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -177,7 +177,7 @@ export default function CalendarPage() {
           <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
             {/* Empty slots for start of month */}
             {Array.from({ length: firstDayIndex }).map((_, i) => (
-              <div key={`empty-${i}`} className="min-h-[64px] sm:min-h-[76px] rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] opacity-30" />
+              <div key={`empty-${i}`} className="min-h-[52px] sm:min-h-[76px] rounded-xl sm:rounded-2xl bg-black/[0.02] dark:bg-white/[0.02] opacity-30" />
             ))}
 
             {/* Days of the month */}
@@ -197,7 +197,7 @@ export default function CalendarPage() {
                 <button
                   key={`day-${day}`}
                   onClick={() => setSelectedDay(day)}
-                  className={`min-h-[64px] sm:min-h-[76px] p-2 rounded-2xl text-left transition-all relative flex flex-col justify-between border cursor-pointer ${
+                  className={`min-h-[52px] sm:min-h-[76px] p-1 sm:p-2 rounded-xl sm:rounded-2xl text-left transition-all relative flex flex-col justify-between border cursor-pointer touch-target ${
                     isSelected
                       ? 'bg-emerald-500/20 border-emerald-500 shadow-md ring-2 ring-emerald-500/40'
                       : isToday
@@ -207,7 +207,7 @@ export default function CalendarPage() {
                 >
                   <div className="flex items-center justify-between w-full">
                     <span
-                      className={`text-xs font-black rounded-full w-5 h-5 flex items-center justify-center ${
+                      className={`text-[11px] sm:text-xs font-black rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center ${
                         isToday
                           ? 'bg-emerald-600 text-white'
                           : isSelected
@@ -218,22 +218,22 @@ export default function CalendarPage() {
                       {day}
                     </span>
                     {data.list.length > 0 && (
-                      <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 font-mono">
+                      <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
                         {data.list.length}
                       </span>
                     )}
                   </div>
 
                   {/* Day activity pills */}
-                  <div className="space-y-0.5 mt-1 overflow-hidden">
+                  <div className="space-y-0.5 mt-0.5 overflow-hidden w-full">
                     {hasIncome && (
-                      <div className="text-[9px] sm:text-[10px] font-black text-emerald-600 dark:text-emerald-400 font-mono truncate">
-                        +{formatUGX(data.income)}
+                      <div className="text-[8px] sm:text-[10px] font-black text-emerald-600 dark:text-emerald-400 font-mono truncate leading-none">
+                        +{formatCompactUGX(data.income)}
                       </div>
                     )}
                     {hasExpense && (
-                      <div className="text-[9px] sm:text-[10px] font-black text-red-600 dark:text-red-400 font-mono truncate">
-                        -{formatUGX(data.expenses)}
+                      <div className="text-[8px] sm:text-[10px] font-black text-red-600 dark:text-red-400 font-mono truncate leading-none">
+                        -{formatCompactUGX(data.expenses)}
                       </div>
                     )}
                   </div>

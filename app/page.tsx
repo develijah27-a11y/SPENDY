@@ -63,7 +63,6 @@ export default function LandingPage() {
             <a href="#preview" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Overview</a>
             <a href="#problem" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Why Spendy</a>
             <a href="#capabilities" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Capabilities</a>
-            <a href="#security" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">Security</a>
             <a href="#faq" className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">FAQ</a>
           </nav>
 
@@ -394,51 +393,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Section 5 — Factual Security & Privacy */}
-      <section id="security" className="py-16 px-4 sm:px-6 bg-slate-100 dark:bg-slate-900/40 border-y border-slate-200 dark:border-slate-800">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-              DATA SECURITY &amp; PRIVACY
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-950 dark:text-white">
-              Built with database-level isolation
-            </h2>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-left text-xs">
-            <div className="p-4 rounded-xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold">
-                <Lock className="w-4 h-4" />
-              </div>
-              <h4 className="font-bold text-sm text-slate-950 dark:text-white">Row Level Security</h4>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                PostgreSQL policies enforce that queries match your authenticated user ID at the database layer.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-teal-100 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center font-bold">
-                <ShieldCheck className="w-4 h-4" />
-              </div>
-              <h4 className="font-bold text-sm text-slate-950 dark:text-white">Encrypted Sessions</h4>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Credentials are cryptographically hashed and sessions expire securely according to standard auth protocols.
-              </p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 flex items-center justify-center font-bold">
-                <Zap className="w-4 h-4" />
-              </div>
-              <h4 className="font-bold text-sm text-slate-950 dark:text-white">Zero Third-Party Sharing</h4>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                Your personal transactions and balances are never sold, monetized, or shared with advertising networks.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* 6. Section 6 — Final CTA */}
       <section className="py-20 px-4 sm:px-6 text-center max-w-3xl mx-auto space-y-6">

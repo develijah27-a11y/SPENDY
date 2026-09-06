@@ -41,8 +41,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Navbar />
                 </div>
 
-                {/* Page Content with safe padding */}
-                <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-32 lg:pb-12 max-w-full overflow-x-hidden">
+                {/* Page Content with safe padding for mobile bottom bar */}
+                <main className="flex-1 w-full max-w-7xl mx-auto p-3.5 sm:p-6 lg:p-8 pb-[calc(env(safe-area-inset-bottom,0px)+6.5rem)] lg:pb-12 max-w-full overflow-x-hidden">
                   {children}
                 </main>
               </div>

@@ -35,7 +35,7 @@ export function SavingsGoalWidget() {
           </div>
         </div>
         <Link
-          href="/savings"
+          href="/goals"
           className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1 transition-colors"
         >
           <span>View all</span>

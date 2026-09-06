@@ -72,8 +72,21 @@ export function QuickAddModal() {
       }
       const defaultCat = categories.find((c) => c.type === (quickAddInitialTab === 'income' ? 'income' : 'expense'));
       if (defaultCat) setCategoryId(defaultCat.id);
+
+      // Lock body scroll and listen for Escape key
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') closeQuickAdd();
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        document.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
     }
-  }, [quickAddOpen, quickAddInitialTab, accounts, categories]);
+  }, [quickAddOpen, quickAddInitialTab, accounts, categories, closeQuickAdd]);
 
   const handleTabChange = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer') => {
     setActiveTab(tab);
@@ -175,84 +188,99 @@ export function QuickAddModal() {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-lg rounded-3xl glass-panel border border-black/20 dark:border-white/20 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Record Money Activity"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) closeQuickAdd();
+      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+    >
+      <div className="w-full max-w-lg rounded-t-[28px] sm:rounded-3xl glass-panel border-t sm:border border-black/20 dark:border-white/20 p-5 sm:p-6 shadow-2xl relative max-h-[92vh] sm:max-h-[88vh] overflow-y-auto pb-safe">
+        {/* Mobile Drag Indicator Bar */}
+        <div className="sm:hidden w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-3" />
+
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
-          <h3 className="text-lg font-black text-gray-950 dark:text-white">Record Money Activity</h3>
+          <div>
+            <h3 className="text-base sm:text-lg font-black text-gray-950 dark:text-white">Record Money Activity</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">Uganda Shillings transaction</p>
+          </div>
           <button
             onClick={closeQuickAdd}
-            className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white transition-colors cursor-pointer"
+            aria-label="Close dialog"
+            className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white transition-colors cursor-pointer touch-target flex items-center justify-center"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
-        {/* Tab Switcher - 5 Tabs */}
-        <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-4 border border-slate-200 dark:border-slate-800 text-[10px] sm:text-xs">
+        {/* Tab Switcher - 5 Tabs (Scrollable pill strip on small mobile, clean grid on larger) */}
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-3.5 border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto scrollbar-none">
           <button
             type="button"
             onClick={() => handleTabChange('expense')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
+            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'expense'
-                ? 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+                ? 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <MinusCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Expense</span>
+            <span className="text-[11px] sm:text-xs">Expense</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('income')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
+            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'income'
-                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+                ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <PlusCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Income</span>
+            <span className="text-[11px] sm:text-xs">Income</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('loan')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
+            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'loan'
-                ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+                ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <HandCoins className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Loan</span>
+            <span className="text-[11px] sm:text-xs">Loan</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('transfer')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
+            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'transfer'
-                ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+                ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <ArrowRightLeft className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Transfer</span>
+            <span className="text-[11px] sm:text-xs">Transfer</span>
           </button>
 
           <button
             type="button"
             onClick={() => handleTabChange('pay')}
-            className={`py-2 px-1 rounded-xl font-bold flex flex-col items-center justify-center gap-1 transition-all cursor-pointer truncate ${
+            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'pay'
-                ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-sm'
-                : 'text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white'
+                ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shadow-xs'
+                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
             <Store className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Pay</span>
+            <span className="text-[11px] sm:text-xs">Pay</span>
           </button>
         </div>
 
@@ -294,7 +322,7 @@ export function QuickAddModal() {
                   type="button"
                   key={q}
                   onClick={() => setAmount(q.toString())}
-                  className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/20 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-500/20 active:scale-95 text-slate-800 dark:text-slate-200 text-xs font-bold font-mono tabular-nums border border-slate-200 dark:border-slate-700 transition-all cursor-pointer touch-target flex items-center justify-center"
                 >
                   +{formatCurrency(q)}
                 </button>

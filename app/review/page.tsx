@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatUGX, formatMonthName, getCurrentMonthKey } from '@/lib/formatters';
 import {
@@ -16,6 +16,21 @@ export default function ReviewPage() {
   const currentMonthKey = getCurrentMonthKey();
 
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
+
+  // Dynamically generate the last 12 months
+  const availableMonths = useMemo(() => {
+    const list = [];
+    const now = new Date();
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      list.push({
+        key,
+        label: `${formatMonthName(key)}${i === 0 ? ' (Current)' : ''}`,
+      });
+    }
+    return list;
+  }, []);
 
   // Parse previous month
   const [year, month] = selectedMonth.split('-').map(Number);
@@ -36,10 +51,10 @@ export default function ReviewPage() {
 
   const prevExpenses = prevMonthTx
     .filter((t) => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0) || 1200000;
+    .reduce((sum, t) => sum + t.amount, 0);
 
   const expenseDiff = currentExpenses - prevExpenses;
-  const expensePctChange = prevExpenses > 0 ? ((expenseDiff / prevExpenses) * 100).toFixed(1) : '0';
+  const expensePctChange = prevExpenses > 0 ? ((expenseDiff / prevExpenses) * 100).toFixed(1) : (currentExpenses > 0 ? '100' : '0');
 
   // Category totals
   const categoryTotals: Record<string, { name: string; amount: number; color: string }> = {};
@@ -73,15 +88,18 @@ export default function ReviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold shadow-sm"
+            aria-label="Select month for financial review"
+            className="px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold shadow-sm cursor-pointer touch-target"
           >
-            <option value={currentMonthKey}>{formatMonthName(currentMonthKey)} (Current)</option>
-            <option value="2026-07">July 2026</option>
-            <option value="2026-06">June 2026</option>
+            {availableMonths.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
           </select>
 
           <button

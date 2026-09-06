@@ -30,7 +30,7 @@ export function RecentTransactionsWidget() {
           </div>
         </div>
         <Link
-          href="/spending"
+          href="/transactions"
           className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1 transition-colors"
         >
           <span>See all</span>

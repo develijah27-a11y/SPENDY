@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,15 @@ import {
   Settings,
   X,
   Download,
+  Landmark,
+  Scale,
+  Repeat,
+  Sparkles,
+  Calendar,
+  CalendarCheck2,
+  Tag,
+  ArrowUpRight,
+  ChevronRight,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 
@@ -22,84 +31,209 @@ export function BottomNav() {
   const pathname = usePathname();
   const { openQuickAdd, exportDataCSV } = useSpendy();
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const drawerRef = useRef<HTMLDivElement>(null);
 
-  const moreItems = [
-    { label: 'Goals', href: '/goals', icon: Target, desc: 'Target milestones' },
-    { label: 'Insights', href: '/reports', icon: PieChart, desc: 'Spending allocation' },
-    { label: 'Settings', href: '/settings', icon: Settings, desc: 'Preferences & profile' },
+  // Close on Escape key
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setShowMoreMenu(false);
+      }
+    }
+    if (showMoreMenu) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [showMoreMenu]);
+
+  // Sections of features for the mobile drawer
+  const featureSections = [
+    {
+      title: 'Money Operations',
+      items: [
+        { label: 'Accounts & Wallets', href: '/accounts', icon: Landmark, desc: 'MTN MoMo, Airtel & Banks', badge: null },
+        { label: 'Income Inflows', href: '/income', icon: ArrowUpRight, desc: 'Track salaries & business earnings', badge: null },
+        { label: 'Transaction Logs', href: '/transactions', icon: ReceiptText, desc: 'Search & filter history', badge: null },
+      ],
+    },
+    {
+      title: 'Planning & Commitments',
+      items: [
+        { label: 'Monthly Budgets', href: '/budgets', icon: PiggyBank, desc: 'Category spending caps', badge: null },
+        { label: 'Savings Milestones', href: '/goals', icon: Target, desc: 'Emergency funds & goals', badge: null },
+        { label: 'Recurring Subscriptions', href: '/recurring', icon: Repeat, desc: 'Rent, Yaka, WiFi & bills', badge: null },
+        { label: 'Debt & Loan Tracker', href: '/debts', icon: Scale, desc: 'Track owed money & repayments', badge: null },
+      ],
+    },
+    {
+      title: 'Intelligence & Review',
+      items: [
+        { label: 'AI Financial Coach', href: '/coach', icon: Sparkles, desc: 'Personalized spending advice', badge: 'AI' },
+        { label: 'Cashflow Calendar', href: '/calendar', icon: Calendar, desc: 'Daily income & expense matrix', badge: null },
+        { label: 'Insights & Analytics', href: '/reports', icon: PieChart, desc: 'Category distribution & trends', badge: null },
+        { label: 'Monthly Debrief', href: '/review', icon: CalendarCheck2, desc: 'Month-end financial review', badge: null },
+      ],
+    },
+    {
+      title: 'System & Tools',
+      items: [
+        { label: 'Spending Categories', href: '/categories', icon: Tag, desc: 'Uganda taxonomy setup', badge: null },
+        { label: 'Settings & Security', href: '/settings', icon: Settings, desc: 'Preferences, profile & PIN', badge: null },
+      ],
+    },
   ];
+
+  const isMoreActive = [
+    '/goals',
+    '/reports',
+    '/settings',
+    '/accounts',
+    '/debts',
+    '/recurring',
+    '/coach',
+    '/calendar',
+    '/review',
+    '/categories',
+    '/income',
+  ].some((path) => pathname.startsWith(path));
 
   return (
     <>
       {/* Mobile Drawer Sheet */}
       {showMoreMenu && (
-        <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#0E1628] border-t border-slate-200 dark:border-slate-800 rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-150 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 className="font-bold text-sm text-slate-950 dark:text-white">More Options</h3>
-              <button
-                onClick={() => setShowMoreMenu(false)}
-                className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-slate-950 dark:hover:text-white cursor-pointer touch-target flex items-center justify-center"
-              >
-                <X className="w-4 h-4" />
-              </button>
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Spendy Navigation Hub"
+          className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end bg-black/75 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowMoreMenu(false);
+          }}
+        >
+          <div
+            ref={drawerRef}
+            className="bg-white dark:bg-[#0B1120] border-t border-slate-200 dark:border-slate-800 rounded-t-[28px] max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-200 shadow-2xl"
+          >
+            {/* Grab handle & header */}
+            <div className="pt-3 pb-3 px-5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+              <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-3" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-base text-slate-950 dark:text-white flex items-center gap-2">
+                    <span>Feature Hub</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      Spendy
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    All financial tools and operations
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowMoreMenu(false)}
+                  aria-label="Close menu"
+                  className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white cursor-pointer touch-target flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5">
-              {moreItems.map((item) => {
-                const Icon = item.icon;
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setShowMoreMenu(false)}
-                    className={cn(
-                      'flex items-center gap-3 p-3.5 rounded-xl border transition-all text-left shadow-xs cursor-pointer touch-target',
-                      isActive
-                        ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold'
-                        : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
-                    )}
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold leading-tight truncate">{item.label}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{item.desc}</p>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+            {/* Scrollable Hub Content */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-5 pb-safe">
+              {featureSections.map((section) => (
+                <div key={section.title} className="space-y-2">
+                  <h4 className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 px-1">
+                    {section.title}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href || (item.href !== '/app' && pathname.startsWith(item.href));
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setShowMoreMenu(false)}
+                          className={cn(
+                            'flex items-center justify-between p-3 rounded-2xl border transition-all text-left shadow-2xs cursor-pointer touch-target active:scale-[0.98]',
+                            isActive
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold'
+                              : 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          )}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div
+                              className={cn(
+                                'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs',
+                                isActive
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                              )}
+                            >
+                              <Icon className="w-4 h-4" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-bold leading-tight truncate text-slate-950 dark:text-white">
+                                {item.label}
+                              </p>
+                              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                                {item.desc}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                            {item.badge && (
+                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+                                {item.badge}
+                              </span>
+                            )}
+                            <ChevronRight className="w-4 h-4 text-slate-400" />
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
 
-            <button
-              onClick={() => {
-                exportDataCSV();
-                setShowMoreMenu(false);
-              }}
-              className="w-full py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer touch-target"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Report</span>
-            </button>
+              {/* Data Export Button */}
+              <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button
+                  onClick={() => {
+                    exportDataCSV();
+                    setShowMoreMenu(false);
+                  }}
+                  className="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer touch-target active:scale-98 transition-transform"
+                >
+                  <Download className="w-4 h-4 text-slate-500" />
+                  <span>Download Financial Data Report (CSV)</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Fixed Bottom Navigation Bar - Strict 5-Column Grid */}
+      {/* Fixed Bottom Navigation Bar - Mobile Thumb Zone */}
       <nav
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#070A12]/95 border-t border-slate-200 dark:border-slate-800 px-2 py-1.5 grid grid-cols-5 items-center shadow-lg backdrop-blur-xl"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#070A12]/95 border-t border-slate-200/90 dark:border-slate-800/90 px-2 pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+0.35rem)] grid grid-cols-5 items-center shadow-lg backdrop-blur-xl"
       >
         {/* Tab 1: Home */}
         <Link
           href="/app"
           className={cn(
-            'flex flex-col items-center justify-center py-1.5 rounded-xl transition-all cursor-pointer touch-target',
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname === '/app'
-              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-medium'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-semibold'
           )}
         >
           <LayoutDashboard className="w-5 h-5" />
@@ -110,24 +244,24 @@ export function BottomNav() {
         <Link
           href="/transactions"
           className={cn(
-            'flex flex-col items-center justify-center py-1.5 rounded-xl transition-all cursor-pointer touch-target',
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname.startsWith('/transactions')
-              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-medium'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-semibold'
           )}
         >
           <ReceiptText className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">History</span>
+          <span className="text-[10px] mt-0.5">Activity</span>
         </Link>
 
-        {/* Tab 3: Quick Add (+) */}
+        {/* Tab 3: Quick Add (+) Thumb Button */}
         <div className="flex items-center justify-center">
           <button
             onClick={() => openQuickAdd('expense')}
             aria-label="Add transaction"
-            className="w-11 h-11 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-md active:scale-95 transition-all cursor-pointer touch-target"
+            className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer touch-target"
           >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
+            <Plus className="w-6 h-6 stroke-[3]" />
           </button>
         </div>
 
@@ -135,28 +269,30 @@ export function BottomNav() {
         <Link
           href="/budgets"
           className={cn(
-            'flex flex-col items-center justify-center py-1.5 rounded-xl transition-all cursor-pointer touch-target',
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname.startsWith('/budgets')
-              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-medium'
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-semibold'
           )}
         >
           <PiggyBank className="w-5 h-5" />
           <span className="text-[10px] mt-0.5">Budgets</span>
         </Link>
 
-        {/* Tab 5: More Options */}
+        {/* Tab 5: Feature Hub ("More") */}
         <button
           onClick={() => setShowMoreMenu(true)}
+          aria-label="Open More navigation tools"
+          aria-expanded={showMoreMenu}
           className={cn(
-            'flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-medium transition-all cursor-pointer touch-target',
-            pathname === '/goals' || pathname === '/reports' || pathname === '/settings'
-              ? 'text-emerald-600 dark:text-emerald-400 font-bold'
-              : ''
+            'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
+            isMoreActive
+              ? 'text-emerald-600 dark:text-emerald-400 font-black'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white font-semibold'
           )}
         >
           <MoreHorizontal className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">More</span>
+          <span className="text-[10px] mt-0.5">Hub</span>
         </button>
       </nav>
     </>

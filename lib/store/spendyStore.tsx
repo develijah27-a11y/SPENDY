@@ -247,158 +247,98 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
     if (!userId) return;
     setIsLoadingData(true);
 
+    const storageKey = `spendy_user_vault_${userId}`;
+
+    // 1. Instant local vault hydration (0ms render time)
     try {
-      // 1. Fetch Profile
-      let profileStartingBal = 0;
-      let profileBuffer = 50000;
-      let profileFullName = metaFullName || userEmail.split('@')[0] || 'User';
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.user) setUser(parsed.user);
+        if (parsed.startingBalance !== undefined) setStartingBalanceState(parsed.startingBalance);
+        if (parsed.transactions) setTransactions(parsed.transactions);
+        if (parsed.budgets) setBudgets(parsed.budgets);
+        if (parsed.savingsGoals) setSavingsGoals(parsed.savingsGoals);
+        if (parsed.loans) setLoans(parsed.loans);
+        if (parsed.accounts && parsed.accounts.length > 0) setAccounts(parsed.accounts);
+        if (parsed.categories && parsed.categories.length > 0) setCategories(parsed.categories);
+        if (parsed.transfers) setTransfers(parsed.transfers);
+        if (parsed.debts) setDebts(parsed.debts);
+        if (parsed.financialGoals) setFinancialGoals(parsed.financialGoals);
+        if (parsed.recurringTransactions) setRecurringTransactions(parsed.recurringTransactions);
+        if (parsed.notifications) setNotifications(parsed.notifications);
+      }
+    } catch {
+      // safe
+    }
 
-      if (isSupabaseConfigured()) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
+    if (!isSupabaseConfigured()) {
+      setIsLoadingData(false);
+      return;
+    }
 
-        if (profileData) {
-          profileFullName = profileData.full_name || profileFullName;
-          profileStartingBal = Number(profileData.starting_balance || 0);
-          profileBuffer = Number(profileData.safe_spend_emergency_buffer || 50000);
+    try {
+      // 2. Fetch cloud data concurrently with a 3.5-second timeout safeguard
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Cloud sync timeout')), 3500));
+
+      const cloudFetches = Promise.allSettled([
+        supabase.from('profiles').select('*').eq('id', userId).single(),
+        supabase.from('categories').select('*').or(`user_id.is.null,user_id.eq.${userId}`),
+        supabase.from('accounts').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
+        supabase.from('transactions').select('*').eq('user_id', userId).order('transaction_date', { ascending: false }),
+        supabase.from('budgets').select('*').eq('user_id', userId),
+        supabase.from('savings_goals').select('*').eq('user_id', userId),
+        supabase.from('loans').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+        supabase.from('transfers').select('*').eq('user_id', userId).order('transfer_date', { ascending: false }),
+        supabase.from('financial_goals').select('*').eq('user_id', userId),
+        supabase.from('recurring_transactions').select('*').eq('user_id', userId),
+        supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      ]);
+
+      const results = await Promise.race([cloudFetches, timeoutPromise]) as PromiseSettledResult<any>[];
+
+      // Unpack results safely
+      if (Array.isArray(results)) {
+        const [
+          profileRes,
+          catRes,
+          accRes,
+          txRes,
+          budgetRes,
+          goalRes,
+          loanRes,
+          transferRes,
+          finGoalRes,
+          recRes,
+          notifRes
+        ] = results;
+
+        if (profileRes.status === 'fulfilled' && profileRes.value.data) {
+          const profileData = profileRes.value.data;
+          const profileFullName = profileData.full_name || metaFullName || userEmail.split('@')[0] || 'User';
+          const profileStartingBal = Number(profileData.starting_balance || 0);
+          const profileBuffer = Number(profileData.safe_spend_emergency_buffer || 50000);
+          setUser({
+            id: userId,
+            email: userEmail,
+            full_name: profileFullName,
+            default_currency: 'UGX',
+            starting_balance: profileStartingBal,
+            safe_spend_emergency_buffer: profileBuffer,
+          });
+          setStartingBalanceState(profileStartingBal);
         }
 
-        setUser({
-          id: userId,
-          email: userEmail,
-          full_name: profileFullName,
-          default_currency: 'UGX',
-          starting_balance: profileStartingBal,
-          safe_spend_emergency_buffer: profileBuffer,
-        });
-        setStartingBalanceState(profileStartingBal);
-
-        // 2. Fetch Categories
-        const { data: dbCategories } = await supabase
-          .from('categories')
-          .select('*')
-          .or(`user_id.is.null,user_id.eq.${userId}`);
-
-        if (dbCategories && dbCategories.length > 0) {
-          setCategories(dbCategories);
-        } else {
-          setCategories(DEFAULT_SYSTEM_CATEGORIES);
+        if (catRes.status === 'fulfilled' && catRes.value.data && catRes.value.data.length > 0) {
+          setCategories(catRes.value.data);
         }
 
-        // 3. Fetch Accounts
-        const { data: dbAccounts } = await supabase
-          .from('accounts')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: true });
-
-        if (dbAccounts && dbAccounts.length > 0) {
-          setAccounts(dbAccounts);
-        } else {
-          const defaultAcc: Account = {
-            id: generateUUID(),
-            user_id: userId,
-            name: 'Cash / Mobile Money',
-            type: 'cash',
-            balance: 0,
-            currency: 'UGX',
-            color: '#10B981',
-            is_archived: false,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-          setAccounts([defaultAcc]);
-          await supabase.from('accounts').insert(defaultAcc);
-        }
-
-        // 4. Fetch Transactions
-        const { data: dbTransactions } = await supabase
-          .from('transactions')
-          .select('*')
-          .eq('user_id', userId)
-          .order('transaction_date', { ascending: false });
-
-        setTransactions(dbTransactions || []);
-
-        // 5. Fetch Budgets
-        const { data: dbBudgets } = await supabase
-          .from('budgets')
-          .select('*')
-          .eq('user_id', userId);
-
-        setBudgets(dbBudgets || []);
-
-        // 6. Fetch Savings Goals
-        const { data: dbGoals } = await supabase
-          .from('savings_goals')
-          .select('*')
-          .eq('user_id', userId);
-
-        setSavingsGoals(dbGoals || []);
-
-        // 7. Fetch Loans
-        const { data: dbLoans } = await supabase
-          .from('loans')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        setLoans(dbLoans || []);
-
-        // 8. Fetch Transfers
-        const { data: dbTransfers } = await supabase
-          .from('transfers')
-          .select('*')
-          .eq('user_id', userId)
-          .order('transfer_date', { ascending: false });
-
-        setTransfers(dbTransfers || []);
-
-        // 9. Fetch Financial Goals
-        const { data: dbFinGoals } = await supabase
-          .from('financial_goals')
-          .select('*')
-          .eq('user_id', userId);
-
-        setFinancialGoals(dbFinGoals || []);
-
-        // 10. Fetch Recurring Transactions
-        const { data: dbRecurring } = await supabase
-          .from('recurring_transactions')
-          .select('*')
-          .eq('user_id', userId);
-
-        setRecurringTransactions(dbRecurring || []);
-
-        // 11. Fetch Notifications
-        const { data: dbNotifs } = await supabase
-          .from('notifications')
-          .select('*')
-          .eq('user_id', userId)
-          .order('created_at', { ascending: false });
-
-        setNotifications(dbNotifs || []);
-      } else {
-        const storageKey = `spendy_user_vault_${userId}`;
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed.transactions) setTransactions(parsed.transactions);
-          if (parsed.budgets) setBudgets(parsed.budgets);
-          if (parsed.savingsGoals) setSavingsGoals(parsed.savingsGoals);
-          if (parsed.loans) setLoans(parsed.loans);
-          if (parsed.accounts) setAccounts(parsed.accounts);
-          if (parsed.categories) setCategories(parsed.categories);
-        } else {
-          setTransactions([]);
-          setBudgets([]);
-          setSavingsGoals([]);
-          setLoans([]);
-          setAccounts([
-            {
+        if (accRes.status === 'fulfilled' && accRes.value.data && accRes.value.data.length > 0) {
+          setAccounts(accRes.value.data);
+        } else if (accRes.status === 'fulfilled' && (!accRes.value.data || accRes.value.data.length === 0)) {
+          setAccounts((prev) => {
+            if (prev.length > 0) return prev;
+            const defaultAcc: Account = {
               id: generateUUID(),
               user_id: userId,
               name: 'Cash / Mobile Money',
@@ -409,12 +349,39 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
               is_archived: false,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
-            },
-          ]);
+            };
+            Promise.resolve(supabase.from('accounts').insert(defaultAcc)).catch(() => {});
+            return [defaultAcc];
+          });
+        }
+
+        if (txRes.status === 'fulfilled' && txRes.value.data) {
+          setTransactions(txRes.value.data);
+        }
+        if (budgetRes.status === 'fulfilled' && budgetRes.value.data) {
+          setBudgets(budgetRes.value.data);
+        }
+        if (goalRes.status === 'fulfilled' && goalRes.value.data) {
+          setSavingsGoals(goalRes.value.data);
+        }
+        if (loanRes.status === 'fulfilled' && loanRes.value.data) {
+          setLoans(loanRes.value.data);
+        }
+        if (transferRes.status === 'fulfilled' && transferRes.value.data) {
+          setTransfers(transferRes.value.data);
+        }
+        if (finGoalRes.status === 'fulfilled' && finGoalRes.value.data) {
+          setFinancialGoals(finGoalRes.value.data);
+        }
+        if (recRes.status === 'fulfilled' && recRes.value.data) {
+          setRecurringTransactions(recRes.value.data);
+        }
+        if (notifRes.status === 'fulfilled' && notifRes.value.data) {
+          setNotifications(notifRes.value.data);
         }
       }
     } catch (err) {
-      console.warn('Error loading user data:', err);
+      console.warn('Background cloud data sync handled safely (using local data):', err);
     } finally {
       setIsLoadingData(false);
     }
@@ -443,46 +410,51 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
 
     async function initAuth() {
       setIsLoadingAuth(true);
-      if (!isSupabaseConfigured()) {
-        try {
-          const savedAuth = localStorage.getItem('spendy_auth_session_v1');
-          if (savedAuth) {
-            const parsed = JSON.parse(savedAuth);
-            if (parsed.user?.id) {
-              if (isMounted) {
-                setIsAuthenticated(true);
-                await loadUserDataFromSupabase(
-                  parsed.user.id,
-                  parsed.user.email || '',
-                  parsed.user.user_metadata?.full_name
-                );
-              }
+      // 1. Instant local session check (0ms render time)
+      try {
+        const savedAuth = localStorage.getItem('spendy_auth_session_v1');
+        if (savedAuth) {
+          const parsed = JSON.parse(savedAuth);
+          if (parsed.user?.id) {
+            if (isMounted) {
+              setIsAuthenticated(true);
+              await loadUserDataFromSupabase(
+                parsed.user.id,
+                parsed.user.email || '',
+                parsed.user.user_metadata?.full_name
+              );
             }
           }
-        } catch {
-          // safe
         }
+      } catch {
+        // safe
+      }
+
+      if (!isSupabaseConfigured()) {
         if (isMounted) setIsLoadingAuth(false);
         return;
       }
 
+      // 2. Background check with 2.5s timeout safeguard
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const sessionPromise = supabase.auth.getSession();
+        const timeoutPromise = new Promise<{ data: { session: null }; error: Error }>((_, reject) =>
+          setTimeout(() => reject(new Error('Session check timeout')), 2500)
+        );
+        const res = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
         if (isMounted) {
-          if (session?.user) {
+          if (res?.data?.session?.user) {
             setIsAuthenticated(true);
             await loadUserDataFromSupabase(
-              session.user.id,
-              session.user.email || '',
-              session.user.user_metadata?.full_name
+              res.data.session.user.id,
+              res.data.session.user.email || '',
+              res.data.session.user.user_metadata?.full_name
             );
-          } else {
-            setIsAuthenticated(false);
-            resetUserStore();
           }
         }
       } catch (err) {
-        console.warn('Auth session check error:', err);
+        console.warn('Auth session background check safely handled:', err);
       } finally {
         if (isMounted) setIsLoadingAuth(false);
       }

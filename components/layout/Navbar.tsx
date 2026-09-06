@@ -41,9 +41,16 @@ export function Navbar() {
         setShowUserMenu(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShowUserMenu(false);
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
@@ -119,28 +126,50 @@ export function Navbar() {
         </div>
 
         {/* Action Center */}
-        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          {/* Cloud Sync Status Indicator */}
+          {isAuthenticated && (
+            <button
+              onClick={triggerManualSync}
+              title={
+                syncState === 'syncing'
+                  ? `Syncing ${pendingSyncCount} changes with cloud`
+                  : syncState === 'offline'
+                  ? 'Offline mode (saved in IndexedDB). Tap to retry connection.'
+                  : 'Cloud Synced with PostgreSQL. Tap to refresh.'
+              }
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer touch-target active:scale-95 ${
+                syncState === 'syncing'
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400'
+                  : syncState === 'offline'
+                  ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                  : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+              }`}
+            >
+              {syncState === 'syncing' ? (
+                <RotateCcw className="w-3.5 h-3.5 animate-spin text-cyan-500" />
+              ) : syncState === 'offline' ? (
+                <WifiOff className="w-3.5 h-3.5 text-amber-500" />
+              ) : (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              )}
+              <span className="hidden sm:inline text-[11px]">
+                {syncState === 'syncing' ? 'Syncing...' : syncState === 'offline' ? 'Offline' : 'Synced'}
+              </span>
+            </button>
+          )}
+
           {/* Theme Quick Toggle (Visible on top navbar for easy access) */}
           <button
             onClick={toggleTheme}
             title={`Switch to ${resolvedTheme === 'dark' ? 'Light' : 'Dark'} Mode`}
-            className="p-2 sm:p-2.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/15 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shrink-0 active:scale-95 shadow-sm"
+            className="p-2 sm:p-2.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/15 text-slate-700 dark:text-slate-200 transition-all cursor-pointer shrink-0 active:scale-95 shadow-sm touch-target flex items-center justify-center"
           >
             {resolvedTheme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
               <Moon className="w-4 h-4 text-indigo-600" />
             )}
-          </button>
-
-          {/* Quick Add Button */}
-          <button
-            onClick={() => openQuickAdd('expense')}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 active:scale-95 transition-all cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4 shrink-0 stroke-[3]" />
-            <span className="hidden sm:inline">Add Entry</span>
-            <span className="sm:hidden">Add</span>
           </button>
 
           {/* User Menu */}

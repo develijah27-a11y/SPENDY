@@ -149,11 +149,34 @@ textarea:focus-visible {
   outline-offset: 2px;
 }
 
-/* Headings: Crisp & Bold */
+/* Headings: Crisp & Bold with modern balanced text wrapping */
 h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.02em;
   font-weight: 800;
   color: var(--foreground-heading);
+  text-wrap: balance;
+}
+
+/* Body & Copy Typography: Prevent orphans and runts */
+p, blockquote, li, .pretty-text {
+  text-wrap: pretty;
+}
+
+/* Safe area insets for mobile devices (iOS home indicator / notches) */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
+}
+.bottom-nav-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.35rem);
+}
+
+/* Touch usability: prevent zoom delays on double-tap and tap-highlight flashes */
+button, a, select, input, textarea {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* High contrast text guarantees in dark mode */

@@ -12,7 +12,6 @@ import {
   ArrowRight,
   AlertCircle,
   Loader2,
-  ShieldCheck,
 } from 'lucide-react';
 
 function LoginContent() {
@@ -162,12 +161,6 @@ function LoginContent() {
               )}
             </button>
           </form>
-
-          {/* Security Badge */}
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-300 font-semibold text-center pt-2">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Encrypted credentials &amp; isolated database access</span>
-          </div>
 
           {/* Link to Signup */}
           <div className="pt-3 border-t border-white/10 text-center text-xs">

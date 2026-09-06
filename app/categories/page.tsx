@@ -20,6 +20,22 @@ export default function CategoriesPage() {
   const [color, setColor] = useState('#10B981');
   const [icon, setIcon] = useState('Tag');
 
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowAddModal(false);
+    }
+    if (showAddModal) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [showAddModal]);
+
   const filteredCategories = categories.filter((c) => c.type === activeTab);
 
   const handleAddCategory = (e: React.FormEvent) => {
@@ -61,28 +77,28 @@ export default function CategoriesPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 text-xs">
+      <div className="flex flex-wrap gap-2 text-xs">
         <button
           onClick={() => setActiveTab('expense')}
-          className={`px-4 py-2.5 rounded-2xl font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+          className={`flex-1 sm:flex-none px-4 py-2.5 rounded-2xl font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs touch-target ${
             activeTab === 'expense'
               ? 'bg-red-500/20 text-red-700 dark:text-red-300 border border-red-500/40'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white border border-slate-200 dark:border-slate-700'
           }`}
         >
           <ArrowDownLeft className="w-4 h-4" />
-          <span>Expense Categories ({categories.filter((c) => c.type === 'expense').length})</span>
+          <span>Expenses ({categories.filter((c) => c.type === 'expense').length})</span>
         </button>
         <button
           onClick={() => setActiveTab('income')}
-          className={`px-4 py-2.5 rounded-2xl font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+          className={`flex-1 sm:flex-none px-4 py-2.5 rounded-2xl font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs touch-target ${
             activeTab === 'income'
               ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40'
               : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-gray-950 dark:hover:text-white border border-slate-200 dark:border-slate-700'
           }`}
         >
           <ArrowUpRight className="w-4 h-4" />
-          <span>Income Categories ({categories.filter((c) => c.type === 'income').length})</span>
+          <span>Income ({categories.filter((c) => c.type === 'income').length})</span>
         </button>
       </div>
 
@@ -111,13 +127,24 @@ export default function CategoriesPage() {
 
       {/* Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-3xl glass-panel p-6 border border-black/20 dark:border-white/20 shadow-2xl">
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          <div className="w-full max-w-md rounded-t-[28px] sm:rounded-3xl glass-panel p-5 sm:p-6 border-t sm:border border-black/20 dark:border-white/20 shadow-2xl pb-safe">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
               <h3 className="font-black text-base text-gray-950 dark:text-white">
                 Add Custom {activeTab === 'expense' ? 'Expense' : 'Income'} Category
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
+              <button
+                onClick={() => setShowAddModal(false)}
+                aria-label="Close modal"
+                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white cursor-pointer touch-target flex items-center justify-center"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -137,14 +164,14 @@ export default function CategoriesPage() {
 
               <div>
                 <label className="block font-bold text-gray-900 dark:text-white mb-1">Theme Color</label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#14B8A6', '#F97316'].map((col) => (
                     <button
                       key={col}
                       type="button"
                       onClick={() => setColor(col)}
-                      className={`w-7 h-7 rounded-full border-2 cursor-pointer ${
-                        color === col ? 'scale-125 ring-2 ring-emerald-500' : 'border-transparent'
+                      className={`w-8 h-8 rounded-full border-2 cursor-pointer touch-target flex items-center justify-center transition-transform ${
+                        color === col ? 'scale-110 ring-2 ring-emerald-500' : 'border-transparent'
                       }`}
                       style={{ backgroundColor: col }}
                     />
@@ -154,7 +181,7 @@ export default function CategoriesPage() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer mt-2"
+                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer touch-target mt-2 active:scale-98"
               >
                 Create Category
               </button>
