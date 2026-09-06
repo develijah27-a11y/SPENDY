@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import { cn, formatSingleName } from '@/lib/utils';
 import {
   LayoutDashboard,
   ReceiptText,
@@ -81,7 +81,7 @@ export function Sidebar() {
     router.push('/login');
   };
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const displayName = formatSingleName(profile?.full_name || user?.user_metadata?.full_name || user?.email, 'User');
 
   return (
     <aside className="hidden lg:flex flex-col w-64 h-screen sticky top-0 bg-white dark:bg-[#0B1120] border-r border-slate-200 dark:border-slate-800 p-4 shrink-0 shadow-xs z-30 justify-between overflow-y-auto">

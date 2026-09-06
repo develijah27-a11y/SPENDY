@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { buildFinancialSummary } from '@/lib/engines/financeEngine';
 import { formatUGX } from '@/lib/formatters';
+import { formatSingleName } from '@/lib/utils';
 import {
   Sparkles,
   Send,
@@ -33,7 +34,7 @@ export default function CoachPage() {
     {
       id: 'm-1',
       sender: 'ai',
-      text: `Hello ${user?.full_name?.split(' ')[0] || 'David'}! I am your Spendy AI Financial Coach. I've reviewed your accounts across MTN MoMo, Airtel, Cash, and Bank accounts.\n\nYou have a savings rate of ${financialSummary.savingsRatePercentage.toFixed(0)}% this month and a Safe-to-Spend allowance of ${formatUGX(financialSummary.safeToSpendDaily)}/day.\n\nHow can I help you optimize your money today?`,
+      text: `Hello ${formatSingleName(user?.full_name, 'Friend')}! I am your Spendy AI Financial Coach. I've reviewed your accounts across MTN MoMo, Airtel, Cash, and Bank accounts.\n\nYou have a savings rate of ${financialSummary.savingsRatePercentage.toFixed(0)}% this month and a Safe-to-Spend allowance of ${formatUGX(financialSummary.safeToSpendDaily)}/day.\n\nHow can I help you optimize your money today?`,
       timestamp: new Date().toISOString(),
     },
   ]);

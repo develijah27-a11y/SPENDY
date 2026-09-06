@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
 import { formatCurrency, isDateInPeriod } from '@/lib/formatters';
+import { formatSingleName } from '@/lib/utils';
 import { PeriodFilter } from '@/types';
 import {
   Wallet,
@@ -62,18 +63,8 @@ function DashboardMainContent() {
   }, []);
 
   const cleanFirstName = useMemo(() => {
-    if (profile?.full_name && profile.full_name.trim()) {
-      return profile.full_name.trim().split(' ')[0];
-    }
-    if (user?.user_metadata?.full_name && typeof user.user_metadata.full_name === 'string') {
-      return user.user_metadata.full_name.trim().split(' ')[0];
-    }
-    if (user?.email) {
-      const raw = user.email.split('@')[0].replace(/[0-9_.-]+$/, '');
-      if (raw.length >= 2) return raw.charAt(0).toUpperCase() + raw.slice(1);
-      return user.email.split('@')[0];
-    }
-    return 'there';
+    const raw = profile?.full_name || user?.user_metadata?.full_name || user?.email;
+    return formatSingleName(raw, 'Friend');
   }, [profile, user]);
 
   const todayFormatted = useMemo(() => {

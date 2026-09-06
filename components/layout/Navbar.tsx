@@ -7,6 +7,7 @@ import { useSpendy } from '@/lib/store/spendyStore';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useTheme } from '@/lib/theme/ThemeContext';
 import { SpendyLogo } from '@/components/ui/SpendyLogo';
+import { formatSingleName } from '@/lib/utils';
 import {
   Plus,
   RotateCcw,
@@ -61,21 +62,8 @@ export function Navbar() {
   };
 
   const getDisplayName = () => {
-    if (profile?.full_name && profile.full_name.trim()) {
-      return profile.full_name.trim();
-    }
-    if (user?.user_metadata?.full_name && typeof user.user_metadata.full_name === 'string' && user.user_metadata.full_name.trim()) {
-      return user.user_metadata.full_name.trim();
-    }
-    if (user?.email) {
-      const rawUser = user.email.split('@')[0];
-      const cleaned = rawUser.replace(/[0-9_.-]+$/, '');
-      if (cleaned.length >= 2) {
-        return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
-      }
-      return rawUser.charAt(0).toUpperCase() + rawUser.slice(1);
-    }
-    return 'User';
+    const raw = profile?.full_name || user?.user_metadata?.full_name || user?.email;
+    return formatSingleName(raw, 'User');
   };
 
   const displayName = getDisplayName();
