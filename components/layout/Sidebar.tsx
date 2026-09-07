@@ -26,6 +26,11 @@ import {
   RotateCcw,
   CheckCircle2,
   WifiOff,
+  Users,
+  Navigation,
+  Clock,
+  TrendingDown,
+  MessageSquare,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -54,6 +59,8 @@ export function Sidebar() {
       items: [
         { label: 'Budgets', href: '/budgets', icon: PiggyBank },
         { label: 'Goals', href: '/goals', icon: Target },
+        { label: 'SACCO & Chamas', href: '/sacco', icon: Users, badge: 'New' },
+        { label: 'Commute Meter', href: '/commute', icon: Navigation, badge: 'New' },
         { label: 'Recurring', href: '/recurring', icon: Repeat },
         { label: 'Debts & Loans', href: '/debts', icon: Scale },
       ],
@@ -61,6 +68,9 @@ export function Sidebar() {
     {
       title: 'Intelligence',
       items: [
+        { label: 'Survival Runway', href: '/runway', icon: Clock, badge: 'New' },
+        { label: 'Inflation Shield', href: '/inflation', icon: TrendingDown, badge: 'New' },
+        { label: 'SMS Auto-Parser', href: '/sms-parser', icon: MessageSquare, badge: 'AI' },
         { label: 'Analytics', href: '/reports', icon: PieChart },
         { label: 'AI Coach', href: '/coach', icon: Sparkles, badge: 'AI' },
         { label: 'Calendar', href: '/calendar', icon: Calendar },
@@ -163,6 +173,7 @@ export function Sidebar() {
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={true}
                       className={cn(
                         'flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer',
                         isActive

@@ -99,6 +99,7 @@ export function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
+                    prefetch={true}
                     className={`px-3 py-1.5 rounded-xl text-xs transition-all cursor-pointer ${
                       isActive
                         ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-black border border-emerald-500/30 shadow-sm'

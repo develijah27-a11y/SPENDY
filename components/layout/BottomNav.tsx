@@ -24,6 +24,11 @@ import {
   Tag,
   ArrowUpRight,
   ChevronRight,
+  Users,
+  Navigation,
+  Clock,
+  TrendingDown,
+  MessageSquare,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
 
@@ -67,6 +72,8 @@ export function BottomNav() {
       items: [
         { label: 'Monthly Budgets', href: '/budgets', icon: PiggyBank, desc: 'Category spending caps', badge: null },
         { label: 'Savings Milestones', href: '/goals', icon: Target, desc: 'Emergency funds & goals', badge: null },
+        { label: 'SACCO & Chamas', href: '/sacco', icon: Users, desc: 'Group shares, pool & dividends', badge: 'New' },
+        { label: 'Commute Meter', href: '/commute', icon: Navigation, desc: 'Daily Boda & taxi fuel burner', badge: 'New' },
         { label: 'Recurring Subscriptions', href: '/recurring', icon: Repeat, desc: 'Rent, Yaka, WiFi & bills', badge: null },
         { label: 'Debt & Loan Tracker', href: '/debts', icon: Scale, desc: 'Track owed money & repayments', badge: null },
       ],
@@ -74,6 +81,9 @@ export function BottomNav() {
     {
       title: 'Intelligence & Review',
       items: [
+        { label: 'Survival Runway', href: '/runway', icon: Clock, desc: 'Emergency survival calculator', badge: 'New' },
+        { label: 'Inflation Shield', href: '/inflation', icon: TrendingDown, desc: 'Uganda purchasing power hedger', badge: 'New' },
+        { label: 'SMS Auto-Parser', href: '/sms-parser', icon: MessageSquare, desc: 'MTN & Airtel SMS to activity', badge: 'AI' },
         { label: 'AI Financial Coach', href: '/coach', icon: Sparkles, desc: 'Personalized spending advice', badge: 'AI' },
         { label: 'Cashflow Calendar', href: '/calendar', icon: Calendar, desc: 'Daily income & expense matrix', badge: null },
         { label: 'Insights & Analytics', href: '/reports', icon: PieChart, desc: 'Category distribution & trends', badge: null },
@@ -160,6 +170,7 @@ export function BottomNav() {
                         <Link
                           key={item.href}
                           href={item.href}
+                          prefetch={true}
                           onClick={() => setShowMoreMenu(false)}
                           className={cn(
                             'flex items-center justify-between p-3 rounded-2xl border transition-all text-left shadow-2xs cursor-pointer touch-target active:scale-[0.98]',
@@ -229,6 +240,7 @@ export function BottomNav() {
         {/* Tab 1: Home */}
         <Link
           href="/app"
+          prefetch={true}
           className={cn(
             'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname === '/app'
@@ -243,6 +255,7 @@ export function BottomNav() {
         {/* Tab 2: Transactions */}
         <Link
           href="/transactions"
+          prefetch={true}
           className={cn(
             'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname.startsWith('/transactions')
@@ -268,6 +281,7 @@ export function BottomNav() {
         {/* Tab 4: Budgets */}
         <Link
           href="/budgets"
+          prefetch={true}
           className={cn(
             'flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer touch-target select-none',
             pathname.startsWith('/budgets')

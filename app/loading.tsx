@@ -1,6 +1,5 @@
 import React from 'react';
 import { SpendyLogo } from '@/components/ui/SpendyLogo';
-import { ShieldCheck } from 'lucide-react';
 
 export default function Loading() {
   return (
@@ -20,10 +19,9 @@ export default function Loading() {
           <h2 className="text-base font-black text-white tracking-tight">
             Loading Workspace
           </h2>
-          <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-emerald-400">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span>Encrypted Session • PostgreSQL Vault</span>
-          </div>
+          <p className="text-xs font-semibold text-slate-400">
+            Getting your financial data ready...
+          </p>
         </div>
 
         {/* Ultra-sleek progress line */}

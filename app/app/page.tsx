@@ -15,6 +15,12 @@ import {
   Plus,
   ChevronRight,
   PieChart,
+  Users,
+  Navigation,
+  Clock,
+  TrendingDown,
+  MessageSquare,
+  Sparkles,
 } from 'lucide-react';
 import { BalanceOverviewCard } from '@/components/dashboard/BalanceOverviewCard';
 import { SafeToSpendCard } from '@/components/dashboard/SafeToSpendCard';
@@ -251,6 +257,122 @@ function DashboardMainContent() {
               <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400">
                 Portion of income preserved
               </p>
+            </div>
+          </div>
+
+          {/* East Africa Smart Financial Suite */}
+          <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200/90 dark:border-slate-800/90 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  <Sparkles className="w-4 h-4" />
+                </span>
+                <div>
+                  <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                    Uganda Smart Financial Suite
+                  </h2>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    East Africa localized tools &amp; intelligence simulators
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
+              <Link
+                href="/sms-parser"
+                prefetch={true}
+                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 hover:border-teal-500/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition-all group flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-2 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform">
+                    <MessageSquare className="w-4 h-4" />
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-teal-500/15 text-teal-700 dark:text-teal-300">
+                    AI
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">SMS Parser</h3>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">MTN &amp; Airtel texts</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/sacco"
+                prefetch={true}
+                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 hover:border-emerald-500/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition-all group flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-2 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
+                    <Users className="w-4 h-4" />
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300">
+                    New
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">SACCO &amp; Chamas</h3>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Shares &amp; dividends</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/commute"
+                prefetch={true}
+                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 hover:border-blue-500/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition-all group flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-2 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
+                    <Navigation className="w-4 h-4" />
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-blue-500/15 text-blue-700 dark:text-blue-300">
+                    New
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">Commute Meter</h3>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Boda &amp; taxi burner</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/runway"
+                prefetch={true}
+                className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 hover:border-amber-500/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition-all group flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
+                    <Clock className="w-4 h-4" />
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                    New
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">Survival Runway</h3>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Liquid buffer days</p>
+                </div>
+              </Link>
+
+              <Link
+                href="/inflation"
+                prefetch={true}
+                className="col-span-2 sm:col-span-1 p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800/80 hover:border-rose-500/50 hover:bg-white dark:hover:bg-slate-900 hover:shadow-xs transition-all group flex flex-col justify-between"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <span className="p-2 rounded-xl bg-rose-500/15 text-rose-600 dark:text-rose-400 group-hover:scale-110 transition-transform">
+                    <TrendingDown className="w-4 h-4" />
+                  </span>
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-300">
+                    New
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white">Inflation Shield</h3>
+                  <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">Purchasing power</p>
+                </div>
+              </Link>
             </div>
           </div>
 
