@@ -66,6 +66,45 @@ function isNetworkError(err: unknown): boolean {
   );
 }
 
+// Cryptographic salt & hash for local fallback credentials (Web Crypto SHA-256)
+async function hashPassword(password: string, salt: string): Promise<string> {
+  try {
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(`${salt}:${password}:spendy_salt_ugx_2026`);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch {
+    // safe fallback
+  }
+  let hash = 0;
+  const str = `${salt}:${password}`;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16);
+}
+
+// Synchronize session cookies with Next.js edge middleware
+function syncSessionCookie(user: { id: string; email?: string } | null) {
+  if (typeof document === 'undefined') return;
+  if (user) {
+    const payload = encodeURIComponent(
+      JSON.stringify({
+        user: { id: user.id, email: user.email },
+        ts: Date.now(),
+      })
+    );
+    // 30 days expiry, SameSite=Lax, Path=/
+    document.cookie = `${LOCAL_AUTH_STORAGE_KEY}=${payload}; Path=/; Max-Age=2592000; SameSite=Lax`;
+  } else {
+    document.cookie = `${LOCAL_AUTH_STORAGE_KEY}=; Path=/; Max-Age=0; SameSite=Lax`;
+  }
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => createClient(), []);
   const [user, setUser] = useState<User | null>(null);
@@ -159,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           if (parsed.user) {
             setUser(parsed.user);
             setSession(parsed.session || null);
+            syncSessionCookie(parsed.user);
           }
         }
         if (savedProfile) {
@@ -187,6 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (isMounted && initialSession?.user) {
           setSession(initialSession);
           setUser(initialSession.user);
+          syncSessionCookie(initialSession.user);
           await fetchProfile(initialSession.user.id, initialSession.user.email || '');
         }
       } catch (e) {
@@ -206,11 +247,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (newSession?.user) {
           setSession(newSession);
           setUser(newSession.user);
+          syncSessionCookie(newSession.user);
           await fetchProfile(newSession.user.id, newSession.user.email || '');
         } else {
           setSession(null);
           setUser(null);
           setProfile(null);
+          syncSessionCookie(null);
         }
         setIsLoading(false);
       });
@@ -256,23 +299,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: 'Please enter both your email address and password.' };
       }
 
-      // Local credential check helper
-      const tryLocalSignIn = () => {
+      // Local credential check helper with cryptographic SHA-256 verification
+      const tryLocalSignIn = async () => {
         try {
           const registered = JSON.parse(localStorage.getItem('spendy_registered_users') || '[]');
           const matched = registered.find((u: any) => u.email === normalizedEmail);
-          if (matched && matched.user) {
-            setUser(matched.user);
-            setProfile(matched.profile);
-            localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify({ user: matched.user, isOffline: true }));
-            localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(matched.profile));
-            return { error: null };
+          if (matched) {
+            const salt = matched.salt || matched.email;
+            const computedHash = await hashPassword(password, salt);
+            const isValidPassword = matched.passwordHash
+              ? matched.passwordHash === computedHash
+              : matched.password === password;
+
+            if (!isValidPassword) {
+              return { error: 'Incorrect password. Please check your credentials and try again.' };
+            }
+
+            if (matched.user) {
+              setUser(matched.user);
+              setProfile(matched.profile);
+              syncSessionCookie(matched.user);
+              localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify({ user: matched.user, isOffline: true }));
+              localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(matched.profile));
+              return { error: null };
+            }
           }
           const savedAuth = localStorage.getItem(LOCAL_AUTH_STORAGE_KEY);
           if (savedAuth) {
             const parsed = JSON.parse(savedAuth);
             if (parsed.user?.email === normalizedEmail) {
               setUser(parsed.user);
+              syncSessionCookie(parsed.user);
               return { error: null };
             }
           }
@@ -283,7 +340,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       if (!isSupabaseConfigured()) {
-        const local = tryLocalSignIn();
+        const local = await tryLocalSignIn();
         if (local) return local;
 
         const mockId = `usr_${Math.abs(normalizedEmail.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0))}`;
@@ -306,6 +363,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(mockUser);
         setProfile(mockProfile);
+        syncSessionCookie(mockUser);
         try {
           localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify({ user: mockUser }));
           localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(mockProfile));
@@ -328,14 +386,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
       } catch (err) {
         console.warn('Supabase sign-in network timeout or failure:', err);
-        const local = tryLocalSignIn();
+        const local = await tryLocalSignIn();
         if (local) return local;
         return { error: 'Network timeout: Unable to connect to server. Please check your connection or use your offline account.' };
       }
 
       if (res?.error) {
         if (isNetworkError(res.error)) {
-          const local = tryLocalSignIn();
+          const local = await tryLocalSignIn();
           if (local) return local;
         }
         return { error: formatAuthError(res.error) };
@@ -344,6 +402,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res?.data?.user) {
         setUser(res.data.user);
         setSession(res.data.session);
+        syncSessionCookie(res.data.user);
         await fetchProfile(res.data.user.id, res.data.user.email || '');
         await logAuditEvent('LOGIN', res.data.user.id, { email: res.data.user.email });
       }
@@ -367,8 +426,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!email.trim()) return { error: 'Email address is required.' };
       if (!password) return { error: 'Password is required.' };
 
-      // Helper to instantly provision local offline account
-      const createLocalAccount = () => {
+      // Helper to instantly provision local offline account with hashed credentials
+      const createLocalAccount = async () => {
         const mockId = `usr_${Date.now()}`;
         const mockUser: User = {
           id: mockId,
@@ -387,13 +446,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           currency,
         };
 
+        const salt = `salt_${Math.random().toString(36).slice(2)}_${Date.now()}`;
+        const passwordHash = await hashPassword(password, salt);
+
         setUser(mockUser);
         setProfile(mockProfile);
+        syncSessionCookie(mockUser);
         try {
           localStorage.setItem(LOCAL_AUTH_STORAGE_KEY, JSON.stringify({ user: mockUser, isOffline: true }));
           localStorage.setItem(LOCAL_PROFILE_STORAGE_KEY, JSON.stringify(mockProfile));
           const existing = JSON.parse(localStorage.getItem('spendy_registered_users') || '[]');
-          existing.push({ email: email.trim().toLowerCase(), password, user: mockUser, profile: mockProfile });
+          existing.push({
+            email: email.trim().toLowerCase(),
+            salt,
+            passwordHash,
+            user: mockUser,
+            profile: mockProfile,
+          });
           localStorage.setItem('spendy_registered_users', JSON.stringify(existing));
         } catch {
           // safe
@@ -402,7 +471,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
 
       if (!isSupabaseConfigured()) {
-        return createLocalAccount();
+        return await createLocalAccount();
       }
 
       // Online attempt with 3.5s timeout
@@ -425,14 +494,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         );
       } catch (networkOrTimeoutErr) {
         console.warn('Supabase sign up network failure or timeout. Provisioning seamless local account:', networkOrTimeoutErr);
-        // Fall back seamlessly to local account so user is NEVER blocked!
-        return createLocalAccount();
+        return await createLocalAccount();
       }
 
       if (res?.error) {
         if (isNetworkError(res.error)) {
           console.warn('Supabase sign up reported network error. Provisioning seamless local account:', res.error.message);
-          return createLocalAccount();
+          return await createLocalAccount();
         }
         return { error: formatAuthError(res.error) };
       }
@@ -442,6 +510,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (res.data.session) {
           setUser(res.data.user);
           setSession(res.data.session);
+          syncSessionCookie(res.data.user);
           await fetchProfile(res.data.user.id, res.data.user.email || '');
           await logAuditEvent('LOGIN', res.data.user.id, { action: 'signup_confirmed' });
           return { error: null, needsEmailVerification: false };
@@ -451,7 +520,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return { error: null, needsEmailVerification: true };
       }
 
-      return createLocalAccount();
+      return await createLocalAccount();
     } catch (e: unknown) {
       const err = e as Error;
       if (isNetworkError(err)) {
@@ -476,6 +545,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(mockUser);
         setProfile(mockProfile);
+        syncSessionCookie(mockUser);
         return { error: null, needsEmailVerification: false };
       }
       return { error: err.message || 'Registration failed. Please try again.' };
@@ -497,6 +567,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (e) {
       console.warn('Sign out error:', e);
     } finally {
+      syncSessionCookie(null);
       setUser(null);
       setSession(null);
       setProfile(null);

@@ -1,8 +1,47 @@
 import { NextResponse } from 'next/server';
 import { FinancialSummary } from '@/types';
+import { createClientServer } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 
 export async function POST(req: Request) {
   try {
+    // 1. Verify caller session / JWT token
+    const supabase = await createClientServer();
+    let isAuthorized = false;
+
+    if (supabase) {
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
+      if (user && !error) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
+      // Check offline session cookie for fallback/demo resilience
+      const cookieStore = await cookies();
+      const offlineCookie = cookieStore.get('spendy_auth_session_v1')?.value;
+      if (offlineCookie) {
+        try {
+          const parsed = JSON.parse(decodeURIComponent(offlineCookie));
+          if (parsed?.user?.id) {
+            isAuthorized = true;
+          }
+        } catch {
+          // malformed
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Valid authentication session or JWT token required.' },
+        { status: 401 }
+      );
+    }
+
     const { message, financialSummary } = (await req.json()) as {
       message: string;
       financialSummary: FinancialSummary;
