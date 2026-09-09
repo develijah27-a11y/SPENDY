@@ -243,7 +243,7 @@ export function QuickAddModal() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Record Money Activity"
+      aria-labelledby="quick-add-modal-title"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeQuickAdd();
       }}
@@ -256,7 +256,7 @@ export function QuickAddModal() {
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
           <div>
-            <h3 className="text-base sm:text-lg font-black text-gray-950 dark:text-white">Record Money Activity</h3>
+            <h3 id="quick-add-modal-title" className="text-base sm:text-lg font-black text-gray-950 dark:text-white">Record Money Activity</h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400">Uganda Shillings transaction</p>
           </div>
           <button
@@ -264,14 +264,20 @@ export function QuickAddModal() {
             aria-label="Close dialog"
             className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white transition-colors cursor-pointer touch-target flex items-center justify-center"
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
           </button>
         </div>
 
         {/* Tab Switcher - 5 Tabs (Scrollable pill strip on small mobile, clean grid on larger) */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-3.5 border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto scrollbar-none">
+        <div
+          role="tablist"
+          aria-label="Transaction Type Selection"
+          className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/90 rounded-2xl my-3.5 border border-slate-200 dark:border-slate-800 text-xs overflow-x-auto scrollbar-none"
+        >
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'expense'}
             onClick={() => handleTabChange('expense')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'expense'
@@ -279,12 +285,14 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <MinusCircle className="w-3.5 h-3.5 shrink-0" />
+            <MinusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Expense</span>
           </button>
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'income'}
             onClick={() => handleTabChange('income')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'income'
@@ -292,12 +300,14 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <PlusCircle className="w-3.5 h-3.5 shrink-0" />
+            <PlusCircle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Income</span>
           </button>
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'loan'}
             onClick={() => handleTabChange('loan')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'loan'
@@ -305,12 +315,14 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <HandCoins className="w-3.5 h-3.5 shrink-0" />
+            <HandCoins className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Loan</span>
           </button>
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'transfer'}
             onClick={() => handleTabChange('transfer')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'transfer'
@@ -318,12 +330,14 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <ArrowRightLeft className="w-3.5 h-3.5 shrink-0" />
+            <ArrowRightLeft className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Transfer</span>
           </button>
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'pay'}
             onClick={() => handleTabChange('pay')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'pay'
@@ -331,12 +345,14 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <Store className="w-3.5 h-3.5 shrink-0" />
+            <Store className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Pay</span>
           </button>
 
           <button
             type="button"
+            role="tab"
+            aria-selected={activeTab === 'sms'}
             onClick={() => handleTabChange('sms')}
             className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
               activeTab === 'sms'
@@ -344,7 +360,7 @@ export function QuickAddModal() {
                 : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+            <MessageSquare className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs flex items-center gap-1">
               SMS <span className="text-[9px] px-1 py-0.2 bg-teal-500/20 rounded font-black text-teal-600 dark:text-teal-400">AI</span>
             </span>
@@ -363,10 +379,11 @@ export function QuickAddModal() {
           {activeTab === 'sms' ? (
             <div className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                <label htmlFor="quickadd-sms" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
                   Paste Mobile Money Confirmation SMS <span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="quickadd-sms"
                   rows={3}
                   value={smsText}
                   onChange={(e) => setSmsText(e.target.value)}
@@ -417,8 +434,11 @@ export function QuickAddModal() {
               {/* Account & Category Selector for SMS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">Wallet / Account</label>
+                  <label htmlFor="quickadd-sms-account" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                    Wallet / Account
+                  </label>
                   <select
+                    id="quickadd-sms-account"
                     value={accountId}
                     onChange={(e) => setAccountId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -431,8 +451,11 @@ export function QuickAddModal() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">Category</label>
+                  <label htmlFor="quickadd-sms-category" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                    Category
+                  </label>
                   <select
+                    id="quickadd-sms-category"
                     value={categoryId}
                     onChange={(e) => setCategoryId(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-teal-500"
@@ -450,7 +473,7 @@ export function QuickAddModal() {
             <>
               {/* Primary Amount Input */}
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                <label htmlFor="quickadd-amount" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
                   Amount (UGX) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -458,6 +481,7 @@ export function QuickAddModal() {
                     UGX
                   </span>
                   <input
+                    id="quickadd-amount"
                     type="number"
                     step="100"
                     min="100"
@@ -488,10 +512,11 @@ export function QuickAddModal() {
           {/* Account Selection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+              <label htmlFor="quickadd-account" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
                 {activeTab === 'transfer' ? 'From Account' : 'Account'}
               </label>
               <select
+                id="quickadd-account"
                 value={accountId}
                 onChange={(e) => setAccountId(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -506,10 +531,11 @@ export function QuickAddModal() {
 
             {activeTab === 'transfer' && (
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+                <label htmlFor="quickadd-to-account" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
                   To Account
                 </label>
                 <select
+                  id="quickadd-to-account"
                   value={toAccountId}
                   onChange={(e) => setToAccountId(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -525,8 +551,9 @@ export function QuickAddModal() {
 
             {(activeTab === 'expense' || activeTab === 'income' || activeTab === 'pay') && (
               <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">Category</label>
+                <label htmlFor="quickadd-category" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">Category</label>
                 <select
+                  id="quickadd-category"
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -545,12 +572,14 @@ export function QuickAddModal() {
           {activeTab === 'loan' && (
             <div className="space-y-3 p-4 rounded-2xl bg-purple-500/10 border border-purple-500/30 text-xs">
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1.5">
+                <span className="block font-bold text-gray-900 dark:text-white mb-1.5">
                   Loan Direction <span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 gap-2">
+                </span>
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Loan Direction">
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={loanType === 'lent'}
                     onClick={() => setLoanType('lent')}
                     className={`py-2 px-3 rounded-xl font-bold border transition-all cursor-pointer ${
                       loanType === 'lent'
@@ -562,6 +591,8 @@ export function QuickAddModal() {
                   </button>
                   <button
                     type="button"
+                    role="radio"
+                    aria-checked={loanType === 'borrowed'}
                     onClick={() => setLoanType('borrowed')}
                     className={`py-2 px-3 rounded-xl font-bold border transition-all cursor-pointer ${
                       loanType === 'borrowed'
@@ -575,13 +606,14 @@ export function QuickAddModal() {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                <label htmlFor="quickadd-counterparty" className="block font-bold text-gray-900 dark:text-white mb-1">
                   {loanType === 'lent' ? 'Lent To (Person / Entity)' : 'Borrowed From (Lender / Friend)'}{' '}
                   <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
                   <input
+                    id="quickadd-counterparty"
                     type="text"
                     required
                     value={counterparty}
@@ -593,12 +625,13 @@ export function QuickAddModal() {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                <label htmlFor="quickadd-duedate" className="block font-bold text-gray-900 dark:text-white mb-1">
                   Expected Repayment Date (Optional)
                 </label>
                 <div className="relative">
-                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Calendar className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" aria-hidden="true" />
                   <input
+                    id="quickadd-duedate"
                     type="date"
                     value={dueDate}
                     onChange={(e) => setDueDate(e.target.value)}
@@ -613,10 +646,11 @@ export function QuickAddModal() {
           {activeTab === 'pay' && (
             <div className="space-y-3 p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs">
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                <label htmlFor="quickadd-merchant-name" className="block font-bold text-gray-900 dark:text-white mb-1">
                   Merchant / Business Name <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="quickadd-merchant-name"
                   type="text"
                   required
                   value={merchantName}
@@ -627,10 +661,11 @@ export function QuickAddModal() {
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">
+                <label htmlFor="quickadd-merchant-ref" className="block font-bold text-gray-900 dark:text-white mb-1">
                   Merchant Reference / Invoice #
                 </label>
                 <input
+                  id="quickadd-merchant-ref"
                   type="text"
                   value={merchantReference}
                   onChange={(e) => setMerchantReference(e.target.value)}
@@ -645,10 +680,11 @@ export function QuickAddModal() {
 
           {/* NOTE / DESCRIPTION */}
           <div>
-            <label className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
+            <label htmlFor="quickadd-note" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
               Description / Note (Optional)
             </label>
             <input
+              id="quickadd-note"
               type="text"
               value={note}
               onChange={(e) => setNote(e.target.value)}

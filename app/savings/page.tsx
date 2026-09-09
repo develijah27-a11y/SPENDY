@@ -30,6 +30,25 @@ export default function SavingsPage() {
   const [contribAmount, setContribAmount] = useState('50000');
   const [contribAccountId, setContribAccountId] = useState(accounts[0]?.id || '');
 
+  React.useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setShowAddModal(false);
+        setContributeGoalId(null);
+      }
+    }
+    if (showAddModal || contributeGoalId) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
+  }, [showAddModal, contributeGoalId]);
+
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     const target = parseFloat(targetAmount.replace(/,/g, ''));
@@ -132,10 +151,10 @@ export default function SavingsPage() {
 
                   <button
                     onClick={() => deleteSavingsGoal(g.id)}
-                    aria-label="Delete goal"
-                    className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-slate-400 hover:text-red-500 transition-opacity cursor-pointer"
+                    aria-label={`Delete ${g.name} savings goal`}
+                    className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 p-2 rounded-xl text-slate-400 hover:text-red-500 transition-all cursor-pointer touch-target flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-red-500"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
 
@@ -158,7 +177,7 @@ export default function SavingsPage() {
 
                 {g.deadline && (
                   <div className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                    <Calendar className="w-3.5 h-3.5 text-slate-500" aria-hidden="true" />
                     <span>Target deadline: {g.deadline}</span>
                   </div>
                 )}
@@ -168,45 +187,59 @@ export default function SavingsPage() {
               <div className="mt-5 pt-3 border-t border-slate-200 dark:border-white/10">
                 {isCompleted ? (
                   <div className="flex items-center justify-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-black text-xs py-2 rounded-xl bg-emerald-500/20 border border-emerald-500/30">
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
                     <span>Goal 100% Achieved!</span>
                   </div>
                 ) : (
                   <div>
                     {contributeGoalId === g.id ? (
                       <div className="space-y-2 animate-in fade-in duration-150">
-                        <select
-                          value={contribAccountId}
-                          onChange={(e) => setContribAccountId(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold"
-                        >
-                          {accounts.map((a) => (
-                            <option key={a.id} value={a.id}>
-                              {a.name} ({formatUGX(a.balance)})
-                            </option>
-                          ))}
-                        </select>
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            value={contribAmount}
-                            onChange={(e) => setContribAmount(e.target.value)}
-                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-mono font-bold"
-                          />
-                          <button
-                            onClick={() => handleContribute(g.id)}
-                            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md cursor-pointer"
+                        <div>
+                          <label htmlFor={`contrib-acc-${g.id}`} className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Pay From Account
+                          </label>
+                          <select
+                            id={`contrib-acc-${g.id}`}
+                            value={contribAccountId}
+                            onChange={(e) => setContribAccountId(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           >
-                            Save
-                          </button>
+                            {accounts.map((a) => (
+                              <option key={a.id} value={a.id}>
+                                {a.name} ({formatUGX(a.balance)})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label htmlFor={`contrib-amt-${g.id}`} className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Amount (UGX)
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              id={`contrib-amt-${g.id}`}
+                              type="number"
+                              min="100"
+                              value={contribAmount}
+                              onChange={(e) => setContribAmount(e.target.value)}
+                              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleContribute(g.id)}
+                              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md cursor-pointer touch-target flex items-center justify-center"
+                            >
+                              Save
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ) : (
                       <button
                         onClick={() => setContributeGoalId(g.id)}
-                        className="w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md"
+                        className="w-full py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-md touch-target"
                       >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-4 h-4" aria-hidden="true" />
                         <span>Contribute to Goal</span>
                       </button>
                     )}
@@ -220,72 +253,100 @@ export default function SavingsPage() {
 
       {/* Add Goal Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-savings-goal-title"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowAddModal(false);
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        >
           <div className="w-full max-w-md rounded-3xl glass-panel p-6 border border-black/20 dark:border-white/20 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-white/10">
-              <h3 className="font-black text-base text-gray-950 dark:text-white">Create Savings Goal</h3>
-              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-                <X className="w-4 h-4" />
+              <h3 id="create-savings-goal-title" className="font-black text-base text-gray-950 dark:text-white">Create Savings Goal</h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                aria-label="Close dialog"
+                className="p-2 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-gray-950 dark:hover:text-white transition-colors touch-target flex items-center justify-center"
+              >
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             </div>
 
             <form onSubmit={handleCreateGoal} className="space-y-3.5 mt-4 text-xs">
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Goal Name</label>
+                <label htmlFor="savings-goal-name" className="block font-bold text-gray-900 dark:text-white mb-1">
+                  Goal Name <span className="text-red-500">*</span>
+                </label>
                 <input
+                  id="savings-goal-name"
                   type="text"
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Tuition, New Laptop, Land Deposit"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Purpose / Reason</label>
+                <label htmlFor="savings-goal-purpose" className="block font-bold text-gray-900 dark:text-white mb-1">
+                  Purpose / Reason
+                </label>
                 <input
+                  id="savings-goal-purpose"
                   type="text"
                   value={purpose}
                   onChange={(e) => setPurpose(e.target.value)}
                   placeholder="e.g. Semester 2 school fees at Makerere"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-gray-900 dark:text-white mb-1">Target (UGX)</label>
+                  <label htmlFor="savings-goal-target" className="block font-bold text-gray-900 dark:text-white mb-1">
+                    Target (UGX) <span className="text-red-500">*</span>
+                  </label>
                   <input
+                    id="savings-goal-target"
                     type="number"
+                    min="1"
                     required
                     value={targetAmount}
                     onChange={(e) => setTargetAmount(e.target.value)}
                     placeholder="1,500,000"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-gray-900 dark:text-white mb-1">Target Deadline</label>
+                  <label htmlFor="savings-goal-deadline" className="block font-bold text-gray-900 dark:text-white mb-1">
+                    Target Deadline
+                  </label>
                   <input
+                    id="savings-goal-deadline"
                     type="date"
                     value={deadline}
                     onChange={(e) => setDeadline(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-gray-900 dark:text-white mb-1">Badge Color</label>
-                <div className="flex gap-2">
+                <span className="block font-bold text-gray-900 dark:text-white mb-1">Badge Color</span>
+                <div className="flex gap-2" role="radiogroup" aria-label="Goal Badge Color">
                   {['#10B981', '#3B82F6', '#8B5CF6', '#FBBF24', '#EF4444', '#EC4899'].map((c) => (
                     <button
                       key={c}
                       type="button"
+                      role="radio"
+                      aria-checked={color === c}
+                      aria-label={`Select badge color ${c}`}
                       onClick={() => setColor(c)}
-                      className={`w-7 h-7 rounded-full border-2 cursor-pointer ${
-                        color === c ? 'scale-110 border-emerald-500' : 'border-transparent'
+                      className={`w-7 h-7 rounded-full border-2 cursor-pointer touch-target ${
+                        color === c ? 'scale-110 border-emerald-500 ring-2 ring-emerald-500/30' : 'border-transparent'
                       }`}
                       style={{ backgroundColor: c }}
                     />
@@ -295,7 +356,7 @@ export default function SavingsPage() {
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer mt-2"
+                className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-600/30 transition-all cursor-pointer mt-2 touch-target flex items-center justify-center"
               >
                 Create Goal
               </button>
