@@ -38,7 +38,7 @@ export default function InflationPage() {
       {/* Header */}
       <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-700 text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center">
             <TrendingDown className="w-5 h-5" />
           </div>
           <div>
@@ -55,7 +55,7 @@ export default function InflationPage() {
       {/* Simulator Inputs & Idle Cash Erosion Card */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Controls */}
-        <div className="lg:col-span-6 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <div className="lg:col-span-6 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-5">
           <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Simulation Parameters
           </h2>
@@ -72,7 +72,7 @@ export default function InflationPage() {
               step={250000}
               value={principal}
               onChange={(e) => setPrincipal(Number(e.target.value))}
-              className="w-full accent-rose-500"
+              className="w-full accent-emerald-600"
             />
           </div>
 
@@ -88,7 +88,7 @@ export default function InflationPage() {
               step={0.5}
               value={inflationRate}
               onChange={(e) => setInflationRate(Number(e.target.value))}
-              className="w-full accent-rose-500"
+              className="w-full accent-emerald-600"
             />
           </div>
 
@@ -104,7 +104,7 @@ export default function InflationPage() {
                   onClick={() => setHorizonYears(y)}
                   className={`py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     horizonYears === y
-                      ? 'bg-rose-600 text-white shadow-xs'
+                      ? 'bg-emerald-600 text-white'
                       : 'bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
                   }`}
                 >
@@ -116,7 +116,7 @@ export default function InflationPage() {
         </div>
 
         {/* Real Loss Alert Card */}
-        <div className="lg:col-span-6 p-6 rounded-3xl bg-gradient-to-br from-rose-950/20 via-rose-900/10 to-transparent border border-rose-500/30 shadow-sm space-y-4">
+        <div className="lg:col-span-6 p-6 rounded-3xl bg-rose-950/15 border border-rose-500/25 space-y-4">
           <div className="flex items-center gap-2 text-rose-500 font-black text-xs uppercase tracking-wider">
             <AlertTriangle className="w-4 h-4" />
             <span>Idle Cash Erosion Impact</span>
@@ -160,7 +160,7 @@ export default function InflationPage() {
             return (
               <div
                 key={idx}
-                className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3 flex flex-col justify-between"
+                className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-3 flex flex-col justify-between"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">

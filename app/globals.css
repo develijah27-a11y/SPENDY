@@ -34,11 +34,11 @@
 
   --accent-income: #059669;
   --accent-expense: #dc2626;
-  --accent-savings: #7c3aed;
+  --accent-savings: #059669;
   --accent-warning: #d97706;
 
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.10), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+  --shadow-card: none;
+  --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.10);
 }
 
 .dark {
@@ -68,7 +68,7 @@
   --accent-savings: #10b981;
   --accent-warning: #f59e0b;
 
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-card: none;
   --shadow-dropdown: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 8px 12px -6px rgba(0, 0, 0, 0.5);
 }
 

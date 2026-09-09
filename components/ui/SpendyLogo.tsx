@@ -36,7 +36,7 @@ export function SpendyLogo({
     >
       {/* Brand Icon SVG */}
       <div
-        className="relative shrink-0 rounded-2xl overflow-hidden shadow-lg shadow-emerald-500/20 ring-1 ring-black/10 dark:ring-white/20 transition-transform duration-200 group-hover:scale-105"
+        className="relative shrink-0 rounded-2xl overflow-hidden ring-1 ring-black/10 dark:ring-white/20 transition-transform duration-200 group-hover:scale-105"
         style={{ width: iconDimensions, height: iconDimensions }}
       >
         <Image

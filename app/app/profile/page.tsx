@@ -119,7 +119,7 @@ function ProfileContent() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="David Mukasa"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
@@ -166,7 +166,7 @@ function ProfileContent() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+256 772 123 456"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
@@ -175,7 +175,7 @@ function ProfileContent() {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {isSaving ? (
                   <>

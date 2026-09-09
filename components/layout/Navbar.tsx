@@ -166,9 +166,9 @@ export function Navbar() {
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               aria-label="User Account Menu"
-              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/15 text-xs transition-all cursor-pointer shadow-sm shrink-0 active:scale-95"
+              className="flex items-center gap-2 p-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 border border-black/10 dark:border-white/15 text-xs transition-all cursor-pointer shrink-0 active:scale-95"
             >
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black flex items-center justify-center shadow-sm text-xs shrink-0">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-600 text-white font-black flex items-center justify-center text-xs shrink-0">
                 {displayName.charAt(0).toUpperCase()}
               </div>
               <div className="hidden sm:flex flex-col text-left">
@@ -188,7 +188,7 @@ export function Navbar() {
                 {/* Header */}
                 <div className="pb-3 border-b border-black/10 dark:border-white/10">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black flex items-center justify-center shadow-md text-sm">
+                    <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white font-black flex items-center justify-center text-sm">
                       {displayName.charAt(0).toUpperCase()}
                     </div>
                     <div className="overflow-hidden">

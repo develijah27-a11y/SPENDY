@@ -106,20 +106,20 @@ export default function AccountsPage() {
 
         <button
           onClick={openCreateModal}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all cursor-pointer w-fit"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer w-fit"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Account</span>
         </button>
       </div>
 
-      {/* Total Aggregation Banner */}
-      <div className="rounded-3xl p-6 sm:p-7 glass-panel border border-black/15 dark:border-white/20 relative overflow-hidden shadow-2xl bg-gradient-to-tr from-emerald-950/40 via-slate-900/60 to-teal-950/20">
-        <span className="text-xs font-black uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
+      {/* Total Aggregation Banner (One Primary Metric) */}
+      <div className="rounded-2xl p-6 sm:p-7 bg-white dark:bg-[#0F172A] border border-slate-200 dark:border-slate-800 relative overflow-hidden">
+        <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
           Combined Liquid Wealth
         </span>
-        <h2 className="text-3xl sm:text-5xl font-black text-gray-950 dark:text-white font-mono mt-1">{formatUGX(totalBalance)}</h2>
-        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">
+        <h2 className="text-3xl sm:text-5xl font-black text-slate-950 dark:text-white font-mono tabular-nums mt-1">{formatUGX(totalBalance)}</h2>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
           Spread across {accounts.length} active financial accounts in Uganda
         </p>
       </div>
@@ -131,16 +131,15 @@ export default function AccountsPage() {
           return (
             <div
               key={acc.id}
-              className="rounded-3xl glass-panel p-5 sm:p-6 border border-black/15 dark:border-white/20 relative group hover:border-emerald-500/40 transition-all flex flex-col justify-between shadow-lg"
+              className="rounded-2xl p-5 sm:p-6 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] relative group hover:border-emerald-500/40 transition-all flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md"
-                      style={{ backgroundColor: acc.color || '#10B981' }}
+                      className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 bg-emerald-600"
                     >
-                      <Icon className="w-5 h-5 font-black" />
+                      <Icon className="w-5 h-5 font-bold" />
                     </div>
                     <div>
                       <h3 className="font-black text-base text-gray-950 dark:text-white">{acc.name}</h3>

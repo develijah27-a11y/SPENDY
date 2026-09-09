@@ -4,7 +4,7 @@ export default function RootLoading() {
   return (
     <div className="w-full max-w-7xl mx-auto py-8 animate-pulse space-y-6">
       {/* Top indeterminate indicator bar */}
-      <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600 animate-[shimmer_1.5s_infinite] z-50 shadow-sm shadow-emerald-500/30" />
+      <div className="fixed top-0 left-0 right-0 h-1 bg-emerald-500 animate-pulse z-50" />
       
       {/* Subtle Page Header Skeleton */}
       <div className="h-8 w-48 rounded-xl bg-slate-200/80 dark:bg-slate-800/80" />

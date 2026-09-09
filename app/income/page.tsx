@@ -127,7 +127,7 @@ export default function IncomePage() {
 
         <button
           onClick={() => openQuickAdd('income')}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all cursor-pointer w-fit"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer w-fit"
         >
           <Plus className="w-4 h-4" />
           <span>Record Income</span>
@@ -136,35 +136,35 @@ export default function IncomePage() {
 
       {/* Aggregate Header KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="rounded-3xl glass-panel p-5 border border-emerald-500/30 shadow-xl bg-gradient-to-tr from-emerald-950/40 via-slate-900/60 to-teal-950/20">
-          <span className="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]">
+          <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
             Total Income in View
           </span>
-          <h2 className="text-2xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+          <h2 className="text-2xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums mt-1">
             {formatCurrency(totalFilteredIncome)}
           </h2>
-          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             Across {incomeTransactions.length} recorded inflow{incomeTransactions.length === 1 ? '' : 's'}
           </p>
         </div>
 
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Top Income Stream
           </span>
-          <h3 className="text-lg sm:text-xl font-black text-gray-950 dark:text-white mt-1 truncate">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white mt-1 truncate">
             {topIncomeSource ? topIncomeSource.name : 'None recorded'}
           </h3>
-          <p className="text-xs font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
+          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 font-mono tabular-nums mt-1">
             {topIncomeSource ? formatCurrency(topIncomeSource.amount) : 'UGX 0'}
           </p>
         </div>
 
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A]">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Average Inflow
           </span>
-          <h3 className="text-lg sm:text-xl font-black text-gray-950 dark:text-white font-mono mt-1">
+          <h3 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white font-mono mt-1">
             {incomeTransactions.length > 0
               ? formatCurrency(Math.round(totalFilteredIncome / incomeTransactions.length))
               : 'UGX 0'}

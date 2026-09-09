@@ -195,7 +195,7 @@ export default function MonthlyReviewStatementPage() {
 
           <button
             onClick={handlePrintPDF}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-black shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition-all cursor-pointer"
             title="Export official PDF format via browser print dialog"
           >
             <Printer className="w-4 h-4" />
@@ -205,7 +205,7 @@ export default function MonthlyReviewStatementPage() {
       </div>
 
       {/* 2. Structured Printable Statement Document */}
-      <div className="print-avoid-break bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xl p-6 sm:p-10 space-y-8 print:p-0 print:border-none print:shadow-none">
+      <div className="print-avoid-break bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-10 space-y-8 print:p-0 print:border-none print:shadow-none">
         
         {/* Document Header & Seal */}
         <div className="border-b-2 border-slate-900 dark:border-slate-100 pb-6 space-y-4">
@@ -363,7 +363,7 @@ export default function MonthlyReviewStatementPage() {
             </div>
 
             {/* Total Estimated Net Worth */}
-            <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white border border-slate-800 space-y-2">
+            <div className="p-4 rounded-2xl bg-slate-900 dark:bg-[#070A12] text-white border border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-emerald-400 flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />

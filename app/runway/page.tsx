@@ -88,7 +88,7 @@ export default function RunwayPage() {
       {/* Header */}
       <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-700 text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center">
             <Clock className="w-5 h-5" />
           </div>
           <div>
@@ -103,7 +103,7 @@ export default function RunwayPage() {
       </div>
 
       {/* Hero Runway Gauge Card */}
-      <div className={`p-6 sm:p-8 rounded-3xl border shadow-sm space-y-4 ${tier.bgColor}`}>
+      <div className={`p-6 sm:p-8 rounded-3xl border space-y-4 ${tier.bgColor}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-white/60 dark:bg-slate-900/60 backdrop-blur-md">
             {tier.badge}
@@ -159,9 +159,9 @@ export default function RunwayPage() {
 
       {/* Interactive What-If Simulator */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-7 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-5">
+        <div className="lg:col-span-7 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-5">
           <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-cyan-500" />
+            <Sliders className="w-4 h-4 text-emerald-500" />
             <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Interactive Stress-Test Scenarios
             </h2>
@@ -208,7 +208,7 @@ export default function RunwayPage() {
               step={50000}
               value={emergencyOneTimeCost}
               onChange={(e) => setEmergencyOneTimeCost(Number(e.target.value))}
-              className="w-full accent-rose-500"
+              className="w-full accent-emerald-600"
             />
             <p className="text-[11px] text-slate-500">
               Simulates a sudden cash withdrawal from your emergency reserves.
@@ -217,7 +217,7 @@ export default function RunwayPage() {
         </div>
 
         {/* Liquid Assets Breakdown */}
-        <div className="lg:col-span-5 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+        <div className="lg:col-span-5 p-6 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-4">
           <h2 className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
             <Wallet className="w-4 h-4 text-emerald-500" />
             <span>Liquid Reserves by Wallet</span>

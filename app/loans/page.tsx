@@ -113,7 +113,7 @@ export default function LoansPage() {
 
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs sm:text-sm shadow-lg shadow-purple-600/30 transition-all cursor-pointer w-fit"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm transition-all cursor-pointer w-fit"
         >
           <Plus className="w-4 h-4" />
           <span>New Loan Record</span>
@@ -123,51 +123,51 @@ export default function LoansPage() {
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Money Lent (Asset) */}
-        <div className="rounded-3xl glass-panel p-5 border border-emerald-500/30 shadow-xl bg-gradient-to-tr from-emerald-950/40 via-slate-900/60 to-teal-950/20 space-y-1">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
               Money Lent (To Collect)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
           <p className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
             {formatCurrency(dashboardMetrics.moneyLent)}
           </p>
-          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {activeLentCount} active loan{activeLentCount === 1 ? '' : 's'} to collect
           </p>
         </div>
 
         {/* Money Borrowed (Liability) */}
-        <div className="rounded-3xl glass-panel p-5 border border-purple-500/30 shadow-xl bg-gradient-to-tr from-purple-950/40 via-slate-900/60 to-indigo-950/20 space-y-1">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase tracking-wider text-purple-600 dark:text-purple-400">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Money Borrowed (You Owe)
             </span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center font-black">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center font-bold">
               <ArrowDownLeft className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 font-mono mt-1">
+          <p className="text-2xl sm:text-3xl font-black text-rose-500 font-mono mt-1">
             {formatCurrency(dashboardMetrics.moneyBorrowed)}
           </p>
-          <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             {activeBorrowedCount} active debt{activeBorrowedCount === 1 ? '' : 's'} to repay
           </p>
         </div>
 
         {/* Net Position */}
-        <div className="rounded-3xl glass-panel p-5 border border-black/15 dark:border-white/20 shadow-xl space-y-1">
-          <span className="text-xs font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
+        <div className="rounded-2xl p-5 border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0F172A] space-y-1">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Net Loan Position
           </span>
           <p
             className={`text-2xl sm:text-3xl font-black font-mono mt-1 ${
               dashboardMetrics.moneyLent >= dashboardMetrics.moneyBorrowed
                 ? 'text-emerald-600 dark:text-emerald-400'
-                : 'text-purple-600 dark:text-purple-400'
+                : 'text-rose-500'
             }`}
           >
             {dashboardMetrics.moneyLent >= dashboardMetrics.moneyBorrowed ? '+' : ''}

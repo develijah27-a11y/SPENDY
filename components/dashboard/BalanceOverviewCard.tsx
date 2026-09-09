@@ -18,7 +18,7 @@ export function BalanceOverviewCard() {
   const [showBalance, setShowBalance] = useState(true);
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-7 shadow-lg relative flex flex-col justify-between h-full transition-all">
+    <div className="rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-7 relative flex flex-col justify-between h-full transition-all">
       <div>
         {/* Top Header */}
         <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ export function BalanceOverviewCard() {
           {accounts.map((acc) => (
             <div
               key={acc.id}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 text-xs text-slate-900 dark:text-white shadow-2xs"
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 text-xs text-slate-900 dark:text-white"
             >
               <span
                 className="w-2 h-2 rounded-full shrink-0"
@@ -76,7 +76,7 @@ export function BalanceOverviewCard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-6 pt-5 border-t border-slate-200/80 dark:border-slate-800/80">
         <button
           onClick={() => openQuickAdd('expense')}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target shadow-2xs hover:border-rose-500/40"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target hover:border-rose-500/40"
         >
           <ArrowDownLeft className="w-4 h-4 text-rose-500 shrink-0" aria-hidden="true" />
           <span>Expense</span>
@@ -84,7 +84,7 @@ export function BalanceOverviewCard() {
 
         <button
           onClick={() => openQuickAdd('income')}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target shadow-2xs hover:border-emerald-500/40"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target hover:border-emerald-500/40"
         >
           <ArrowUpRight className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
           <span>Income</span>
@@ -92,7 +92,7 @@ export function BalanceOverviewCard() {
 
         <button
           onClick={() => openQuickAdd('transfer')}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target shadow-2xs hover:border-blue-500/40"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target hover:border-blue-500/40"
         >
           <ArrowRightLeft className="w-4 h-4 text-blue-500 shrink-0" aria-hidden="true" />
           <span>Transfer</span>
@@ -100,7 +100,7 @@ export function BalanceOverviewCard() {
 
         <button
           onClick={() => openQuickAdd('pay')}
-          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target shadow-2xs hover:border-emerald-500/40"
+          className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target hover:border-emerald-500/40"
         >
           <Store className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
           <span>Pay Bill</span>

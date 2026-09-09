@@ -96,7 +96,7 @@ export default function InsightsPage() {
 
           <Link
             href="/review"
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all cursor-pointer touch-target"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black transition-all cursor-pointer touch-target"
           >
             <Printer className="w-4 h-4" />
             <span>Monthly Statement (PDF)</span>
@@ -117,7 +117,7 @@ export default function InsightsPage() {
           </p>
           <button
             onClick={() => openQuickAdd('expense')}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all mt-2"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all mt-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Transaction</span>
@@ -127,7 +127,7 @@ export default function InsightsPage() {
         <>
           {/* 2. Financial Summary KPIs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Total Income
               </span>
@@ -136,7 +136,7 @@ export default function InsightsPage() {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Total Expenses
               </span>
@@ -145,7 +145,7 @@ export default function InsightsPage() {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Net Change
               </span>
@@ -160,11 +160,11 @@ export default function InsightsPage() {
               </p>
             </div>
 
-            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-1">
+            <div className="p-5 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-1">
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Savings Rate
               </span>
-              <p className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono tabular-nums">
+              <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tabular-nums">
                 {savingsRate.toFixed(0)}%
               </p>
             </div>
@@ -183,7 +183,7 @@ export default function InsightsPage() {
           )}
 
           {/* 4. Spending by Category Breakdown Table */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-4">
             <h2 className="text-base font-bold text-slate-950 dark:text-white">
               Category Allocation
             </h2>

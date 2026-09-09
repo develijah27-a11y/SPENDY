@@ -13,7 +13,7 @@ export function SafeToSpendCard() {
   const isCaution = safeToSpend.status === 'caution';
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-7 shadow-lg relative flex flex-col justify-between h-full transition-all">
+    <div className="rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-7 relative flex flex-col justify-between h-full transition-all">
       <div>
         {/* Top Header */}
         <div className="flex items-center justify-between">

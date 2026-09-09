@@ -9,11 +9,11 @@ export function FinancialHealthWidget() {
   const { financialHealth, insights } = useSpendy();
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 shadow-lg space-y-4">
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 space-y-4">
       {/* Top Banner */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <ShieldCheck className="w-5 h-5 font-black" aria-hidden="true" />
           </div>
           <div>
@@ -32,19 +32,19 @@ export function FinancialHealthWidget() {
 
       {/* 4 Score Telemetry Pillars */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center shadow-2xs">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Savings Rate</span>
           <span className="text-sm font-black text-slate-950 dark:text-white font-mono mt-0.5 block">{financialHealth.savingsRateScore}/25</span>
         </div>
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center shadow-2xs">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Budget Control</span>
           <span className="text-sm font-black text-slate-950 dark:text-white font-mono mt-0.5 block">{financialHealth.budgetAdherenceScore}/30</span>
         </div>
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center shadow-2xs">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Debt Burden</span>
           <span className="text-sm font-black text-slate-950 dark:text-white font-mono mt-0.5 block">{financialHealth.debtBurdenScore}/20</span>
         </div>
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center shadow-2xs">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-center">
           <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 block">Goal Progress</span>
           <span className="text-sm font-black text-slate-950 dark:text-white font-mono mt-0.5 block">{financialHealth.goalProgressScore}/15</span>
         </div>
@@ -62,7 +62,7 @@ export function FinancialHealthWidget() {
 
       {/* Intelligence Highlight */}
       {insights.length > 0 && (
-        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between gap-3 text-xs shadow-2xs">
+        <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2 min-w-0">
             <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
             <p className="text-slate-800 dark:text-slate-200 font-bold truncate">{insights[0].description}</p>

@@ -81,7 +81,7 @@ export default function SmsParserPage() {
       {/* Header */}
       <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center">
             <MessageSquare className="w-5 h-5" />
           </div>
           <div>
@@ -99,7 +99,7 @@ export default function SmsParserPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Input Box & Sample Presets */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-3">
             <div className="flex items-center justify-between">
               <label htmlFor="sms-textarea" className="text-xs font-bold text-gray-950 dark:text-white flex items-center gap-1.5">
                 <Copy className="w-3.5 h-3.5 text-emerald-500" />
@@ -154,7 +154,7 @@ export default function SmsParserPage() {
 
         {/* Right Column: Extracted Smart Summary */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
@@ -278,7 +278,7 @@ export default function SmsParserPage() {
                 ) : (
                   <button
                     onClick={handleSaveTransaction}
-                    className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-600/20 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Confirm &amp; Log Transaction</span>

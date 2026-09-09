@@ -39,11 +39,11 @@ export function BudgetProgressWidget() {
     .slice(0, 4);
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 shadow-lg space-y-4">
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <PiggyBank className="w-5 h-5 font-black" aria-hidden="true" />
           </div>
           <div>
@@ -62,7 +62,7 @@ export function BudgetProgressWidget() {
 
       {/* Overall Total Budget Meter */}
       {totalPlanned > 0 ? (
-        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 shadow-2xs space-y-2.5">
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 space-y-2.5">
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800 dark:text-slate-200">Month Budget Target</span>
             <span className="font-mono text-xs text-slate-600 dark:text-slate-300 font-semibold tabular-nums">
@@ -70,7 +70,7 @@ export function BudgetProgressWidget() {
             </span>
           </div>
 
-          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden shadow-inner">
+          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 overallPercentage >= 100

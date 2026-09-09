@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { useSpendy } from '@/lib/store/spendyStore';
@@ -21,6 +21,9 @@ import {
   TrendingDown,
   MessageSquare,
   Sparkles,
+  ReceiptText,
+  PiggyBank,
+  Target,
 } from 'lucide-react';
 import { BalanceOverviewCard } from '@/components/dashboard/BalanceOverviewCard';
 import { SafeToSpendCard } from '@/components/dashboard/SafeToSpendCard';
@@ -38,6 +41,8 @@ function DashboardMainContent() {
     periodFilter,
     setPeriodFilter,
   } = useSpendy();
+
+  const [activeTab, setActiveTab] = useState<'activity' | 'breakdown' | 'budgets' | 'goals'>('activity');
 
   // Filter transactions according to selected period
   const periodTransactions = useMemo(() => {
@@ -127,7 +132,7 @@ function DashboardMainContent() {
               value={periodFilter}
               onChange={(e) => setPeriodFilter(e.target.value as PeriodFilter)}
               aria-label="Select reporting time period"
-              className="px-3 py-2 rounded-xl bg-white dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer shadow-2xs touch-target"
+              className="px-3 py-2 rounded-xl bg-white dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer touch-target"
             >
               <option value="today">Today</option>
               <option value="this_week">This Week</option>
@@ -140,7 +145,7 @@ function DashboardMainContent() {
 
           <button
             onClick={() => openQuickAdd('expense')}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-sm shadow-emerald-600/20 transition-all active:scale-98 cursor-pointer touch-target shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all active:scale-98 cursor-pointer touch-target shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" aria-hidden="true" />
             <span>Record Activity</span>
@@ -150,8 +155,8 @@ function DashboardMainContent() {
 
       {/* 2. Zero-Data Onboarding State */}
       {transactions.length === 0 ? (
-        <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-lg text-center max-w-2xl mx-auto space-y-4 my-6">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto font-bold shadow-2xs">
+        <div className="p-8 sm:p-12 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 text-center max-w-2xl mx-auto space-y-4 my-6">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto font-bold">
             <Wallet className="w-7 h-7" aria-hidden="true" />
           </div>
           <div className="space-y-1.5">
@@ -165,7 +170,7 @@ function DashboardMainContent() {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2.5">
             <button
               onClick={() => openQuickAdd('income')}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-sm transition-all active:scale-98 cursor-pointer touch-target flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all active:scale-98 cursor-pointer touch-target flex items-center justify-center gap-2"
             >
               <Plus className="w-4 h-4" aria-hidden="true" />
               <span>Record First Income</span>
@@ -194,7 +199,7 @@ function DashboardMainContent() {
           {/* 4. Financial Vitals Ticker (Clean Neutral Slate Surface) */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Income in period */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-2xs space-y-1">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Total Inflow
@@ -212,7 +217,7 @@ function DashboardMainContent() {
             </div>
 
             {/* Expenses in period */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-2xs space-y-1">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Total Outflow
@@ -230,7 +235,7 @@ function DashboardMainContent() {
             </div>
 
             {/* Net Cashflow in period */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-2xs space-y-1">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Net Cashflow
@@ -249,7 +254,7 @@ function DashboardMainContent() {
             </div>
 
             {/* Savings Rate */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-2xs space-y-1">
+            <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Savings Rate
@@ -264,85 +269,133 @@ function DashboardMainContent() {
             </div>
           </div>
 
-          {/* 5. Main 2-Column Responsive Workspace */}
+          {/* 5. Focused Workspace: One Focused View at a Time Instead of Cluttered Tables */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Column (7 cols): Transactions Feed & Category Breakdown */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Recent Transactions Widget */}
-              <RecentTransactionsWidget />
+            <div className="lg:col-span-8 space-y-4">
+              {/* Clean Segmented Tab Switcher */}
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto scrollbar-none">
+                <button
+                  onClick={() => setActiveTab('activity')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'activity'
+                      ? 'bg-white dark:bg-[#0B0F19] text-emerald-600 dark:text-emerald-400 border border-slate-200/80 dark:border-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
+                  }`}
+                >
+                  <ReceiptText className="w-3.5 h-3.5" />
+                  <span>Recent Activity</span>
+                </button>
 
-              {/* Spending by Category Breakdown */}
-              <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-lg space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
-                      <PieChart className="w-5 h-5 font-black" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-bold text-slate-950 dark:text-white">
-                        Spending by Category
-                      </h2>
-                      <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-                        Allocation in selected period
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href="/reports"
-                    className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-                  >
-                    <span>Reports</span>
-                    <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
-                  </Link>
-                </div>
+                <button
+                  onClick={() => setActiveTab('breakdown')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'breakdown'
+                      ? 'bg-white dark:bg-[#0B0F19] text-emerald-600 dark:text-emerald-400 border border-slate-200/80 dark:border-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
+                  }`}
+                >
+                  <PieChart className="w-3.5 h-3.5" />
+                  <span>Category Breakdown</span>
+                </button>
 
-                {topCategories.length === 0 ? (
-                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 py-6 text-center">
-                    No expense records in this period.
-                  </p>
-                ) : (
-                  <div className="space-y-3 pt-1">
-                    {topCategories.map((cat) => (
-                      <div key={cat.id} className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">
-                            {cat.name}
-                          </span>
-                          <span className="font-mono font-bold text-slate-950 dark:text-white tabular-nums">
-                            {formatCurrency(cat.amount)} ({cat.pct.toFixed(0)}%)
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                          <div
-                            className="h-full rounded-full transition-all duration-300"
-                            style={{
-                              width: `${Math.min(100, Math.max(4, cat.pct))}%`,
-                              backgroundColor: cat.color,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <button
+                  onClick={() => setActiveTab('budgets')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'budgets'
+                      ? 'bg-white dark:bg-[#0B0F19] text-emerald-600 dark:text-emerald-400 border border-slate-200/80 dark:border-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
+                  }`}
+                >
+                  <PiggyBank className="w-3.5 h-3.5" />
+                  <span>Budgets</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('goals')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    activeTab === 'goals'
+                      ? 'bg-white dark:bg-[#0B0F19] text-emerald-600 dark:text-emerald-400 border border-slate-200/80 dark:border-slate-800'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-950 dark:hover:text-white'
+                  }`}
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  <span>Savings Goals</span>
+                </button>
               </div>
+
+              {/* Render Selected View */}
+              {activeTab === 'activity' && <RecentTransactionsWidget />}
+
+              {activeTab === 'breakdown' && (
+                <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <PieChart className="w-5 h-5 font-black" aria-hidden="true" />
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-bold text-slate-950 dark:text-white">
+                          Spending by Category
+                        </h2>
+                        <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                          Allocation in selected period
+                        </p>
+                      </div>
+                    </div>
+                    <Link
+                      href="/reports"
+                      className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      <span>Reports</span>
+                      <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                    </Link>
+                  </div>
+
+                  {topCategories.length === 0 ? (
+                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400 py-6 text-center">
+                      No expense records in this period.
+                    </p>
+                  ) : (
+                    <div className="space-y-3 pt-1">
+                      {topCategories.map((cat) => (
+                        <div key={cat.id} className="space-y-1.5">
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                              {cat.name}
+                            </span>
+                            <span className="font-mono font-bold text-slate-950 dark:text-white tabular-nums">
+                              {formatCurrency(cat.amount)} ({cat.pct.toFixed(0)}%)
+                            </span>
+                          </div>
+                          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-300"
+                              style={{
+                                width: `${Math.min(100, Math.max(4, cat.pct))}%`,
+                                backgroundColor: cat.color,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'budgets' && <BudgetProgressWidget />}
+
+              {activeTab === 'goals' && <SavingsGoalWidget />}
             </div>
 
-            {/* Right Column (5 cols): Financial Health, Budgets & Goals */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Financial Health Score */}
+            {/* Right Column (4 cols): Financial Health Assessment */}
+            <div className="lg:col-span-4 space-y-4">
               <FinancialHealthWidget />
-
-              {/* Monthly Budgets Widget */}
-              <BudgetProgressWidget />
-
-              {/* Active Savings Goals Widget */}
-              <SavingsGoalWidget />
             </div>
           </div>
 
           {/* 6. Regional Intelligence & East Africa Suite (Refined Monochromatic Dock) */}
-          <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 shadow-lg space-y-3.5">
+          <div className="p-5 sm:p-6 rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 space-y-3.5">
             <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
               <div className="flex items-center gap-2">
                 <span className="p-1.5 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">

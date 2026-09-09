@@ -302,7 +302,7 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Link
                 href="/review"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all cursor-pointer"
               >
                 <Printer className="w-4 h-4" />
                 <span>Generate Monthly Statement (PDF)</span>

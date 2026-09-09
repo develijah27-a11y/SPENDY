@@ -64,7 +64,7 @@ export default function CommutePage() {
       {/* Header */}
       <div className="pb-4 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center">
             <Navigation className="w-5 h-5" />
           </div>
           <div>
@@ -90,14 +90,14 @@ export default function CommutePage() {
         {/* Route & Mode Controls */}
         <div className="lg:col-span-7 space-y-4">
           {/* Route Preset Selector */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-3">
             <label className="text-xs font-bold text-gray-950 dark:text-white block">
               Select Your Regular Commute Route
             </label>
             <select
               value={selectedRouteId}
               onChange={(e) => setSelectedRouteId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-gray-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-gray-950 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
             >
               {KAMPALA_ROUTE_PRESETS.map((r) => (
                 <option key={r.id} value={r.id}>
@@ -108,7 +108,7 @@ export default function CommutePage() {
           </div>
 
           {/* Mode Selector */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-3">
             <label className="text-xs font-bold text-gray-950 dark:text-white block">
               Primary Transit Mode
             </label>
@@ -118,7 +118,7 @@ export default function CommutePage() {
                 onClick={() => setSelectedMode('boda')}
                 className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                   selectedMode === 'boda'
-                    ? 'bg-amber-500/15 border-amber-500 text-amber-600 dark:text-amber-400 font-black shadow-xs'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black'
                     : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -132,7 +132,7 @@ export default function CommutePage() {
                 onClick={() => setSelectedMode('matatu')}
                 className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                   selectedMode === 'matatu'
-                    ? 'bg-blue-500/15 border-blue-500 text-blue-600 dark:text-blue-400 font-black shadow-xs'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black'
                     : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -146,7 +146,7 @@ export default function CommutePage() {
                 onClick={() => setSelectedMode('car_fuel')}
                 className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                   selectedMode === 'car_fuel'
-                    ? 'bg-purple-500/15 border-purple-500 text-purple-600 dark:text-purple-400 font-black shadow-xs'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black'
                     : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -160,7 +160,7 @@ export default function CommutePage() {
                 onClick={() => setSelectedMode('walking')}
                 className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                   selectedMode === 'walking'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black shadow-xs'
+                    ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black'
                     : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
@@ -172,7 +172,7 @@ export default function CommutePage() {
           </div>
 
           {/* Working Days & Rain Surge Sliders */}
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-4">
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-slate-700 dark:text-slate-300">Office / Work Days per Month:</span>
@@ -184,14 +184,14 @@ export default function CommutePage() {
                 max={30}
                 value={workingDays}
                 onChange={(e) => setWorkingDays(Number(e.target.value))}
-                className="w-full accent-amber-500"
+                className="w-full accent-emerald-600"
               />
             </div>
 
             <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
               <div className="flex justify-between text-xs font-bold">
                 <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                  <CloudRain className="w-3.5 h-3.5 text-cyan-500" />
+                  <CloudRain className="w-3.5 h-3.5 text-emerald-500" />
                   <span>Rainy / Traffic Surge Days:</span>
                 </span>
                 <span className="text-gray-950 dark:text-white font-mono">{rainyDays} days</span>
@@ -202,7 +202,7 @@ export default function CommutePage() {
                 max={15}
                 value={rainyDays}
                 onChange={(e) => setRainyDays(Number(e.target.value))}
-                className="w-full accent-cyan-500"
+                className="w-full accent-emerald-600"
               />
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function CommutePage() {
 
         {/* Burn Rate Output & Action Card */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-5 rounded-3xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 space-y-4">
             <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Transit Burn Projection
             </span>
@@ -243,7 +243,7 @@ export default function CommutePage() {
             {commuteCalc.dailyCost > 0 && (
               <button
                 onClick={handleLogTransitExpense}
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-black text-xs shadow-md shadow-amber-600/20 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Log Today&apos;s Commute ({formatUGX(commuteCalc.dailyCost)})</span>

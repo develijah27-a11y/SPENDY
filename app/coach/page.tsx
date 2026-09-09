@@ -100,7 +100,7 @@ export default function CoachPage() {
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight flex items-center gap-2.5">
-          <Sparkles className="w-7 h-7 text-amber-500 font-black" />
+          <Sparkles className="w-7 h-7 text-emerald-500 font-black" />
           <span>AI Money Coach (Uganda Edition)</span>
         </h1>
         <p className="text-xs font-semibold text-slate-700 dark:text-slate-200 mt-1">
@@ -114,7 +114,7 @@ export default function CoachPage() {
           <button
             key={q}
             onClick={() => handleSend(q)}
-            className="text-xs font-bold px-3.5 py-2 rounded-2xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-800 dark:text-purple-200 border border-purple-500/30 text-left transition-all cursor-pointer shadow-sm"
+            className="text-xs font-bold px-3.5 py-2 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border border-emerald-500/25 text-left transition-all cursor-pointer"
           >
             💡 {q}
           </button>
@@ -122,7 +122,7 @@ export default function CoachPage() {
       </div>
 
       {/* Chat Container */}
-      <div className="rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-2xl p-4 sm:p-6 flex flex-col h-[540px]">
+      <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200 dark:border-slate-800 p-4 sm:p-6 flex flex-col h-[540px]">
         {/* Messages */}
         <div className="flex-1 overflow-y-auto space-y-4 pr-2">
           {messages.map((m) => {
@@ -133,7 +133,7 @@ export default function CoachPage() {
                 className={`flex items-start gap-3 ${isAI ? 'justify-start' : 'justify-end'}`}
               >
                 {isAI && (
-                  <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-purple-600 text-white flex items-center justify-center shrink-0 mt-1 shadow-md">
+                  <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-1">
                     <Bot className="w-5 h-5" />
                   </div>
                 )}
@@ -141,8 +141,8 @@ export default function CoachPage() {
                 <div
                   className={`max-w-[85%] sm:max-w-[75%] p-4 rounded-3xl text-xs sm:text-sm leading-relaxed whitespace-pre-line ${
                     isAI
-                      ? 'bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-gray-950 dark:text-white font-medium shadow-sm'
-                      : 'bg-emerald-600 text-white font-semibold shadow-md'
+                      ? 'bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-gray-950 dark:text-white font-medium'
+                      : 'bg-emerald-600 text-white font-semibold'
                   }`}
                 >
                   {m.text}
@@ -159,7 +159,7 @@ export default function CoachPage() {
 
           {loading && (
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-purple-600 text-white flex items-center justify-center shrink-0">
+              <div className="w-9 h-9 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div className="px-4 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 animate-pulse">
@@ -182,12 +182,12 @@ export default function CoachPage() {
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask Spendy Coach anything about your budget, savings, or spending..."
-            className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-medium text-gray-950 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-inner"
+            className="flex-1 px-4 py-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-medium text-gray-950 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || loading}
-            className="px-5 py-3 rounded-2xl bg-gradient-to-tr from-amber-500 to-purple-600 hover:from-amber-400 hover:to-purple-500 text-white font-black text-xs shadow-md transition-all active:scale-95 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
+            className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs transition-all active:scale-95 disabled:opacity-40 cursor-pointer flex items-center gap-1.5"
           >
             <Send className="w-4 h-4" />
             <span className="hidden sm:inline">Send</span>

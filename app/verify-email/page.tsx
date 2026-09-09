@@ -167,14 +167,14 @@ function VerifyEmailContent() {
                       setOtpCode(val);
                     }}
                     placeholder="000000"
-                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border-2 border-slate-700 text-white font-mono font-black text-2xl tracking-[0.5em] text-center placeholder:text-slate-500 placeholder:tracking-widest focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 shadow-inner transition-colors"
+                    className="w-full px-4 py-3.5 rounded-2xl bg-slate-900 border-2 border-slate-700 text-white font-mono font-black text-2xl tracking-[0.5em] text-center placeholder:text-slate-500 placeholder:tracking-widest focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 transition-colors"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isVerifying || otpCode.trim().length !== 6}
-                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isVerifying ? (
                     <>

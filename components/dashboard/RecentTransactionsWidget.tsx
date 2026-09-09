@@ -18,11 +18,11 @@ export function RecentTransactionsWidget() {
   const recent = transactions.slice(0, 5);
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 shadow-lg space-y-4">
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <ReceiptText className="w-5 h-5 font-black" aria-hidden="true" />
           </div>
           <div>
@@ -44,7 +44,7 @@ export function RecentTransactionsWidget() {
           <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">No transactions recorded yet.</p>
           <button
             onClick={() => openQuickAdd('expense')}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black cursor-pointer shadow-sm shadow-emerald-600/20 touch-target"
+            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-black cursor-pointer touch-target"
           >
             Record First Transaction
           </button>
@@ -60,7 +60,7 @@ export function RecentTransactionsWidget() {
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs ${
+                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
                       isExpense
                         ? 'bg-rose-500/10 text-rose-500'
                         : 'bg-emerald-500/10 text-emerald-500'

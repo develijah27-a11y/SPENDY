@@ -23,11 +23,11 @@ export function SavingsGoalWidget() {
   };
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 shadow-lg space-y-4">
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
             <Target className="w-5 h-5 font-black" aria-hidden="true" />
           </div>
           <div>
@@ -60,7 +60,7 @@ export function SavingsGoalWidget() {
             return (
               <div
                 key={g.id}
-                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 space-y-2.5 shadow-2xs"
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 space-y-2.5"
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -123,7 +123,7 @@ export function SavingsGoalWidget() {
                     />
                     <button
                       onClick={() => handleContribute(g.id)}
-                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer shadow-sm touch-target"
+                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer touch-target"
                     >
                       Confirm
                     </button>
