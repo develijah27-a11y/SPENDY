@@ -74,19 +74,19 @@ function LoginContent() {
         </div>
 
         {/* Card */}
-        <div className="rounded-3xl glass-panel p-6 sm:p-8 border border-white/20 shadow-2xl space-y-5">
-          <div className="text-center space-y-1">
+        <div className="rounded-3xl p-6 sm:p-8 bg-slate-950/90 border-2 border-slate-700/80 shadow-2xl space-y-5 backdrop-blur-xl">
+          <div className="text-center space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Welcome back
             </h1>
-            <p className="text-xs font-semibold text-slate-300">
+            <p className="text-xs sm:text-sm font-bold text-slate-100">
               Sign in to manage your finances, track spending, and review your savings.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-3.5 rounded-2xl bg-red-500/20 border border-red-500/40 text-red-200 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
               <span>{errorMsg}</span>
             </div>
           )}
@@ -94,7 +94,7 @@ function LoginContent() {
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Email */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1.5">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Email Address
               </label>
               <input
@@ -104,19 +104,19 @@ function LoginContent() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-bold text-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 shadow-inner transition-colors"
               />
             </div>
 
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="font-bold text-slate-200">
+                <label className="text-xs font-black text-white uppercase tracking-wider">
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline text-[11px]"
+                  className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline text-xs"
                 >
                   Forgot password?
                 </Link>
@@ -129,12 +129,12 @@ function LoginContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                  className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-bold font-mono placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-400/20 shadow-inner transition-colors text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-white p-1 transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -146,7 +146,7 @@ function LoginContent() {
             <button
               type="submit"
               disabled={isSubmitting || !email.trim() || !password}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
             >
               {isSubmitting ? (
                 <>
@@ -163,8 +163,8 @@ function LoginContent() {
           </form>
 
           {/* Link to Signup */}
-          <div className="pt-3 border-t border-white/10 text-center text-xs">
-            <span className="text-slate-300">Don&apos;t have an account? </span>
+          <div className="pt-3 border-t border-slate-700/80 text-center text-xs">
+            <span className="text-white font-medium">Don&apos;t have an account? </span>
             <Link
               href="/signup"
               className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline"

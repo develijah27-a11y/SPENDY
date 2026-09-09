@@ -36,6 +36,7 @@ export interface AuthContextType {
   updatePassword: (newPassword: string) => Promise<{ error: string | null }>;
   updateProfile: (updates: Partial<UserProfileData>) => Promise<{ error: string | null }>;
   resendVerificationEmail: (email: string) => Promise<{ error: string | null }>;
+  verifyOtp: (email: string, token: string) => Promise<{ error: string | null }>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -639,6 +640,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Verify OTP (6-digit confirmation code)
+  const verifyOtp = async (email: string, token: string): Promise<{ error: string | null }> => {
+    setIsLoading(true);
+    try {
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanToken = token.trim();
+
+      if (!cleanEmail) {
+        return { error: 'Please provide the email address used during registration.' };
+      }
+      if (!cleanToken || cleanToken.length < 6) {
+        return { error: 'Please enter the complete 6-digit verification code.' };
+      }
+
+      if (!isSupabaseConfigured()) {
+        // Offline / mock mode
+        return { error: null };
+      }
+
+      // Try signup OTP first
+      let res = await supabase.auth.verifyOtp({
+        email: cleanEmail,
+        token: cleanToken,
+        type: 'signup',
+      });
+
+      // If signup type fails, attempt 'email' type (Magic link / email OTP)
+      if (res.error) {
+        const secondRes = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token: cleanToken,
+          type: 'email',
+        });
+        if (!secondRes.error) {
+          res = secondRes;
+        }
+      }
+
+      if (res.error) {
+        return { error: formatAuthError(res.error) };
+      }
+
+      if (res.data?.user) {
+        setUser(res.data.user);
+        if (res.data.session) {
+          setSession(res.data.session);
+        }
+        await fetchProfile(res.data.user.id, res.data.user.email || '');
+      }
+
+      return { error: null };
+    } catch (e: unknown) {
+      const err = e as Error;
+      return { error: err.message || 'Verification failed. Please check your 6-digit code.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const refreshProfile = async () => {
     if (user?.id) {
       await fetchProfile(user.id, user.email || '');
@@ -664,6 +724,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         updatePassword,
         updateProfile,
         resendVerificationEmail,
+        verifyOtp,
         refreshProfile,
       }}
     >

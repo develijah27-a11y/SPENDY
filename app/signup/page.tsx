@@ -125,33 +125,33 @@ export default function SignupPage() {
       <div className="w-full max-w-md space-y-6 animate-in fade-in zoom-in-95 duration-300">
         {/* Brand Logo */}
         <div className="text-center flex justify-center">
-          <Link href="/" className="inline-block">
-            <SpendyLogo size="lg" showTagline={true} />
+          <Link href="/" className="inline-block" aria-label="Spendy Home">
+            <SpendyLogo size="lg" showTagline={false} />
           </Link>
         </div>
 
         {/* Card */}
-        <div className="rounded-3xl glass-panel p-6 sm:p-8 border border-white/20 shadow-2xl space-y-5">
-          <div className="text-center space-y-1">
+        <div className="rounded-3xl bg-slate-950/90 p-6 sm:p-8 border-2 border-slate-700 shadow-2xl space-y-6">
+          <div className="text-center space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               Create your Spendy account
             </h1>
-            <p className="text-xs font-semibold text-slate-300">
+            <p className="text-sm font-bold text-slate-100 leading-snug">
               Start tracking your income, expenses, and savings goals with total privacy.
             </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-red-500/20 border border-red-500/30 text-red-300 text-xs font-bold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-3.5 rounded-2xl bg-red-500/20 border-2 border-red-500/40 text-red-200 text-xs font-black flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Full Name */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Full Name
               </label>
               <input
@@ -161,13 +161,13 @@ export default function SignupPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="David Mukasa"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-bold text-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 shadow-inner transition-colors"
               />
             </div>
 
             {/* Email */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Email Address
               </label>
               <input
@@ -177,19 +177,19 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-semibold placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-bold text-sm placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 shadow-inner transition-colors"
               />
             </div>
 
             {/* Currency Preference */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Primary Currency
               </label>
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-bold text-sm focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 transition-colors cursor-pointer"
               >
                 <option value="UGX">UGX — Ugandan Shilling</option>
                 <option value="USD">USD — US Dollar</option>
@@ -200,7 +200,7 @@ export default function SignupPage() {
 
             {/* Password */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Password
               </label>
               <div className="relative">
@@ -211,12 +211,12 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                  className="w-full px-4 py-3 pr-11 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-400 text-sm font-bold focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 shadow-inner transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -225,9 +225,9 @@ export default function SignupPage() {
 
               {/* Password Strength Meter */}
               {password && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center justify-between text-[11px] font-bold">
-                    <span className="text-slate-400">Strength:</span>
+                <div className="mt-2 space-y-1.5">
+                  <div className="flex items-center justify-between text-xs font-black">
+                    <span className="text-slate-300">Password Strength:</span>
                     <span
                       className={
                         strengthScore <= 1
@@ -242,7 +242,7 @@ export default function SignupPage() {
                       {strengthLabel}
                     </span>
                   </div>
-                  <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
                     <div
                       className={`h-full rounded-full transition-all duration-300 ${
                         strengthScore <= 1
@@ -261,7 +261,7 @@ export default function SignupPage() {
 
             {/* Confirm Password */}
             <div>
-              <label className="block font-bold text-slate-200 mb-1">
+              <label className="block text-xs font-black text-white uppercase tracking-wider mb-1.5">
                 Confirm Password
               </label>
               <input
@@ -271,23 +271,26 @@ export default function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-900 border-2 border-slate-700 text-white font-mono placeholder:font-sans placeholder:text-slate-400 text-sm font-bold focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 shadow-inner transition-colors"
               />
             </div>
 
             {/* Requirements Checklist */}
-            <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-1 text-[11px]">
-              <div className="grid grid-cols-2 gap-1 font-semibold">
-                <span className={passwordChecks.minLength ? 'text-emerald-400' : 'text-slate-400'}>
+            <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-700 space-y-1.5 text-xs font-bold">
+              <span className="block text-[11px] font-black uppercase tracking-wider text-slate-300 mb-1">
+                Password Requirements
+              </span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <span className={passwordChecks.minLength ? 'text-emerald-400' : 'text-slate-300'}>
                   {passwordChecks.minLength ? '✓' : '○'} 8+ characters
                 </span>
-                <span className={passwordChecks.hasUpper ? 'text-emerald-400' : 'text-slate-400'}>
+                <span className={passwordChecks.hasUpper ? 'text-emerald-400' : 'text-slate-300'}>
                   {passwordChecks.hasUpper ? '✓' : '○'} Uppercase letter
                 </span>
-                <span className={passwordChecks.hasLower ? 'text-emerald-400' : 'text-slate-400'}>
+                <span className={passwordChecks.hasLower ? 'text-emerald-400' : 'text-slate-300'}>
                   {passwordChecks.hasLower ? '✓' : '○'} Lowercase letter
                 </span>
-                <span className={passwordChecks.hasNumber ? 'text-emerald-400' : 'text-slate-400'}>
+                <span className={passwordChecks.hasNumber ? 'text-emerald-400' : 'text-slate-300'}>
                   {passwordChecks.hasNumber ? '✓' : '○'} Number (0-9)
                 </span>
               </div>
@@ -297,7 +300,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={isSubmitting || !isPasswordValid}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs sm:text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
+              className="w-full py-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-lg shadow-emerald-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-3"
             >
               {isSubmitting ? (
                 <>
@@ -306,7 +309,7 @@ export default function SignupPage() {
                 </>
               ) : (
                 <>
-                  <UserPlus className="w-4 h-4" />
+                  <UserPlus className="w-4 h-4 stroke-[2.5]" />
                   <span>Create Account</span>
                 </>
               )}
@@ -314,11 +317,11 @@ export default function SignupPage() {
           </form>
 
           {/* Link to Login */}
-          <div className="pt-3 border-t border-white/10 text-center text-xs">
-            <span className="text-slate-300">Already have an account? </span>
+          <div className="pt-4 border-t border-slate-700 text-center text-xs">
+            <span className="text-slate-200 font-semibold">Already have an account? </span>
             <Link
               href="/login"
-              className="font-bold text-emerald-400 hover:text-emerald-300 hover:underline"
+              className="font-black text-emerald-400 hover:text-emerald-300 underline underline-offset-4 ml-1"
             >
               Log in
             </Link>

@@ -53,14 +53,10 @@ export function SpendyLogo({
         <div className={`flex flex-col ${variant === 'stacked' ? 'items-center' : 'items-start'}`}>
           <div className="flex items-center leading-none">
             <span
-              className={`${titleSize} tracking-tight text-gray-950 dark:text-white flex items-center`}
+              className={`${titleSize} tracking-tight text-slate-900 dark:text-white flex items-center select-none`}
             >
-              <span className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent">
-                Spend
-              </span>
-              <span className="text-gray-950 dark:text-white">
-                y
-              </span>
+              <span>Spend</span>
+              <span className="text-emerald-500 dark:text-emerald-400 font-black">y</span>
             </span>
           </div>
           {showTagline && (
