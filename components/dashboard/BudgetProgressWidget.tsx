@@ -39,41 +39,42 @@ export function BudgetProgressWidget() {
     .slice(0, 4);
 
   return (
-    <div className="rounded-3xl glass-panel p-5 sm:p-6 border border-black/15 dark:border-white/20 shadow-xl">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-white/15">
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-5 sm:p-6 shadow-lg space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-slate-800/80">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-sm">
-            <PiggyBank className="w-5 h-5 font-black" />
+          <div className="w-9 h-9 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-2xs">
+            <PiggyBank className="w-5 h-5 font-black" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="font-black text-sm text-gray-950 dark:text-white">Monthly Budgets</h3>
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Track spending vs plan</p>
+            <h3 className="font-black text-sm text-slate-950 dark:text-white">Monthly Budgets</h3>
+            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Spending limits &amp; thresholds</p>
           </div>
         </div>
         <Link
           href="/budgets"
           className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1 transition-colors"
         >
-          <span>All budgets</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <span>All limits</span>
+          <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
         </Link>
       </div>
 
       {/* Overall Total Budget Meter */}
       {totalPlanned > 0 ? (
-        <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
-          <div className="flex items-center justify-between text-xs mb-2">
-            <span className="font-bold text-slate-800 dark:text-slate-200">Overall Month Limit</span>
-            <span className="font-mono text-xs text-slate-700 dark:text-slate-300 font-semibold">
-              <strong className="text-gray-950 dark:text-white font-black">{formatUGX(totalSpent)}</strong> / {formatUGX(totalPlanned)}
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 shadow-2xs space-y-2.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-bold text-slate-800 dark:text-slate-200">Month Budget Target</span>
+            <span className="font-mono text-xs text-slate-600 dark:text-slate-300 font-semibold tabular-nums">
+              <strong className="text-slate-950 dark:text-white font-black">{formatUGX(totalSpent)}</strong> / {formatUGX(totalPlanned)}
             </span>
           </div>
 
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner">
+          <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden shadow-inner">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 overallPercentage >= 100
-                  ? 'bg-red-500'
+                  ? 'bg-rose-500'
                   : overallPercentage >= 80
                   ? 'bg-amber-500'
                   : 'bg-emerald-500'
@@ -82,48 +83,51 @@ export function BudgetProgressWidget() {
             />
           </div>
 
-          <div className="flex items-center justify-between text-xs font-bold mt-2.5">
-            <span className="text-slate-700 dark:text-slate-300">{overallPercentage.toFixed(0)}% used</span>
+          <div className="flex items-center justify-between text-xs font-bold pt-0.5">
+            <span className="text-slate-600 dark:text-slate-400">{overallPercentage.toFixed(0)}% allocated</span>
             {overallPercentage >= 100 ? (
-              <span className="text-red-600 dark:text-red-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" /> Exceeded by {formatUGX(totalSpent - totalPlanned)}
+              <span className="text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Over by {formatUGX(totalSpent - totalPlanned)}</span>
               </span>
             ) : overallPercentage >= 80 ? (
               <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" /> Warning (80%+)
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>Caution (80%+)</span>
               </span>
             ) : (
               <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> {formatUGX(totalPlanned - totalSpent)} remaining
+                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <span>{formatUGX(totalPlanned - totalSpent)} left</span>
               </span>
             )}
           </div>
         </div>
       ) : (
-        <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs text-center font-bold text-slate-700 dark:text-slate-300">
-          No overall budget set yet.{' '}
-          <Link href="/budgets" className="text-emerald-600 dark:text-emerald-400 underline ml-1">
-            Set Monthly Budget
+        <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 text-xs text-center font-medium text-slate-500 dark:text-slate-400">
+          No monthly limit configured.{' '}
+          <Link href="/budgets" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline ml-1">
+            Configure Budget
           </Link>
         </div>
       )}
 
       {/* Category Budgets list */}
-      <div className="mt-4 space-y-3">
+      <div className="space-y-2 pt-1">
         {categoryBudgets.map((b) => (
-          <div key={b.id} className="space-y-1.5 p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+          <div key={b.id} className="space-y-1.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/60 transition-colors">
             <div className="flex items-center justify-between text-xs font-bold">
-              <span className="text-gray-950 dark:text-white">{b.categoryName}</span>
-              <span className="text-xs text-slate-700 dark:text-slate-300 font-mono font-semibold">
+              <span className="text-slate-950 dark:text-white">{b.categoryName}</span>
+              <span className="text-xs text-slate-600 dark:text-slate-400 font-mono font-semibold tabular-nums">
                 {formatUGX(b.spent)} / {formatUGX(b.planned_amount)} ({b.percentage.toFixed(0)}%)
               </span>
             </div>
-            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
                   width: `${Math.min(100, b.percentage)}%`,
-                  backgroundColor: b.percentage >= 100 ? '#EF4444' : b.percentage >= 80 ? '#F59E0B' : b.color,
+                  backgroundColor: b.percentage >= 100 ? '#F43F5E' : b.percentage >= 80 ? '#F59E0B' : b.color,
                 }}
               />
             </div>

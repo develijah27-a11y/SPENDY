@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatUGX } from '@/lib/formatters';
-import { Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Info, ChevronDown, ChevronUp, Sparkles, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 export function SafeToSpendCard() {
   const { safeToSpend } = useSpendy();
@@ -13,92 +13,104 @@ export function SafeToSpendCard() {
   const isCaution = safeToSpend.status === 'caution';
 
   return (
-    <div
-      className={`rounded-3xl p-5 sm:p-6 border transition-all relative overflow-hidden shadow-xl ${
-        isDanger
-          ? 'bg-gradient-to-br from-red-950/60 via-red-900/40 to-neutral-950 border-red-500/40'
-          : isCaution
-          ? 'bg-gradient-to-br from-amber-950/60 via-amber-900/40 to-neutral-950 border-amber-500/40'
-          : 'bg-gradient-to-br from-emerald-950/70 via-teal-900/40 to-slate-950 border-emerald-500/40'
-      }`}
-    >
-      <div className="flex items-start justify-between">
-        <div>
+    <div className="rounded-3xl bg-white dark:bg-[#0B0F19] border border-slate-200/90 dark:border-slate-800/90 p-6 sm:p-7 shadow-lg relative flex flex-col justify-between h-full transition-all">
+      <div>
+        {/* Top Header */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span
-              className={`text-xs font-black uppercase tracking-widest px-3 py-1 rounded-full border ${
+              className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${
                 isDanger
-                  ? 'bg-red-500/30 text-red-200 border-red-400'
+                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30'
                   : isCaution
-                  ? 'bg-amber-500/30 text-amber-200 border-amber-400'
-                  : 'bg-emerald-500/30 text-emerald-200 border-emerald-400'
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
               }`}
             >
-              Safe-to-Spend Daily
-            </span>
-            <span className="text-xs font-bold text-slate-200">
-              {safeToSpend.daysRemainingInMonth} days left in month
+              {isDanger ? (
+                <AlertTriangle className="w-3 h-3 shrink-0" aria-hidden="true" />
+              ) : (
+                <CheckCircle2 className="w-3 h-3 shrink-0" aria-hidden="true" />
+              )}
+              <span>Safe-to-Spend</span>
             </span>
           </div>
 
-          <div className="mt-3 flex items-baseline gap-2">
-            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
-              {formatUGX(safeToSpend.safeToSpendDaily)}
-            </h2>
-            <span className="text-sm font-bold text-slate-200">/ day</span>
-          </div>
-
-          <p className="text-xs font-semibold text-slate-100 mt-1.5">
-            {isDanger
-              ? 'Commitments exceed available balance. Pause discretionary expenses.'
-              : `You can safely spend ${formatUGX(safeToSpend.safeToSpendDaily)} today without breaking your budgets, bills, or debts.`}
-          </p>
+          <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400">
+            {safeToSpend.daysRemainingInMonth} days left in month
+          </span>
         </div>
 
-        <button
-          onClick={() => setShowDetails(!showDetails)}
-          className="flex items-center gap-1 text-xs font-bold text-white px-3 py-2 rounded-2xl bg-white/15 hover:bg-white/25 border border-white/20 transition-colors cursor-pointer shadow-sm"
-        >
-          <Info className="w-4 h-4 text-emerald-400" />
-          <span>{showDetails ? 'Hide math' : 'How it works'}</span>
-          {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        </button>
+        {/* Daily Allowance */}
+        <div className="mt-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl sm:text-4xl font-black text-slate-950 dark:text-white tracking-tight font-mono">
+              {formatUGX(safeToSpend.safeToSpendDaily)}
+            </span>
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">/ day</span>
+          </div>
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-300 mt-1.5 leading-relaxed">
+            {isDanger
+              ? 'Active commitments exceed liquid balance. Defer discretionary expenses.'
+              : `Discretionary spending limit today after honoring bills, budgets, and savings.`}
+          </p>
+        </div>
       </div>
 
-      {/* Expanded Breakdown */}
-      {showDetails && (
-        <div className="mt-4 pt-4 border-t border-white/20 space-y-2 text-xs animate-in fade-in duration-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-100">
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Available Liquid Balance:</span>
-              <span className="font-black text-emerald-300">{formatUGX(safeToSpend.totalAvailableBalance)}</span>
+      {/* Math Breakdown Toggle & Drawer */}
+      <div className="mt-5 pt-4 border-t border-slate-200/80 dark:border-slate-800/80">
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="w-full flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer py-1"
+          aria-expanded={showDetails}
+        >
+          <span className="flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+            <span>Calculation Breakdown</span>
+          </span>
+          <span className="flex items-center gap-1 text-[11px] text-slate-500 dark:text-slate-400">
+            <span>{showDetails ? 'Hide' : 'Inspect'}</span>
+            {showDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </span>
+        </button>
+
+        {showDetails && (
+          <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-800/60 space-y-2 text-xs animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Liquid Balance:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                  {formatUGX(safeToSpend.totalAvailableBalance)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Recurring Bills:</span>
+                <span className="font-bold text-rose-500 font-mono">
+                  - {formatUGX(safeToSpend.upcomingRecurring)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Budget Commitments:</span>
+                <span className="font-bold text-rose-500 font-mono">
+                  - {formatUGX(safeToSpend.remainingBudgetCommitments)}
+                </span>
+              </div>
+              <div className="flex justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70">
+                <span className="text-slate-500 dark:text-slate-400 font-medium">Debts Owed:</span>
+                <span className="font-bold text-rose-500 font-mono">
+                  - {formatUGX(safeToSpend.pendingDebtsOwed)}
+                </span>
+              </div>
             </div>
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Upcoming Bills / Recurring:</span>
-              <span className="font-black text-red-300">- {formatUGX(safeToSpend.upcomingRecurring)}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Remaining Budget Commitments:</span>
-              <span className="font-black text-red-300">- {formatUGX(safeToSpend.remainingBudgetCommitments)}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Pending Debt Repayments:</span>
-              <span className="font-black text-red-300">- {formatUGX(safeToSpend.pendingDebtsOwed)}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Emergency Buffer:</span>
-              <span className="font-black text-amber-300">- {formatUGX(safeToSpend.emergencyBuffer)}</span>
-            </div>
-            <div className="flex justify-between p-2.5 rounded-2xl bg-white/10 border border-white/10">
-              <span className="text-slate-200 font-semibold">Safe for Month:</span>
-              <span className="font-black text-white">{formatUGX(safeToSpend.safeToSpendMonth)}</span>
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold">
+              <span className="text-slate-700 dark:text-slate-300">Remaining Monthly Safe Pool:</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-mono font-black">
+                {formatUGX(safeToSpend.safeToSpendMonth)}
+              </span>
             </div>
           </div>
-          <p className="text-[11px] font-medium text-slate-300 text-center italic mt-2">
-            * Note: Safe-to-spend is calculated from your entered accounts, budgets, and upcoming commitments. It is an estimate and not formal financial advice.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
