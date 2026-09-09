@@ -128,7 +128,7 @@ export function BottomNav() {
         >
           <div
             ref={drawerRef}
-            className="bg-white dark:bg-[#0B1120] border-t border-slate-200 dark:border-slate-800 rounded-t-[28px] max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-200 shadow-2xl"
+            className="bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-slate-800 rounded-t-[28px] max-h-[88vh] flex flex-col animate-in slide-in-from-bottom duration-200 shadow-2xl"
           >
             {/* Grab handle & header */}
             <div className="pt-3 pb-3 px-5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
@@ -176,16 +176,16 @@ export function BottomNav() {
                             'flex items-center justify-between p-3 rounded-2xl border transition-all text-left shadow-2xs cursor-pointer touch-target active:scale-[0.98]',
                             isActive
                               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300 font-bold'
-                              : 'bg-slate-50/80 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                              : 'bg-slate-50/80 dark:bg-[#0B101D] border-slate-200/80 dark:border-slate-800/80 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                           )}
                         >
                           <div className="flex items-center gap-3 min-w-0">
                             <div
                               className={cn(
-                                'w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-2xs',
+                                'p-2 rounded-xl shrink-0',
                                 isActive
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
+                                  ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                               )}
                             >
                               <Icon className="w-4 h-4" />
@@ -201,7 +201,7 @@ export function BottomNav() {
                           </div>
                           <div className="flex items-center gap-1.5 shrink-0 ml-2">
                             {item.badge && (
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-600 dark:text-purple-400 border border-purple-500/30">
+                              <span className="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                                 {item.badge}
                               </span>
                             )}
@@ -235,7 +235,7 @@ export function BottomNav() {
       {/* Fixed Bottom Navigation Bar - Mobile Thumb Zone */}
       <nav
         aria-label="Mobile Navigation"
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#070A12]/95 border-t border-slate-200/90 dark:border-slate-800/90 px-2 pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+0.35rem)] grid grid-cols-5 items-center shadow-lg backdrop-blur-xl"
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#090D16]/95 border-t border-slate-200/90 dark:border-slate-800/90 px-2 pt-1 pb-[calc(env(safe-area-inset-bottom,0px)+0.35rem)] grid grid-cols-5 items-center shadow-lg backdrop-blur-xl"
       >
         {/* Tab 1: Home */}
         <Link
@@ -272,7 +272,7 @@ export function BottomNav() {
           <button
             onClick={() => openQuickAdd('expense')}
             aria-label="Add transaction"
-            className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer touch-target"
+            className="w-12 h-12 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg shadow-emerald-600/30 active:scale-95 transition-all cursor-pointer touch-target"
           >
             <Plus className="w-6 h-6 stroke-[3]" />
           </button>

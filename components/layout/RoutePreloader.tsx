@@ -3,28 +3,31 @@
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
-const CORE_ROUTES = [
+const PRIORITY_ROUTES = [
   '/app',
   '/transactions',
   '/budgets',
   '/goals',
   '/sacco',
+  '/accounts',
+];
+
+const SECONDARY_ROUTES = [
   '/commute',
   '/runway',
   '/inflation',
   '/sms-parser',
   '/reports',
   '/coach',
-  '/accounts',
   '/recurring',
   '/debts',
-  '/login',
-  '/signup',
+  '/categories',
+  '/settings',
 ];
 
 /**
- * Non-blocking Background Route Preloader
- * Warms up Next.js route chunks during idle browser cycles so navigation transitions are instant.
+ * High-Performance Background Route Preloader
+ * Proactively preloads route chunks into the Next.js router cache so page transitions happen in 0ms.
  */
 export function RoutePreloader() {
   const router = useRouter();
@@ -34,28 +37,33 @@ export function RoutePreloader() {
     if (hasPreloaded.current) return;
     hasPreloaded.current = true;
 
-    // Utilize idle time to avoid contention with main-thread interactivity
-    const prefetchRoutes = () => {
-      let delay = 200;
-      CORE_ROUTES.forEach((route) => {
+    // Warm up priority routes immediately
+    PRIORITY_ROUTES.forEach((route, idx) => {
+      setTimeout(() => {
+        try {
+          router.prefetch(route);
+        } catch (_) {}
+      }, idx * 60);
+    });
+
+    // Warm up secondary routes during idle window
+    const prefetchSecondary = () => {
+      SECONDARY_ROUTES.forEach((route, idx) => {
         setTimeout(() => {
           try {
             router.prefetch(route);
-          } catch (_) {
-            // Silently ignore prefetch errors
-          }
-        }, delay);
-        delay += 120; // Stagger prefetch requests
+          } catch (_) {}
+        }, 400 + idx * 80);
       });
     };
 
     if (typeof window !== 'undefined') {
       if ('requestIdleCallback' in window) {
         (window as unknown as { requestIdleCallback: (cb: () => void) => void }).requestIdleCallback(() => {
-          prefetchRoutes();
+          prefetchSecondary();
         });
       } else {
-        setTimeout(prefetchRoutes, 500);
+        setTimeout(prefetchSecondary, 600);
       }
     }
   }, [router]);

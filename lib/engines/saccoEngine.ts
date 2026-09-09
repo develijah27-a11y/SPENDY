@@ -49,33 +49,5 @@ export function calculateSaccoMetrics(groups: SaccoGroup[]): SaccoPortfolioMetri
   };
 }
 
-export const DEFAULT_SAMPLE_SACCOS: SaccoGroup[] = [
-  {
-    id: 'sacco-1',
-    name: 'Wazalendo Family & Welfare SACCO',
-    type: 'sacco',
-    share_value: 50000,
-    shares_owned: 30,
-    monthly_contribution: 100000,
-    estimated_dividend_percent: 11.5,
-    loan_borrowed: 0,
-    loan_interest_percent: 5,
-    next_due_date: '2026-09-25',
-    notes: 'Primary monthly community savings pool. Payouts every December.',
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: 'sacco-2',
-    name: 'Kampala Young Tech Innovators Club',
-    type: 'investment_club',
-    share_value: 100000,
-    shares_owned: 15,
-    monthly_contribution: 150000,
-    estimated_dividend_percent: 14.0,
-    loan_borrowed: 400000,
-    loan_interest_percent: 4,
-    next_due_date: '2026-09-30',
-    notes: 'Invests in land plots in Mukono and treasury bills.',
-    created_at: new Date().toISOString(),
-  },
-];
+export const EMPTY_SACCOS: SaccoGroup[] = [];
+

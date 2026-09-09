@@ -42,13 +42,13 @@
 }
 
 .dark {
-  /* DARK MODE (Deep Midnight Obsidian & High Contrast Typography) */
-  --background: #070a12;
-  --background-secondary: #0b1120;
-  --surface: #0e1628;
-  --surface-elevated: #131d35;
-  --surface-subtle: #090e1c;
-  --surface-hover: #17233f;
+  /* DARK MODE (Deep Midnight Obsidian & High Contrast Fintech Typography) */
+  --background: #090d16;
+  --background-secondary: #0d1322;
+  --surface: #0f172a;
+  --surface-elevated: #162036;
+  --surface-subtle: #0b101c;
+  --surface-hover: #1e293b;
   
   --border-subtle: #1e293b;
   --border-strong: #334155;
@@ -56,20 +56,20 @@
   
   --foreground: #ffffff;
   --foreground-heading: #ffffff;
-  --foreground-muted: #f1f5f9;
+  --foreground-muted: #f8fafc;
   --foreground-subtle: #cbd5e1;
   
   --primary: #10b981;
   --primary-hover: #34d399;
-  --primary-subtle: rgba(16, 185, 129, 0.15);
+  --primary-subtle: rgba(16, 185, 129, 0.12);
 
   --accent-income: #10b981;
-  --accent-expense: #f87171;
-  --accent-savings: #a78bfa;
-  --accent-warning: #fbbf24;
+  --accent-expense: #f43f5e;
+  --accent-savings: #10b981;
+  --accent-warning: #f59e0b;
 
-  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
-  --shadow-dropdown: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 8px 12px -6px rgba(0, 0, 0, 0.4);
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-dropdown: 0 10px 30px -5px rgba(0, 0, 0, 0.7), 0 8px 12px -6px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -120,7 +120,7 @@ body {
 }
 
 .dark .glass-panel {
-  background: rgba(14, 22, 40, 0.92);
+  background: rgba(15, 23, 42, 0.92);
   border-color: var(--border-subtle);
 }
 

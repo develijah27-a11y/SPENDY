@@ -28,11 +28,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <SpendyProvider>
           <RoutePreloader />
           {isPublicAuthPage ? (
-            <div className="min-h-screen bg-[#070A12] text-gray-100 selection:bg-emerald-500 selection:text-white">
+            <div className="min-h-screen bg-[#090D16] text-gray-100 selection:bg-emerald-500 selection:text-white">
               {children}
             </div>
           ) : (
-            <div className="min-h-screen flex bg-[#f8fafc] dark:bg-[#070A12] text-gray-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white transition-colors">
+            <div className="min-h-screen flex bg-[#f8fafc] dark:bg-[#090D16] text-gray-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white transition-colors">
               {/* Desktop Sidebar (lg and up) */}
               <Sidebar />
 
