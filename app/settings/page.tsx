@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { useTheme } from '@/lib/theme/ThemeContext';
 import { useAuth } from '@/lib/auth/AuthContext';
@@ -12,6 +13,8 @@ import {
   Moon,
   Trash2,
   Download,
+  Printer,
+  FileText,
   Plus,
   Tag,
   ShieldCheck,
@@ -291,18 +294,27 @@ export default function SettingsPage() {
           {/* Data Export Card */}
           <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#0E1628] border border-slate-200 dark:border-slate-800 shadow-sm space-y-3">
             <h2 className="text-base font-bold text-slate-950 dark:text-white">
-              Data Management
+              Financial Statements &amp; Reports
             </h2>
             <p className="text-xs text-slate-600 dark:text-slate-400">
-              Download your complete transaction ledger as a CSV report for your accounting or tax records.
+              Generate structured, month-end PDF statements with cash flows, wealth balance sheets, and full audit ledgers.
             </p>
-            <button
-              onClick={exportDataCSV}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-            >
-              <Download className="w-4 h-4" />
-              <span>Download Report (CSV)</span>
-            </button>
+            <div className="space-y-2">
+              <Link
+                href="/review"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Generate Monthly Statement (PDF)</span>
+              </Link>
+              <button
+                onClick={exportDataCSV}
+                className="w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                <span>Export Raw Ledger (CSV)</span>
+              </button>
+            </div>
           </div>
 
           {/* Danger Zone */}

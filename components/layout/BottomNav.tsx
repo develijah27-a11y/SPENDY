@@ -28,6 +28,8 @@ import {
   Navigation,
   Clock,
   TrendingDown,
+  TrendingUp,
+  FileText,
   MessageSquare,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
@@ -70,6 +72,7 @@ export function BottomNav() {
     {
       title: 'Planning & Commitments',
       items: [
+        { label: 'Investments', href: '/investments', icon: TrendingUp, desc: 'Unit trusts, T-bills & land', badge: 'New' },
         { label: 'Monthly Budgets', href: '/budgets', icon: PiggyBank, desc: 'Category spending caps', badge: null },
         { label: 'Savings Milestones', href: '/goals', icon: Target, desc: 'Emergency funds & goals', badge: null },
         { label: 'SACCO & Chamas', href: '/sacco', icon: Users, desc: 'Group shares, pool & dividends', badge: 'New' },
@@ -216,16 +219,14 @@ export function BottomNav() {
 
               {/* Data Export Button */}
               <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-                <button
-                  onClick={() => {
-                    exportDataCSV();
-                    setShowMoreMenu(false);
-                  }}
+                <Link
+                  href="/review"
+                  onClick={() => setShowMoreMenu(false)}
                   className="w-full py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 cursor-pointer touch-target active:scale-98 transition-transform"
                 >
-                  <Download className="w-4 h-4 text-slate-500" />
-                  <span>Download Financial Data Report (CSV)</span>
-                </button>
+                  <FileText className="w-4 h-4 text-emerald-500" />
+                  <span>Monthly Financial Statement (PDF)</span>
+                </Link>
               </div>
             </div>
           </div>

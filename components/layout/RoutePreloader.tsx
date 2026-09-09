@@ -8,6 +8,7 @@ const PRIORITY_ROUTES = [
   '/transactions',
   '/budgets',
   '/goals',
+  '/investments',
   '/sacco',
   '/accounts',
 ];

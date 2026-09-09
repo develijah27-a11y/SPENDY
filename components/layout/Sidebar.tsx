@@ -30,6 +30,8 @@ import {
   Navigation,
   Clock,
   TrendingDown,
+  TrendingUp,
+  FileText,
   MessageSquare,
 } from 'lucide-react';
 import { useSpendy } from '@/lib/store/spendyStore';
@@ -57,6 +59,7 @@ export function Sidebar() {
     {
       title: 'Planning',
       items: [
+        { label: 'Investments', href: '/investments', icon: TrendingUp, badge: 'New' },
         { label: 'Budgets', href: '/budgets', icon: PiggyBank },
         { label: 'Goals', href: '/goals', icon: Target },
         { label: 'SACCO & Chamas', href: '/sacco', icon: Users, badge: 'New' },
@@ -206,16 +209,16 @@ export function Sidebar() {
 
       {/* Footer Area: User Profile & Actions */}
       <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2 mt-4">
-        <button
-          onClick={exportDataCSV}
+        <Link
+          href="/review"
           className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <Download className="w-3.5 h-3.5 text-slate-400" />
-            <span>Download CSV</span>
+            <FileText className="w-3.5 h-3.5 text-emerald-500" />
+            <span>Monthly Statement (PDF)</span>
           </div>
-          <span className="text-[10px] font-mono text-slate-400">Export</span>
-        </button>
+          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-black">Export</span>
+        </Link>
 
         <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2 min-w-0">

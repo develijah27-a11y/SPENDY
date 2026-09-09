@@ -8,6 +8,7 @@ import { PeriodFilter } from '@/types';
 import {
   PieChart,
   Download,
+  Printer,
   ArrowDownRight,
   ArrowUpRight,
   TrendingUp,
@@ -93,13 +94,13 @@ export default function InsightsPage() {
             <option value="all">All Time</option>
           </select>
 
-          <button
-            onClick={exportDataCSV}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-sm touch-target"
+          <Link
+            href="/review"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-xs font-black shadow-md shadow-emerald-600/20 transition-all cursor-pointer touch-target"
           >
-            <Download className="w-4 h-4" />
-            <span>Download Report</span>
-          </button>
+            <Printer className="w-4 h-4" />
+            <span>Monthly Statement (PDF)</span>
+          </Link>
         </div>
       </div>
 

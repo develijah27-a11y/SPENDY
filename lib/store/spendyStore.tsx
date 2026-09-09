@@ -338,10 +338,10 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
         } else if (accRes.status === 'fulfilled' && (!accRes.value.data || accRes.value.data.length === 0)) {
           setAccounts((prev) => {
             if (prev.length > 0) return prev;
-            const defaultAcc: Account = {
+            const cashAcc: Account = {
               id: generateUUID(),
               user_id: userId,
-              name: 'Cash / Mobile Money',
+              name: 'Cash (Physical Wallet)',
               type: 'cash',
               balance: 0,
               currency: 'UGX',
@@ -350,8 +350,32 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             };
-            Promise.resolve(supabase.from('accounts').insert(defaultAcc)).catch(() => {});
-            return [defaultAcc];
+            const mtnAcc: Account = {
+              id: generateUUID(),
+              user_id: userId,
+              name: 'MTN Mobile Money',
+              type: 'mtn_momo',
+              balance: 0,
+              currency: 'UGX',
+              color: '#F59E0B',
+              is_archived: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            const airtelAcc: Account = {
+              id: generateUUID(),
+              user_id: userId,
+              name: 'Airtel Money',
+              type: 'airtel_money',
+              balance: 0,
+              currency: 'UGX',
+              color: '#EF4444',
+              is_archived: false,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            };
+            Promise.resolve(supabase.from('accounts').insert([cashAcc, mtnAcc, airtelAcc])).catch(() => {});
+            return [cashAcc, mtnAcc, airtelAcc];
           });
         }
 
@@ -643,7 +667,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
       currency: 'UGX',
       description: desc,
       note: desc,
-      payment_method: data.payment_method || 'Cash / Mobile Money',
+      payment_method: data.payment_method || 'Cash',
       merchant_name: data.merchant_name,
       receipt_number: data.receipt_number,
       transaction_date: data.transaction_date || new Date().toISOString(),
@@ -659,7 +683,7 @@ export function SpendyProvider({ children }: { children: React.ReactNode }) {
           {
             id: defaultAccId,
             user_id: user.id,
-            name: 'Cash / Mobile Money',
+            name: 'Cash (Physical Wallet)',
             type: 'cash',
             balance: data.type === 'income' ? rawAmt : -rawAmt,
             currency: 'UGX',

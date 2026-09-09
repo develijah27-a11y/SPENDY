@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatCurrency } from '@/lib/formatters';
 import { LoanType } from '@/types';
-import { parseMobileMoneySms, SAMPLE_MOBILE_MONEY_SMS } from '@/lib/engines/smsParserEngine';
 import {
   X,
   PlusCircle,
@@ -35,32 +35,13 @@ export function QuickAddModal() {
     processMerchantPayment,
   } = useSpendy();
 
-  const [activeTab, setActiveTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer' | 'sms'>('expense');
+  const [activeTab, setActiveTab] = useState<'expense' | 'income' | 'loan' | 'pay' | 'transfer'>('expense');
 
   // Form states
   const [amount, setAmount] = useState<string>('');
   const [accountId, setAccountId] = useState<string>('');
   const [categoryId, setCategoryId] = useState<string>('');
   const [note, setNote] = useState<string>('');
-
-  // SMS parsing state
-  const [smsText, setSmsText] = useState<string>('');
-  const parsedSms = useMemo(() => {
-    if (!smsText.trim()) return null;
-    return parseMobileMoneySms(smsText);
-  }, [smsText]);
-
-  // Sync category when SMS is parsed
-  useEffect(() => {
-    if (parsedSms && parsedSms.success) {
-      if (parsedSms.suggestedCategoryId) {
-        setCategoryId(parsedSms.suggestedCategoryId);
-      }
-      if (!note && parsedSms.counterparty) {
-        setNote(parsedSms.counterparty);
-      }
-    }
-  }, [parsedSms, note]);
 
   // Loan states
   const [loanType, setLoanType] = useState<LoanType>('lent');
@@ -78,10 +59,9 @@ export function QuickAddModal() {
 
   useEffect(() => {
     if (quickAddOpen) {
-      setActiveTab(quickAddInitialTab || 'expense');
+      setActiveTab(quickAddInitialTab && quickAddInitialTab !== ('sms' as any) ? quickAddInitialTab : 'expense');
       setAmount('');
       setNote('');
-      setSmsText('');
       setCounterparty('');
       setDueDate('');
       setErrorMsg('');
@@ -111,7 +91,7 @@ export function QuickAddModal() {
     }
   }, [quickAddOpen, quickAddInitialTab, accounts, categories, closeQuickAdd]);
 
-  const handleTabChange = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer' | 'sms') => {
+  const handleTabChange = (tab: 'expense' | 'income' | 'loan' | 'pay' | 'transfer') => {
     setActiveTab(tab);
     setErrorMsg('');
     if (tab === 'expense' || tab === 'pay') {
@@ -130,34 +110,6 @@ export function QuickAddModal() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
-
-    if (activeTab === 'sms') {
-      if (!parsedSms || !parsedSms.success || parsedSms.amount <= 0) {
-        setErrorMsg('Please paste a valid MTN MoMo or Airtel Money confirmation SMS.');
-        return;
-      }
-      setIsProcessing(true);
-      try {
-        await addTransaction({
-          account_id: accountId || accounts[0]?.id,
-          category_id: categoryId || parsedSms.suggestedCategoryId || categories[0]?.id || 'cat-other-exp',
-          type: parsedSms.type,
-          amount: parsedSms.amount,
-          description: (note.trim() || parsedSms.counterparty || 'Mobile Money Transaction'),
-          merchant_name: parsedSms.counterparty,
-          payment_method: parsedSms.provider,
-          receipt_number: parsedSms.transactionId,
-          transaction_date: new Date().toISOString(),
-        });
-        closeQuickAdd();
-      } catch (err: unknown) {
-        const error = err as Error;
-        setErrorMsg(error.message || 'Failed to save SMS transaction.');
-      } finally {
-        setIsProcessing(false);
-      }
-      return;
-    }
 
     const parsedAmount = Math.round(parseFloat(amount.replace(/,/g, '')));
 
@@ -348,23 +300,6 @@ export function QuickAddModal() {
             <Store className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="text-[11px] sm:text-xs">Pay</span>
           </button>
-
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'sms'}
-            onClick={() => handleTabChange('sms')}
-            className={`flex-1 min-w-[68px] sm:min-w-0 py-2 px-2 rounded-xl font-bold flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer touch-target shrink-0 ${
-              activeTab === 'sms'
-                ? 'bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-gray-950 dark:hover:text-white'
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span className="text-[11px] sm:text-xs flex items-center gap-1">
-              SMS <span className="text-[9px] px-1 py-0.2 bg-teal-500/20 rounded font-black text-teal-600 dark:text-teal-400">AI</span>
-            </span>
-          </button>
         </div>
 
         {errorMsg && (
@@ -376,103 +311,8 @@ export function QuickAddModal() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
-          {activeTab === 'sms' ? (
-            <div className="space-y-3.5">
-              <div>
-                <label htmlFor="quickadd-sms" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
-                  Paste Mobile Money Confirmation SMS <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  id="quickadd-sms"
-                  rows={3}
-                  value={smsText}
-                  onChange={(e) => setSmsText(e.target.value)}
-                  placeholder="Paste MTN MoMo or Airtel confirmation text... e.g. Y'ello. You have sent UGX 15,000 to David Mukasa (256772123456)..."
-                  className="w-full p-3 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-medium focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none shadow-inner"
-                />
-              </div>
-
-              {/* Sample Presets */}
-              <div className="space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Quick Test with Samples:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {SAMPLE_MOBILE_MONEY_SMS.slice(0, 3).map((sample, idx) => (
-                    <button
-                      type="button"
-                      key={idx}
-                      onClick={() => setSmsText(sample.text)}
-                      className="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-teal-500/20 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
-                    >
-                      {sample.title.split(' - ')[1] || sample.title}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Parsed Result Preview Card */}
-              {parsedSms && parsedSms.success && (
-                <div className="p-3.5 rounded-2xl bg-teal-500/10 border border-teal-500/30 space-y-2 animate-in fade-in">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-teal-700 dark:text-teal-400 uppercase tracking-wide">
-                      {parsedSms.provider} • {parsedSms.type.toUpperCase()}
-                    </span>
-                    <span className="text-base font-black text-gray-950 dark:text-white font-mono">
-                      UGX {parsedSms.amount.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="text-xs text-slate-700 dark:text-slate-300 font-semibold flex justify-between">
-                    <span>{parsedSms.type === 'income' ? 'From:' : 'To:'} {parsedSms.counterparty || 'Unknown'}</span>
-                    {parsedSms.transactionId && (
-                      <span className="font-mono text-[10px] text-slate-500">Ref: {parsedSms.transactionId}</span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Account & Category Selector for SMS */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label htmlFor="quickadd-sms-account" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
-                    Wallet / Account
-                  </label>
-                  <select
-                    id="quickadd-sms-account"
-                    value={accountId}
-                    onChange={(e) => setAccountId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
-                        {acc.name} ({formatCurrency(acc.balance)})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="quickadd-sms-category" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
-                    Category
-                  </label>
-                  <select
-                    id="quickadd-sms-category"
-                    value={categoryId}
-                    onChange={(e) => setCategoryId(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-gray-950 dark:text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  >
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              {/* Primary Amount Input */}
-              <div>
+          {/* Primary Amount Input */}
+          <div>
                 <label htmlFor="quickadd-amount" className="block text-xs font-bold text-gray-900 dark:text-white mb-1.5">
                   Amount (UGX) <span className="text-red-500">*</span>
                 </label>
@@ -675,8 +515,6 @@ export function QuickAddModal() {
               </div>
             </div>
           )}
-            </>
-          )}
 
           {/* NOTE / DESCRIPTION */}
           <div>
@@ -696,16 +534,15 @@ export function QuickAddModal() {
           {/* Submit Action Button */}
           <button
             type="submit"
-            disabled={isProcessing || (activeTab === 'sms' && (!parsedSms || !parsedSms.success))}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-sm shadow-lg shadow-emerald-600/30 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98 disabled:opacity-50 mt-2"
+            disabled={isProcessing}
+            className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all active:scale-98 disabled:opacity-50 mt-2"
           >
             {isProcessing ? (
               <span>Processing...</span>
             ) : (
               <>
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4 stroke-[3]" />
                 <span>
-                  {activeTab === 'sms' && (parsedSms?.success ? `Record UGX ${parsedSms.amount.toLocaleString()} from SMS` : 'Paste SMS to Record')}
                   {activeTab === 'expense' && 'Save Expense'}
                   {activeTab === 'income' && 'Record Income'}
                   {activeTab === 'loan' && (loanType === 'lent' ? 'Record Money Lent' : 'Record Money Borrowed')}
@@ -715,6 +552,18 @@ export function QuickAddModal() {
               </>
             )}
           </button>
+
+          {/* Quick link to dedicated SMS auto-parser */}
+          <div className="pt-2 text-center border-t border-slate-100 dark:border-slate-800/80">
+            <Link
+              href="/sms-parser"
+              onClick={closeQuickAdd}
+              className="text-[11px] font-semibold text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+              <span>Want to auto-parse MTN or Airtel SMS? Open SMS Parser →</span>
+            </Link>
+          </div>
         </form>
       </div>
     </div>

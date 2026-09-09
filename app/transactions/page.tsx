@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatCurrency, formatDate } from '@/lib/formatters';
 import { Transaction } from '@/types';
@@ -12,6 +13,7 @@ import {
   ArrowUpRight,
   Trash2,
   Download,
+  Printer,
   Edit2,
   X,
   Check,
@@ -115,13 +117,13 @@ export default function TransactionsPage() {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={exportDataCSV}
+          <Link
+            href="/review"
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-bold border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer shadow-sm touch-target"
           >
-            <Download className="w-4 h-4" />
-            <span>Download Report</span>
-          </button>
+            <Printer className="w-4 h-4" />
+            <span>Monthly Statement (PDF)</span>
+          </Link>
           <button
             onClick={() => openQuickAdd('expense')}
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all active:scale-98 cursor-pointer touch-target"

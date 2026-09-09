@@ -1,4 +1,4 @@
-export type AccountType = 'cash' | 'mtn_momo' | 'airtel_money' | 'bank' | 'spendy_wallet' | 'other';
+export type AccountType = 'cash' | 'mtn_momo' | 'airtel_money' | 'mobile_money' | 'bank' | 'spendy_wallet' | 'other';
 
 export interface Account {
   id: string;

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useSpendy } from '@/lib/store/spendyStore';
 import { formatCurrency, formatUGX, formatCompactUGX, formatDate } from '@/lib/formatters';
+import { getUgandaHoliday, HolidayCelebration } from '@/lib/calendar/ugandaHolidays';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -15,6 +16,8 @@ import {
   DollarSign,
   TrendingDown,
   TrendingUp,
+  PartyPopper,
+  Sparkles,
 } from 'lucide-react';
 
 export default function CalendarPage() {
@@ -42,6 +45,23 @@ export default function CalendarPage() {
     setCurrentDate(new Date(year, month + 1, 1));
     setSelectedDay(1);
   };
+
+  // Holidays in the current month
+  const monthHolidays = useMemo(() => {
+    const list: { day: number; holiday: HolidayCelebration }[] = [];
+    for (let day = 1; day <= daysInMonth; day++) {
+      const hol = getUgandaHoliday(year, month, day);
+      if (hol) {
+        list.push({ day, holiday: hol });
+      }
+    }
+    return list;
+  }, [year, month, daysInMonth]);
+
+  // Selected Day Holiday/Celebration
+  const selectedHoliday = useMemo(() => {
+    return getUgandaHoliday(year, month, selectedDay);
+  }, [year, month, selectedDay]);
 
   // Group transactions by day of the active month
   const transactionsByDay = useMemo(() => {
@@ -87,13 +107,13 @@ export default function CalendarPage() {
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
             <CalendarIcon className="w-4 h-4" />
-            <span>Activity Calendar</span>
+            <span>Activity Calendar & Celebrations</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-gray-950 dark:text-white tracking-tight">
             Financial Calendar
           </h1>
           <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            Day-by-day interactive view of income, expenses, and cash movements.
+            Track daily cash flows alongside Uganda public holidays & celebrations to anticipate spending surges.
           </p>
         </div>
 
@@ -109,7 +129,7 @@ export default function CalendarPage() {
       </div>
 
       {/* Month Summary Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="p-4 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-md">
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Total Income ({monthName})</span>
           <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono mt-1">
@@ -126,6 +146,14 @@ export default function CalendarPage() {
           <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Net Month Flow</span>
           <p className={`text-xl font-black font-mono mt-1 ${monthNetFlow >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
             {monthNetFlow >= 0 ? '+' : ''}{formatCurrency(monthNetFlow)}
+          </p>
+        </div>
+        <div className="p-4 rounded-3xl glass-panel border border-black/15 dark:border-white/20 shadow-md bg-amber-500/[0.04]">
+          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 flex items-center gap-1">
+            <PartyPopper className="w-3.5 h-3.5" /> Celebrations & Feasts
+          </span>
+          <p className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono mt-1">
+            {monthHolidays.length} {monthHolidays.length === 1 ? 'Event' : 'Events'}
           </p>
         </div>
       </div>
@@ -189,6 +217,7 @@ export default function CalendarPage() {
                 new Date().getFullYear() === year &&
                 new Date().getMonth() === month &&
                 new Date().getDate() === day;
+              const hol = getUgandaHoliday(year, month, day);
 
               const hasExpense = data.expenses > 0;
               const hasIncome = data.income > 0;
@@ -197,11 +226,13 @@ export default function CalendarPage() {
                 <button
                   key={`day-${day}`}
                   onClick={() => setSelectedDay(day)}
-                  className={`min-h-[52px] sm:min-h-[76px] p-1 sm:p-2 rounded-xl sm:rounded-2xl text-left transition-all relative flex flex-col justify-between border cursor-pointer touch-target ${
+                  className={`min-h-[56px] sm:min-h-[82px] p-1 sm:p-2 rounded-xl sm:rounded-2xl text-left transition-all relative flex flex-col justify-between border cursor-pointer touch-target ${
                     isSelected
                       ? 'bg-emerald-500/20 border-emerald-500 shadow-md ring-2 ring-emerald-500/40'
                       : isToday
                       ? 'bg-emerald-500/10 border-emerald-500/30 text-gray-950 dark:text-white hover:bg-black/5 dark:hover:bg-white/10'
+                      : hol
+                      ? 'bg-amber-500/[0.04] border-amber-500/30 text-gray-950 dark:text-white hover:bg-amber-500/10'
                       : 'bg-black/[0.03] dark:bg-white/[0.03] border-black/10 dark:border-white/10 text-gray-950 dark:text-white hover:bg-black/5 dark:hover:bg-white/10'
                   }`}
                 >
@@ -217,12 +248,28 @@ export default function CalendarPage() {
                     >
                       {day}
                     </span>
-                    {data.list.length > 0 && (
-                      <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
-                        {data.list.length}
+                    {hol ? (
+                      <span
+                        className="text-[10px] sm:text-xs"
+                        title={`${hol.name}: ${hol.spendingAdvice}`}
+                      >
+                        🎉
                       </span>
+                    ) : (
+                      data.list.length > 0 && (
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 font-mono">
+                          {data.list.length}
+                        </span>
+                      )
                     )}
                   </div>
+
+                  {/* Holiday celebration pill on desktop */}
+                  {hol && (
+                    <div className="hidden sm:block text-[8px] font-black text-amber-700 dark:text-amber-300 truncate leading-tight mt-0.5">
+                      {hol.tag}
+                    </div>
+                  )}
 
                   {/* Day activity pills */}
                   <div className="space-y-0.5 mt-0.5 overflow-hidden w-full">
@@ -262,6 +309,41 @@ export default function CalendarPage() {
               <Plus className="w-4 h-4" />
             </button>
           </div>
+
+          {/* Holiday / Celebration Warning & Spending Advice */}
+          {selectedHoliday && (
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/15 via-rose-500/10 to-transparent border border-amber-500/30 dark:border-amber-400/25 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <PartyPopper className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-[10px] font-black text-amber-700 dark:text-amber-300 uppercase tracking-wider truncate">
+                    {selectedHoliday.tag} • {selectedHoliday.category}
+                  </span>
+                </div>
+                <span
+                  className={`text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
+                    selectedHoliday.spendingImpact === 'extreme'
+                      ? 'bg-rose-500 text-white'
+                      : selectedHoliday.spendingImpact === 'very_high'
+                      ? 'bg-amber-500 text-slate-950 font-black'
+                      : 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'
+                  }`}
+                >
+                  {selectedHoliday.spendingImpact === 'extreme'
+                    ? '🔥 Extreme Spending Surge'
+                    : selectedHoliday.spendingImpact === 'very_high'
+                    ? '⚡ High Spending Spike'
+                    : 'Celebration Day'}
+                </span>
+              </div>
+              <h4 className="text-sm font-black text-gray-950 dark:text-white leading-snug">
+                {selectedHoliday.name}
+              </h4>
+              <p className="text-[11px] text-slate-700 dark:text-slate-300 font-medium leading-relaxed">
+                💡 <strong className="text-gray-950 dark:text-white">Festive Budget Tip:</strong> {selectedHoliday.spendingAdvice}
+              </p>
+            </div>
+          )}
 
           {/* Daily Totals */}
           <div className="grid grid-cols-2 gap-2 text-xs">
