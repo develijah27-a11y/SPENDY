@@ -10,6 +10,7 @@ import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { QuickAddModal } from './QuickAddModal';
 import { ReceiptModal } from './ReceiptModal';
+import { RoutePreloader } from './RoutePreloader';
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -25,6 +26,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <AuthProvider>
         <SpendyProvider>
+          <RoutePreloader />
           {isPublicAuthPage ? (
             <div className="min-h-screen bg-[#070A12] text-gray-100 selection:bg-emerald-500 selection:text-white">
               {children}

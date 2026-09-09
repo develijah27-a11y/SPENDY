@@ -235,3 +235,20 @@ input, select, textarea {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* High-end Neutral Skeleton Animation */
+@keyframes skeleton-shimmer {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+.skeleton-shimmer {
+  animation: skeleton-shimmer 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

@@ -83,6 +83,7 @@ export default function LandingPage() {
             {isAuthenticated ? (
               <Link
                 href="/app"
+                prefetch={true}
                 className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-98 cursor-pointer touch-target"
               >
                 <span>Dashboard</span>
@@ -92,12 +93,14 @@ export default function LandingPage() {
               <>
                 <Link
                   href="/login"
+                  prefetch={true}
                   className="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-600 dark:hover:text-white transition-colors cursor-pointer touch-target flex items-center"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/signup"
+                  prefetch={true}
                   className="flex items-center gap-1.5 px-4 sm:px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-98 cursor-pointer touch-target"
                 >
                   <UserPlus className="w-4 h-4" />
@@ -130,6 +133,7 @@ export default function LandingPage() {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
               <Link
                 href="/signup"
+                prefetch={true}
                 className="px-6 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer touch-target"
               >
                 <span>Get Started</span>
@@ -406,6 +410,7 @@ export default function LandingPage() {
         <div className="pt-2">
           <Link
             href="/signup"
+            prefetch={true}
             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-sm transition-all active:scale-98 cursor-pointer touch-target"
           >
             <span>Create your account</span>
@@ -421,9 +426,9 @@ export default function LandingPage() {
           <span>• Personal Finance Application</span>
         </div>
         <div className="flex items-center gap-6">
-          <Link href="/login" className="hover:text-emerald-600 dark:hover:text-white transition-colors">Sign In</Link>
-          <Link href="/signup" className="hover:text-emerald-600 dark:hover:text-white transition-colors">Sign Up</Link>
-          <Link href="/forgot-password" className="hover:text-emerald-600 dark:hover:text-white transition-colors">Reset Password</Link>
+          <Link href="/login" prefetch={true} className="hover:text-emerald-600 dark:hover:text-white transition-colors">Sign In</Link>
+          <Link href="/signup" prefetch={true} className="hover:text-emerald-600 dark:hover:text-white transition-colors">Sign Up</Link>
+          <Link href="/forgot-password" prefetch={true} className="hover:text-emerald-600 dark:hover:text-white transition-colors">Reset Password</Link>
         </div>
         <p>© {new Date().getFullYear()} Spendy. All rights reserved.</p>
       </footer>
